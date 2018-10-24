@@ -9,18 +9,13 @@ properties {
 }
 
 task Debug -depends Default
-task Default -depends Clean-Solution, Build-Solution, Test-Solution
+task Default -depends Clean-Solution, Build-Solution
 task Download -depends Clean-Solution, Update-AssemblyInfoFiles, Build-Output
-
-task Test-Solution -depends Build-Solution {
-	$runnerDir = ([array](dir $baseDir\packages\xunit.runners.*))[-1];
-    exec { .$runnerDir\tools\xunit.console.clr4.exe "nquant.Facts\bin\$configuration\nquant.Facts.dll" }
-}
 
 task Build-35-Solution {
   $conf = $configuration+35
-  exec { msbuild 'nquant.core\nquant.core.csproj' /maxcpucount /t:Build /v:Minimal /p:Configuration=$conf }
-  exec { msbuild 'nquantshell\nquant.csproj' /maxcpucount /t:Build /v:Minimal /p:Configuration=$conf }
+  exec { msbuild 'nQuant.Master\nQuant.Master.csproj' /maxcpucount /t:Build /v:Minimal /p:Configuration=$conf }
+  exec { msbuild 'nQuant.Console\nQuant.csproj' /maxcpucount /t:Build /v:Minimal /p:Configuration=$conf }
 }
 
 task Clean-Solution -depends Clean-BuildFiles {
@@ -28,8 +23,8 @@ task Clean-Solution -depends Clean-BuildFiles {
     clean $baseDir\nquant.core\Nuget\Lib
 	create $baseDir\nquant.core\Nuget\Lib
     exec { msbuild nQuant.sln /t:Clean /v:quiet }
-	exec { msbuild 'nQuant.core\nquant.core.csproj' /t:Clean /v:quiet /p:Configuration=$conf }
-	exec { msbuild 'nQuantShell\nQuant.csproj' /t:Clean /v:quiet /p:Configuration=$conf }
+	exec { msbuild 'nQuant.Master\nQuant.Master.csproj' /t:Clean /v:quiet /p:Configuration=$conf }
+	exec { msbuild 'nQuant.Console\nQuant.csproj' /t:Clean /v:quiet /p:Configuration=$conf }
 }
 
 task Update-AssemblyInfoFiles {
