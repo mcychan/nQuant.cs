@@ -46,27 +46,26 @@ task Push-Nuget {
 }
 
 task Build-Output -depends Build-Solution {
-	clean $baseDir\nquant.core\Nuget\Lib
-	create $baseDir\nquant.core\Nuget\Lib\net20
-	create $baseDir\nquant.core\Nuget\Lib\net40
-	Copy-Item $baseDir\nquant.core\bin\v3.5\$configuration\*.* $baseDir\nquant.core\Nuget\Lib\net20
-	Copy-Item $baseDir\nquant.core\bin\v4.0\$configuration\*.* $baseDir\nquant.core\Nuget\Lib\net40
-	clean $baseDir\nquant.core\Nuget\Tools
-	create $baseDir\nquant.core\Nuget\Tools\net20
-	create $baseDir\nquant.core\Nuget\Tools\net40
-	Copy-Item $baseDir\nquantShell\bin\v3.5\$configuration\*.* $baseDir\nquant.core\Nuget\Tools\net20
-	Copy-Item $baseDir\nquantShell\bin\v4.0\$configuration\*.* $baseDir\nquant.core\Nuget\Tools\net40
+	clean $baseDir\nQuant.Master\Nuget\Lib
+	create $baseDir\nQuant.Master\Nuget\Lib\net20
+	create $baseDir\nQuant.Master\Nuget\Lib\net40
+	Copy-Item $baseDir\nQuant.Master\bin\v3.5\$configuration\*.* $baseDir\nQuant.Master\Nuget\Lib\net20
+	Copy-Item $baseDir\nQuant.Master\bin\v4.0\$configuration\*.* $baseDir\nQuant.Master\Nuget\Lib\net40
+	clean $baseDir\nQuant.Master\Nuget\Tools
+	create $baseDir\nQuant.Master\Nuget\Tools\net20
+	create $baseDir\nQuant.Master\Nuget\Tools\net40
+	Copy-Item $baseDir\nQuant.Console\bin\v3.5\$configuration\*.* $baseDir\nQuant.Master\Nuget\Tools\net20
+	Copy-Item $baseDir\nQuant.Console\bin\v4.0\$configuration\*.* $baseDir\nQuant.Master\Nuget\Tools\net40
 	clean $filesDir
 	create $filesDir
 	create $filesDir\net35
 	create $filesDir\net40
-	Copy-Item $baseDir\nquantShell\bin\v3.5\$configuration\*.* $filesDir\net35
-	Copy-Item $baseDir\nquantShell\bin\v4.0\$configuration\*.* $filesDir\net40
-	Copy-Item $baseDir\License.txt $filesDir
+	Copy-Item $baseDir\nQuant.Console\bin\v3.5\$configuration\*.* $filesDir\net35
+	Copy-Item $baseDir\nQuant.Console\bin\v4.0\$configuration\*.* $filesDir\net40
 	cd $filesDir
 	exec { ..\Tools\zip.exe -9 -r nQuant-$version.zip . }
 	cd $currentDir
-    exec { .$nugetDir\nuget.exe pack "nQuant.core\Nuget\nQuant.nuspec" -o $filesDir -version $version }
+    exec { .$nugetDir\nuget.exe pack "nQuant.Master\Nuget\nQuant.nuspec" -o $filesDir -version $version }
 }
 
 function clean($path) {
