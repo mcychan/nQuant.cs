@@ -51,6 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CIELABConvertor.cs" />
+    <Compile Include="PnnLABQuantizer.cs" />
     <Compile Include="PnnQuantizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

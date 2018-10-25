@@ -22,7 +22,7 @@ namespace PnnQuant
             public int nn, fw, bk, tm, mtm;
 	    }
 
-	    private int getARGBIndex(Color c)
+        protected int getARGBIndex(Color c)
 	    {
 		    if(hasSemiTransparency)
 			    return (c.A & 0xF0) << 8 | (c.R & 0xF0) << 4 | (c.G & 0xF0) | (c.B >> 4);
@@ -488,7 +488,7 @@ namespace PnnQuant
 		    return true;
 	    }
 
-        private bool ProcessImagePixels(Bitmap dest, ColorPalette palette, int[] qPixels)
+        protected bool ProcessImagePixels(Bitmap dest, ColorPalette palette, int[] qPixels)
         {
             dest.Palette = palette;
 
@@ -606,7 +606,7 @@ namespace PnnQuant
             return true;
         }
 
-	    public bool QuantizeImage(Bitmap source, Bitmap dest, int nMaxColors, bool dither)
+	    public virtual bool QuantizeImage(Bitmap source, Bitmap dest, int nMaxColors, bool dither)
 	    {
 		    int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
 		    int bitmapWidth = source.Width;
