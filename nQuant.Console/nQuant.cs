@@ -38,7 +38,7 @@ namespace nQuant
             }
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            var quantizer = new PnnQuant.PnnQuantizer();
+            PnnQuant.PnnQuantizer quantizer = new PnnQuant.PnnLABQuantizer();
             using(var bitmap = new Bitmap(sourcePath))
             {
                 try
