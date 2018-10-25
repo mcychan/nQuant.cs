@@ -507,6 +507,7 @@ namespace PnnQuant
             }
 
             quantize_image(pixels, palette, qPixels, bitmapWidth, bitmapHeight, dither);
+            pixelMap.Clear();
             closestMap.Clear();
 
             return ProcessImagePixels(dest, palette, qPixels);
