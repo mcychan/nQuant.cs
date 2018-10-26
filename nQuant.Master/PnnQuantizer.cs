@@ -313,7 +313,7 @@ namespace PnnQuant
 					    row1 = orowerr;
 				    }
 				
-				    int cursor0 = DJ, cursor1 = (int) (width * DJ);
+				    int cursor0 = DJ, cursor1 = width * DJ;
 				    row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
 				    for (int j = 0; j < width; j++) {
 					    Color c = pixels[pixelIndex];
@@ -441,7 +441,7 @@ namespace PnnQuant
 					    if (hasSemiTransparency)
 						    rgba1 = Color.FromArgb((c1.A & 0xF0), (c1.R & 0xF0), (c1.G & 0xF0), (c1.B & 0xF0));
 					    else if (hasTransparency)
-						    rgba1 = Color.FromArgb((c1.A < Byte.MaxValue) ? 0 : Byte.MaxValue, (c1.R & 0xF8), (c1.G & 0xF8), (c1.B & 0xF8));
+                            rgba1 = Color.FromArgb((c1.A & 0x80), (c1.R & 0xF8), (c1.G & 0xF8), (c1.B & 0xF8));
 					    lookup[offset] = rgba1;
 				    }
 
@@ -593,7 +593,8 @@ namespace PnnQuant
 
                 // Second loop: fill indexed bitmap
                 for (int y = 0; y < h; y++)
-                {	// For each row...
+                {
+                    // For each row...
                     for (int x = 0; x < w * 2; )
                     {
                         ushort argb = (ushort) qPixels[pixelIndex++];

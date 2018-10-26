@@ -323,7 +323,7 @@ namespace PnnQuant
                         row1 = orowerr;
                     }
 
-                    int cursor0 = DJ, cursor1 = (int)(width * DJ);
+                    int cursor0 = DJ, cursor1 = width * DJ;
                     row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
                     for (int j = 0; j < width; j++)
                     {
