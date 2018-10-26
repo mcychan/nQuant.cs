@@ -387,7 +387,7 @@ namespace PnnQuant
                 return true;
             }
 
-            if (hasSemiTransparency || nMaxColors < 256)
+            if (hasTransparency || nMaxColors < 256)
             {
                 for (int i = 0; i < qPixels.Length; i++)
                     qPixels[i] = nearestColorIndex(palette, pixels[i]);
@@ -479,11 +479,12 @@ namespace PnnQuant
                 }
 
                 source.UnlockBits(data);
-            }
+            }             
 
             var qPixels = new int[bitmapWidth * bitmapHeight];
             if (nMaxColors > 256)
             {
+                hasSemiTransparency = false;
                 quantize_image(pixels, qPixels, bitmapWidth, bitmapHeight);
                 return ProcessImagePixels(dest, qPixels);
             }
@@ -494,7 +495,7 @@ namespace PnnQuant
                 pnnquan(pixels, bins, palette, nMaxColors);
             else
             {
-                if (hasSemiTransparency)
+                if (hasTransparency)
                 {
                     palette.Entries[0] = Color.Transparent;
                     palette.Entries[1] = Color.Black;

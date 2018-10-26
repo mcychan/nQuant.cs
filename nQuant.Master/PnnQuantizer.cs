@@ -371,7 +371,8 @@ namespace PnnQuant
 			    return true;
 		    }
 
-		    if(hasSemiTransparency || nMaxColors < 256) {
+            if (hasTransparency || nMaxColors < 256)
+            {
 			    for (int i = 0; i < qPixels.Length; i++)
 				    qPixels[i] = nearestColorIndex(palette, squares3, pixels[i]);
 		    }
@@ -425,7 +426,7 @@ namespace PnnQuant
 			
 			    int cursor0 = DJ, cursor1 = (int) (width * DJ);
 			    row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
-			    for (short j = 0; j < width; j++) {
+			    for (int j = 0; j < width; j++) {
 				    Color c = pixels[pixelIndex];
 
 				    r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];
@@ -436,7 +437,7 @@ namespace PnnQuant
 				    Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 				    int offset = getARGBIndex(c1);
 				    if (lookup[offset] == null) {
-					    Color rgba1 = Color.FromArgb(Byte.MaxValue, (c1.R & 0xF8), (c1.G & 0xFC), (c1.B & 0xF8));
+                        Color rgba1 = Color.FromArgb(c1.A, (c1.R & 0xF8), (c1.G & 0xFC), (c1.B & 0xF8));
 					    if (hasSemiTransparency)
 						    rgba1 = Color.FromArgb((c1.A & 0xF0), (c1.R & 0xF0), (c1.G & 0xF0), (c1.B & 0xF0));
 					    else if (hasTransparency)
@@ -591,12 +592,13 @@ namespace PnnQuant
                 }
 
                 // Second loop: fill indexed bitmap
-                for (uint y = 0; y < h; y++)
+                for (int y = 0; y < h; y++)
                 {	// For each row...
-                    for (uint x = 0; x < w * 2; )
+                    for (int x = 0; x < w * 2; )
                     {
-                        pRowDest[x++] = (byte)(qPixels[pixelIndex] & 0xFF);
-                        pRowDest[x++] = (byte)(qPixels[pixelIndex++] >> 8);
+                        ushort argb = (ushort) qPixels[pixelIndex++];
+                        pRowDest[x++] = (byte)(argb & 0xFF);
+                        pRowDest[x++] = (byte)(argb >> 8);
                     }
                     pRowDest += strideDest;
                 }
@@ -628,7 +630,7 @@ namespace PnnQuant
 					    }
 					    pixels[pixelIndex++] = color;
 				    }
-			    }
+			    }                
 		    }
 
 		    // Lock bits on 3x8 source bitmap
@@ -678,10 +680,11 @@ namespace PnnQuant
                 }			    
 
 			    source.UnlockBits(data);
-		    }
+		    }                
 
             var qPixels = new int[bitmapWidth * bitmapHeight];
-		    if (nMaxColors > 256) {			    
+		    if (nMaxColors > 256) {
+                hasSemiTransparency = false;
 			    quantize_image(pixels, qPixels, bitmapWidth, bitmapHeight);
 			    return ProcessImagePixels(dest, qPixels);
 		    }
@@ -692,7 +695,8 @@ namespace PnnQuant
 		    if (nMaxColors > 2)
 			    pnnquan(pixels, bins, palette, quan_sqrt);
 		    else {
-			    if (hasSemiTransparency) {
+                if (hasTransparency)
+                {
 				    palette.Entries[0] = Color.Transparent;
 				    palette.Entries[1] = Color.Black;
 			    }
