@@ -1,7 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C# Express 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nQuant.Console", "nQuant.Console\nQuant.csproj", "{D502D741-603F-4566-A7ED-B8A624DD008F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nQuant", "nQuant.Console\nQuant.csproj", "{D502D741-603F-4566-A7ED-B8A624DD008F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A59307EA-FCB0-4110-BC42-0417871C24C4} = {A59307EA-FCB0-4110-BC42-0417871C24C4}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nQuant.Master", "nQuant.Master\nQuant.Master.csproj", "{A59307EA-FCB0-4110-BC42-0417871C24C4}"
 EndProject
@@ -31,10 +34,12 @@ Global
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Debug|x86.Build.0 = Debug|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|x64.ActiveCfg = Release|Any CPU
 		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|x86.ActiveCfg = Release|Any CPU
+		{A59307EA-FCB0-4110-BC42-0417871C24C4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
