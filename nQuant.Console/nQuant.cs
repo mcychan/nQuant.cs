@@ -19,8 +19,8 @@ namespace nQuant
 
             if(args.Length < 1)
             {
-                PrintUsage();
-                Environment.Exit(1);
+               PrintUsage();
+               Environment.Exit(1);
             }
             var sourcePath = args[0];
             ProcessArgs(args);
@@ -46,14 +46,19 @@ namespace nQuant
                     using (var dest = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format8bppIndexed))
                     {
                         if (quantizer.QuantizeImage(bitmap, dest, maxColors, true))
+                        {
                             dest.Save(targetPath, ImageFormat.Png);
+                            Console.WriteLine("Converted image: " + targetPath);
+                        }
+                        else
+                            Console.WriteLine("Incorrect pixel format for {0} colors.", maxColors);
                     }
                 }
                 catch (Exception q)
                 {
                     Console.WriteLine(q.Message);
                 }
-            }
+            }            
             Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
         }
 
