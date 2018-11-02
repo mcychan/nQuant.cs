@@ -16,15 +16,13 @@ namespace PnnQuant
             internal double err;
 	    }
 	
-	    private CIELABConvertor.Lab getLab(int argb)
+	    private void getLab(int argb, out CIELABConvertor.Lab lab1)
 	    {
             Color c = Color.FromArgb(argb);
-		    CIELABConvertor.Lab lab1;
 		    if (!pixelMap.TryGetValue(argb, out lab1)) {
 			    lab1 = CIELABConvertor.RGB2LAB(c);
 			    pixelMap[argb] = lab1;
 		    }
-		    return lab1;
 	    }
 
 	    private void find_nn(Pnnbin[] bins, int idx)
@@ -53,8 +51,7 @@ namespace PnnQuant
 
 	    private int pnnquan(int[] pixels, ColorPalette palette, int nMaxColors)
 	    {
-            var bins = new Pnnbin[65536];
-            var heap = new int[65537];		    
+            var bins = new Pnnbin[65536];            		    
 
 		    /* Build histogram */
 		    for(int i=0; i<pixels.Length; ++i) {
@@ -62,7 +59,8 @@ namespace PnnQuant
 			    // !!! nonuniformity then?
                 Color c = Color.FromArgb(pixels[i]);
                 int index = getARGBIndex(pixels[i]);
-                CIELABConvertor.Lab lab1 = getLab(pixels[i]);
+                CIELABConvertor.Lab lab1;
+                getLab(pixels[i], out lab1);
 			    if(bins[index] == null)
 				    bins[index] = new Pnnbin();
 			    var tb = bins[index];
@@ -75,10 +73,10 @@ namespace PnnQuant
 
 		    /* Cluster nonempty bins at one end of array */
 		    int maxbins = 0;
-
+            var heap = new int[65537];
             for (int i = 0; i < heap.Length - 1; ++i)
             {
-			    if (bins[i] == null)
+			    if (bins[i] == null || bins[i].cnt == 0)
 				    continue;
 
                 float d = 1.0f / (float)bins[i].cnt;
@@ -116,12 +114,12 @@ namespace PnnQuant
 		    /* Merge bins which increase error the least */
 		    int extbins = maxbins - nMaxColors;
 		    for (int i = 0; i < extbins; ) {
-                Pnnbin tb = null;
-                int b1;
+                Pnnbin tb = null;                
                 /* Use heap to find which bins to merge */
                 for (; ; )
                 {
-                    tb = bins[b1 = heap[1]]; /* One with least error */
+                    int b1 = heap[1];
+                    tb = bins[b1]; /* One with least error */
                     /* Is stored error up to date? */
                     if ((tb.tm >= tb.mtm) && (bins[tb.nn].mtm <= tb.tm))
                         break;
@@ -146,7 +144,6 @@ namespace PnnQuant
                 }
 
                 /* Do a merge */
-                tb = bins[b1];
 			    var nb = bins[tb.nn];
                 float n1 = tb.cnt;
                 float n2 = nb.cnt;
@@ -163,9 +160,10 @@ namespace PnnQuant
 			    bins[nb.fw].bk = nb.bk;
 			    nb.mtm = 0xFFFF;
 		    }
+            heap = null;
 
-		    /* Fill palette */
-		    int k = 0;
+            /* Fill palette */
+            int k = 0;
 		    for (int i = 0;; ++k) {
 			    CIELABConvertor.Lab lab1 = new CIELABConvertor.Lab();
 			    lab1.alpha = (int) Math.Round(bins[i].ac);
@@ -190,12 +188,14 @@ namespace PnnQuant
             Color c = Color.FromArgb(argb);
 
 		    double mindist = int.MaxValue;
-            CIELABConvertor.Lab lab1 = getLab(argb);
+            CIELABConvertor.Lab lab1;
+            getLab(argb, out lab1);
 
             for (short i = 0; i < nMaxColors; ++i)
             {
                 Color c2 = palette.Entries[i];
-			    CIELABConvertor.Lab lab2 = getLab(c2.ToArgb());
+                CIELABConvertor.Lab lab2;
+                getLab(c2.ToArgb(), out lab2);
 			
 			    double curdist = Math.Pow(c2.A - c.A, 2.0);
 			    if (curdist > mindist)
@@ -252,12 +252,14 @@ namespace PnnQuant
             {
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;
-                CIELABConvertor.Lab lab1 = getLab(pixel);
+                CIELABConvertor.Lab lab1;
+                getLab(pixel, out lab1);
 
                 for (; k < nMaxColors; k++)
                 {
                     Color c2 = palette.Entries[k];
-				    CIELABConvertor.Lab lab2 = getLab(c2.ToArgb());
+                    CIELABConvertor.Lab lab2;
+                    getLab(c2.ToArgb(), out lab2);
 
                     closest[4] = (ushort)(Math.Pow(lab2.alpha - lab1.alpha, 2) + CIELABConvertor.CIEDE2000(lab2, lab1));
                     //closest[4] = (short) (Math.abs(lab2.alpha - lab1.alpha) + Math.abs(lab2.L - lab1.L) + Math.abs(lab2.A - lab1.A) + Math.abs(lab2.B - lab1.B));

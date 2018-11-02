@@ -63,8 +63,7 @@ namespace PnnQuant
 
         private int pnnquan(int[] pixels, ColorPalette palette, int nMaxColors, bool quan_sqrt)
 	    {
-            var bins = new Pnnbin[65536];
-            var heap = new int[65537];
+            var bins = new Pnnbin[65536];            
 
 		    /* Build histogram */
             for(int i=0; i<pixels.Length; ++i)
@@ -85,10 +84,10 @@ namespace PnnQuant
 
             /* Cluster nonempty bins at one end of array */
             int maxbins = 0;
-
+            var heap = new int[65537];
             for (int i = 0; i < heap.Length - 1; ++i)
             {
-                if (bins[i] == null)
+                if (bins[i] == null || bins[i].cnt == 0)
                     continue;
 
                 float d = 1.0f / (float) bins[i].cnt;
@@ -131,12 +130,12 @@ namespace PnnQuant
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins; )
             {
-                Pnnbin tb = null;
-                int b1;
+                Pnnbin tb = null;                
                 /* Use heap to find which bins to merge */
                 for (; ; )
                 {
-                    tb = bins[b1 = heap[1]]; /* One with least error */
+                    int b1 = heap[1];
+                    tb = bins[b1]; /* One with least error */
                     /* Is stored error up to date? */
                     if ((tb.tm >= tb.mtm) && (bins[tb.nn].mtm <= tb.tm))
                         break;
@@ -161,7 +160,6 @@ namespace PnnQuant
                 }
 
                 /* Do a merge */
-                tb = bins[b1];
                 var nb = bins[tb.nn];
                 float n1 = tb.cnt;
                 float n2 = nb.cnt;
@@ -178,6 +176,7 @@ namespace PnnQuant
                 bins[nb.fw].bk = nb.bk;
                 nb.mtm = 0xFFFF;
             }
+            heap = null;
 
 		    /* Fill palette */
 		    int k = 0;
