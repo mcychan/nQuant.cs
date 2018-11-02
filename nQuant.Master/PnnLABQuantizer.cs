@@ -10,10 +10,10 @@ namespace PnnQuant
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();	
 
 	    private sealed class Pnnbin {
-            public float ac, Lc, Ac, Bc;
-		    public int cnt;
-		    public int nn, fw, bk, tm, mtm;
-            public double err;
+            internal float ac, Lc, Ac, Bc;
+            internal int cnt;
+            internal int nn, fw, bk, tm, mtm;
+            internal double err;
 	    }
 	
 	    private CIELABConvertor.Lab getLab(int argb)
@@ -114,43 +114,45 @@ namespace PnnQuant
 		    /* Merge bins which increase error the least */
 		    extbins = maxbins - nMaxColors;
 		    for (int i = 0; i < extbins; ) {
+                Pnnbin tb = null;
 			    /* Use heap to find which bins to merge */
-			    for (;;) {
-				    var tb = bins[b1 = heap[1]]; /* One with least error */
-											   /* Is stored error up to date? */
-				    if ((tb.tm >= tb.mtm) && (bins[tb.nn].mtm <= tb.tm))
-					    break;
-				    if (tb.mtm == 0xFFFF) /* Deleted node */
-					    b1 = heap[1] = heap[heap[0]--];
-				    else /* Too old error value */
-				    {
-					    find_nn(bins, b1);
-					    tb.tm = i;
-				    }
-				    /* Push slot down */
-				    err = bins[b1].err;
-				    for (l = 1; (l2 = l + l) <= heap[0]; l = l2) {
-					    if ((l2 < heap[0]) && (bins[heap[l2]].err > bins[heap[l2 + 1]].err))
-						    l2++;
-					    if (err <= bins[h = heap[l2]].err)
-						    break;
-					    heap[l] = h;
-				    }
-				    heap[l] = b1;
-			    }
+                do
+                {
+                    tb = bins[b1 = heap[1]]; /* One with least error */
+                    /* Is stored error up to date? */
+
+                    if (tb.mtm == 0xFFFF) /* Deleted node */
+                        b1 = heap[1] = heap[heap[0]--];
+                    else /* Too old error value */
+                    {
+                        find_nn(bins, b1);
+                        tb.tm = i;
+                    }
+                    /* Push slot down */
+                    err = bins[b1].err;
+                    for (l = 1; (l2 = l + l) <= heap[0]; l = l2)
+                    {
+                        if ((l2 < heap[0]) && (bins[heap[l2]].err > bins[heap[l2 + 1]].err))
+                            l2++;
+                        if (err <= bins[h = heap[l2]].err)
+                            break;
+                        heap[l] = h;
+                    }
+                    heap[l] = b1;
+                } while ((tb.tm < tb.mtm) || (bins[tb.nn].mtm > tb.tm));
 
 			    /* Do a merge */
-			    var tb1 = bins[b1];
-			    var nb = bins[tb1.nn];
-                float n1 = tb1.cnt;
+			    tb = bins[b1];
+			    var nb = bins[tb.nn];
+                float n1 = tb.cnt;
                 float n2 = nb.cnt;
                 float d = 1.0f / (n1 + n2);
-			    tb1.ac = d * (n1 * tb1.ac + n2 * nb.ac);
-			    tb1.Lc = d * (n1 * tb1.Lc + n2 * nb.Lc);
-			    tb1.Ac = d * (n1 * tb1.Ac + n2 * nb.Ac);
-			    tb1.Bc = d * (n1 * tb1.Bc + n2 * nb.Bc);
-			    tb1.cnt += nb.cnt;
-			    tb1.mtm = ++i;
+			    tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
+			    tb.Lc = d * (n1 * tb.Lc + n2 * nb.Lc);
+			    tb.Ac = d * (n1 * tb.Ac + n2 * nb.Ac);
+			    tb.Bc = d * (n1 * tb.Bc + n2 * nb.Bc);
+			    tb.cnt += nb.cnt;
+			    tb.mtm = ++i;
 
 			    /* Unchain deleted bin */
 			    bins[nb.bk].fw = nb.fw;
@@ -297,10 +299,10 @@ namespace PnnQuant
                 short[] orowerr = new short[err_len];
                 short[] lookup = new short[65536];
 
-                for (int i = 0; i < 256; i++)
+                for (int i = 0; i < 256; ++i)
                 {
                     clamp[i] = 0;
-                    clamp[i + 256] = (short)i;
+                    clamp[i + 256] = i;
                     clamp[i + 512] = Byte.MaxValue;
                     clamp[i + 768] = Byte.MaxValue;
 
@@ -310,7 +312,7 @@ namespace PnnQuant
                 for (int i = -DITHER_MAX; i <= DITHER_MAX; i++)
                     limtb[i + 256] = i;
 
-                for (int i = 0; i < height; i++)
+                for (int i = 0; i < height; ++i)
                 {
                     if (odd_scanline)
                     {
@@ -328,7 +330,7 @@ namespace PnnQuant
 
                     int cursor0 = DJ, cursor1 = width * DJ;
                     row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
-                    for (int j = 0; j < width; j++)
+                    for (int j = 0; j < width; ++j)
                     {
                         Color c = Color.FromArgb(pixels[pixelIndex]);
                         r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];

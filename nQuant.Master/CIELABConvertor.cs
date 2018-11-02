@@ -7,9 +7,9 @@ namespace PnnQuant
 {
     internal class CIELABConvertor
     {
-        internal class Lab {
-		    public int alpha = Byte.MaxValue;
-		    public float A, B, L;
+        internal struct Lab {
+            internal int alpha;
+            internal float A, B, L;
 	    }
 
         internal static Lab RGB2LAB(Color c1)

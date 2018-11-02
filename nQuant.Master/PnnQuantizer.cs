@@ -19,10 +19,10 @@ namespace PnnQuant
 
         private sealed class Pnnbin
         {
-		    public float ac, rc, gc, bc;            
-		    public int cnt;
-            public int nn, fw, bk, tm, mtm;
-            public double err;
+            internal float ac, rc, gc, bc;
+            internal int cnt;
+            internal int nn, fw, bk, tm, mtm;
+            internal double err;
 	    }
 
         protected int getARGBIndex(int argb)
@@ -130,10 +130,11 @@ namespace PnnQuant
             extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins; )
             {
+                Pnnbin tb = null;
                 /* Use heap to find which bins to merge */
                 for (; ; )
                 {
-                    var tb = bins[b1 = heap[1]]; /* One with least error */
+                    tb = bins[b1 = heap[1]]; /* One with least error */
                     /* Is stored error up to date? */
                     if ((tb.tm >= tb.mtm) && (bins[tb.nn].mtm <= tb.tm))
                         break;
@@ -158,17 +159,17 @@ namespace PnnQuant
                 }
 
                 /* Do a merge */
-                var tb1 = bins[b1];
-                var nb = bins[tb1.nn];
-                float n1 = tb1.cnt;
+                tb = bins[b1];
+                var nb = bins[tb.nn];
+                float n1 = tb.cnt;
                 float n2 = nb.cnt;
                 float d = 1.0f / (n1 + n2);
-                tb1.ac = d * (n1 * tb1.ac + n2 * nb.ac);
-                tb1.rc = d * (n1 * tb1.rc + n2 * nb.rc);
-                tb1.gc = d * (n1 * tb1.gc + n2 * nb.gc);
-                tb1.bc = d * (n1 * tb1.bc + n2 * nb.bc);
-                tb1.cnt += nb.cnt;
-                tb1.mtm = ++i;
+                tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
+                tb.rc = d * (n1 * tb.rc + n2 * nb.rc);
+                tb.gc = d * (n1 * tb.gc + n2 * nb.gc);
+                tb.bc = d * (n1 * tb.bc + n2 * nb.bc);
+                tb.cnt += nb.cnt;
+                tb.mtm = ++i;
 
                 /* Unchain deleted bin */
                 bins[nb.bk].fw = nb.fw;
@@ -272,11 +273,11 @@ namespace PnnQuant
 	    {
 		    var sqr_tbl = new int[Byte.MaxValue + Byte.MaxValue + 1];
 
-		    for (int i = (-Byte.MaxValue); i <= Byte.MaxValue; i++)
+		    for (int i = (-Byte.MaxValue); i <= Byte.MaxValue; ++i)
 			    sqr_tbl[i + Byte.MaxValue] = i * i;
 
 		    var squares3 = new int[sqr_tbl.Length - Byte.MaxValue];
-		    for (int i = 0; i < squares3.Length; i++)
+		    for (int i = 0; i < squares3.Length; ++i)
 			    squares3[i] = sqr_tbl[i + Byte.MaxValue];
 
 		    int pixelIndex = 0;
@@ -293,7 +294,7 @@ namespace PnnQuant
                 short[] orowerr = new short[err_len];
                 short[] lookup = new short[65536];
 
-			    for (int i = 0; i < 256; i++) {
+			    for (int i = 0; i < 256; ++i) {
 				    clamp[i] = 0;
 				    clamp[i + 256] = (short) i;
 				    clamp[i + 512] = Byte.MaxValue;
@@ -302,10 +303,10 @@ namespace PnnQuant
 				    limtb[i] = -DITHER_MAX;
 				    limtb[i + 256] = DITHER_MAX;
 			    }
-			    for (int i = -DITHER_MAX; i <= DITHER_MAX; i++)
+			    for (int i = -DITHER_MAX; i <= DITHER_MAX; ++i)
 				    limtb[i + 256] = i;
 
-                for (int i = 0; i < height; i++)
+                for (int i = 0; i < height; ++i)
                 {
 				    if (odd_scanline) {
 					    dir = -1;
@@ -405,9 +406,9 @@ namespace PnnQuant
             short[] orowerr = new short[err_len];
 		    int[] lookup = new int[65536];
 
-		    for (int i = 0; i < 256; i++) {
+		    for (int i = 0; i < 256; ++i) {
 			    clamp[i] = 0;
-			    clamp[i + 256] = (short) i;
+			    clamp[i + 256] = i;
 			    clamp[i + 512] = Byte.MaxValue;
 			    clamp[i + 768] = Byte.MaxValue;
 
@@ -417,10 +418,10 @@ namespace PnnQuant
 		    for (int i = -DITHER_MAX; i <= DITHER_MAX; i++)
 			    limtb[i + 256] = i;
 
-		    for (int i = 0; i < height; i++) {
+		    for (int i = 0; i < height; ++i) {
 			    if (odd_scanline) {
 				    dir = -1;
-				    pixelIndex += (int)(width - 1);
+				    pixelIndex += (width - 1);
 				    row0 = orowerr;
 				    row1 = erowerr;
 			    }
@@ -432,7 +433,7 @@ namespace PnnQuant
 			
 			    int cursor0 = DJ, cursor1 = (width * DJ);
 			    row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
-			    for (int j = 0; j < width; j++) {
+			    for (int j = 0; j < width; ++j) {
 				    Color c = Color.FromArgb(pixels[pixelIndex]);
 
 				    r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];
