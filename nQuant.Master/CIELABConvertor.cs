@@ -9,9 +9,7 @@ namespace PnnQuant
     {
         internal class Lab {
 		    public int alpha = Byte.MaxValue;
-		    public double A = 0.0;
-		    public double B = 0.0;
-		    public double L = 0.0;
+		    public float A, B, L;
 	    }
 
         internal static Lab RGB2LAB(Color c1)
@@ -33,9 +31,9 @@ namespace PnnQuant
 
 		    Lab lab = new Lab();
 		    lab.alpha = c1.A;
-		    lab.L = (116 * y) - 16;
-		    lab.A = 500 * (x - y);
-		    lab.B = 200 * (y - z);
+		    lab.L = (float) ((116 * y) - 16);
+		    lab.A = (float) (500 * (x - y));
+		    lab.B = (float) (200 * (y - z));
 		    return lab;
 	    }
 
