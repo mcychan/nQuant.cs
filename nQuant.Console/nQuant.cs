@@ -51,7 +51,7 @@ namespace nQuant
                             Console.WriteLine("Converted image: " + targetPath);
                         }
                         else
-                            Console.WriteLine("Incorrect pixel format for {0} colors.", maxColors);
+                            Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", dest.PixelFormat.ToString(), maxColors);
                     }
                 }
                 catch (Exception q)
