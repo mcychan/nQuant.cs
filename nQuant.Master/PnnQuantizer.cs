@@ -61,11 +61,10 @@ namespace PnnQuant
 		    bin1.nn = nn;
 	    }
 
-        private int pnnquan(int[] pixels, Pnnbin[] bins, ColorPalette palette, int nMaxColors, bool quan_sqrt)
+        private int pnnquan(int[] pixels, ColorPalette palette, int nMaxColors, bool quan_sqrt)
 	    {
-		    var heap = new int[65537];
-		    double err;
-		    int l, l2, h, b1, maxbins, extbins;
+            var bins = new Pnnbin[65536];
+            var heap = new int[65537];
 
 		    /* Build histogram */
             for(int i=0; i<pixels.Length; ++i)
@@ -85,7 +84,7 @@ namespace PnnQuant
 		    }
 
             /* Cluster nonempty bins at one end of array */
-            maxbins = 0;
+            int maxbins = 0;
 
             for (int i = 0; i < heap.Length - 1; ++i)
             {
@@ -110,6 +109,8 @@ namespace PnnQuant
             // !!! Already zeroed out by calloc()
             //	bins[0].bk = bins[i].fw = 0;
 
+            int h, l, l2;
+            double err;
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
@@ -127,10 +128,11 @@ namespace PnnQuant
             }
 
             /* Merge bins which increase error the least */
-            extbins = maxbins - nMaxColors;
+            int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins; )
             {
                 Pnnbin tb = null;
+                int b1;
                 /* Use heap to find which bins to merge */
                 for (; ; )
                 {
@@ -705,12 +707,11 @@ namespace PnnQuant
 			    quantize_image(pixels, qPixels, bitmapWidth, bitmapHeight);
 			    return ProcessImagePixels(dest, qPixels);
 		    }
-
-		    var bins = new Pnnbin[65536];
+		    
 		    var palette = dest.Palette;
 		    bool quan_sqrt = nMaxColors > Byte.MaxValue;
 		    if (nMaxColors > 2)
-                nMaxColors = pnnquan(pixels, bins, palette, nMaxColors, quan_sqrt);
+                nMaxColors = pnnquan(pixels, palette, nMaxColors, quan_sqrt);
 		    else {
                 if (hasTransparency)
                 {

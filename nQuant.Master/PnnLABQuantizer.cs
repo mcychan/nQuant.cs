@@ -51,11 +51,10 @@ namespace PnnQuant
 		    bin1.nn = nn;
 	    }
 
-	    private int pnnquan(int[] pixels, Pnnbin[] bins, ColorPalette palette, int nMaxColors)
+	    private int pnnquan(int[] pixels, ColorPalette palette, int nMaxColors)
 	    {
-		    int[] heap = new int[65537];
-		    double err;
-		    int l, l2, h, b1, maxbins, extbins;
+            var bins = new Pnnbin[65536];
+            var heap = new int[65537];		    
 
 		    /* Build histogram */
 		    for(int i=0; i<pixels.Length; ++i) {
@@ -75,7 +74,7 @@ namespace PnnQuant
 		    }
 
 		    /* Cluster nonempty bins at one end of array */
-		    maxbins = 0;
+		    int maxbins = 0;
 
             for (int i = 0; i < heap.Length - 1; ++i)
             {
@@ -94,14 +93,17 @@ namespace PnnQuant
 			    bins[i].fw = (i + 1);
 			    bins[i + 1].bk = i;
 		    }
-		    // !!! Already zeroed out by calloc()
-		    //	bins[0].bk = bins[i].fw = 0;
+            // !!! Already zeroed out by calloc()
+            //	bins[0].bk = bins[i].fw = 0;
 
-		    /* Initialize nearest neighbors and build heap of them */
-		    for (int i = 0; i < maxbins; i++) {
+            int h, l, l2;
+            double err;
+            /* Initialize nearest neighbors and build heap of them */
+            for (int i = 0; i < maxbins; i++) {
 			    find_nn(bins, i);
 			    /* Push slot on heap */
 			    err = bins[i].err;
+                
 			    for (l = ++heap[0]; l > 1; l = l2) {
 				    l2 = l >> 1;
 				    if (bins[h = heap[l2]].err <= err)
@@ -112,15 +114,17 @@ namespace PnnQuant
 		    }
 
 		    /* Merge bins which increase error the least */
-		    extbins = maxbins - nMaxColors;
+		    int extbins = maxbins - nMaxColors;
 		    for (int i = 0; i < extbins; ) {
                 Pnnbin tb = null;
-			    /* Use heap to find which bins to merge */
-                do
+                int b1;
+                /* Use heap to find which bins to merge */
+                for (; ; )
                 {
                     tb = bins[b1 = heap[1]]; /* One with least error */
                     /* Is stored error up to date? */
-
+                    if ((tb.tm >= tb.mtm) && (bins[tb.nn].mtm <= tb.tm))
+                        break;
                     if (tb.mtm == 0xFFFF) /* Deleted node */
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
@@ -139,10 +143,10 @@ namespace PnnQuant
                         heap[l] = h;
                     }
                     heap[l] = b1;
-                } while ((tb.tm < tb.mtm) || (bins[tb.nn].mtm > tb.tm));
+                }
 
-			    /* Do a merge */
-			    tb = bins[b1];
+                /* Do a merge */
+                tb = bins[b1];
 			    var nb = bins[tb.nn];
                 float n1 = tb.cnt;
                 float n2 = nb.cnt;
@@ -496,11 +500,10 @@ namespace PnnQuant
                 quantize_image(pixels, qPixels, bitmapWidth, bitmapHeight);
                 return ProcessImagePixels(dest, qPixels);
             }
-
-            var bins = new Pnnbin[65536];
+                        
             var palette = dest.Palette;
             if (nMaxColors > 2)
-                nMaxColors = pnnquan(pixels, bins, palette, nMaxColors);
+                nMaxColors = pnnquan(pixels, palette, nMaxColors);
             else
             {
                 if (hasTransparency)
