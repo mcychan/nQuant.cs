@@ -37,7 +37,7 @@ namespace PnnQuant
 		    double wA = bin1.Ac;
 		    double wB = bin1.Bc;
 		    for (int i = bin1.fw; i != 0; i = bins[i].fw) {
-			    double nerr = Math.Pow((bins[i].ac - wa), 2) + Math.Pow((bins[i].Lc - wL), 2) + Math.Pow((bins[i].Ac - wA), 2) + Math.Pow((bins[i].Bc - wB), 2);
+			    double nerr = sqr(bins[i].ac - wa) + sqr(bins[i].Lc - wL) + sqr(bins[i].Ac - wA) + sqr(bins[i].Bc - wB);
 			    double n2 = bins[i].cnt;
 			    nerr *= (n1 * n2) / (n1 + n2);
 			    if (nerr >= err)
@@ -63,20 +63,19 @@ namespace PnnQuant
                 getLab(pixels[i], out lab1);
 			    if(bins[index] == null)
 				    bins[index] = new Pnnbin();
-			    var tb = bins[index];
-			    tb.ac += c.A;
-			    tb.Lc += lab1.L;
-			    tb.Ac += lab1.A;
-			    tb.Bc += lab1.B;
-			    tb.cnt++;
+                bins[index].ac += c.A;
+                bins[index].Lc += lab1.L;
+                bins[index].Ac += lab1.A;
+                bins[index].Bc += lab1.B;
+                bins[index].cnt++;
 		    }
 
 		    /* Cluster nonempty bins at one end of array */
 		    int maxbins = 0;
             var heap = new int[65537];
-            for (int i = 0; i < heap.Length - 1; ++i)
+            for (int i = 0; i < bins.Length; ++i)
             {
-			    if (bins[i] == null || bins[i].cnt == 0)
+			    if (bins[i] == null)
 				    continue;
 
                 float d = 1.0f / (float)bins[i].cnt;
@@ -95,12 +94,11 @@ namespace PnnQuant
             //	bins[0].bk = bins[i].fw = 0;
 
             int h, l, l2;
-            double err;
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++) {
 			    find_nn(bins, i);
-			    /* Push slot on heap */
-			    err = bins[i].err;
+                /* Push slot on heap */
+                double err = bins[i].err;
                 
 			    for (l = ++heap[0]; l > 1; l = l2) {
 				    l2 = l >> 1;
@@ -131,7 +129,7 @@ namespace PnnQuant
                         tb.tm = i;
                     }
                     /* Push slot down */
-                    err = bins[b1].err;
+                    double err = bins[b1].err;
                     for (l = 1; (l2 = l + l) <= heap[0]; l = l2)
                     {
                         if ((l2 < heap[0]) && (bins[heap[l2]].err > bins[heap[l2 + 1]].err))
@@ -165,7 +163,7 @@ namespace PnnQuant
             /* Fill palette */
             int k = 0;
 		    for (int i = 0;; ++k) {
-			    CIELABConvertor.Lab lab1 = new CIELABConvertor.Lab();
+			    CIELABConvertor.Lab lab1;
 			    lab1.alpha = (int) Math.Round(bins[i].ac);
 			    lab1.L = bins[i].Lc; lab1.A = bins[i].Ac; lab1.B = bins[i].Bc;
 			    palette.Entries[k] = CIELABConvertor.LAB2RGB(lab1);
@@ -196,26 +194,26 @@ namespace PnnQuant
                 Color c2 = palette.Entries[i];
                 CIELABConvertor.Lab lab2;
                 getLab(c2.ToArgb(), out lab2);
-			
-			    double curdist = Math.Pow(c2.A - c.A, 2.0);
+
+                double curdist = sqr(c2.A - c.A);
 			    if (curdist > mindist)
 				    continue;
 
                 if (nMaxColors < 256) {
 				    double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
-				    curdist += Math.Pow(deltaL_prime_div_k_L_S_L, 2.0);
+                    curdist += sqr(deltaL_prime_div_k_L_S_L);
 				    if (curdist > mindist)
 					    continue;
 
 				    double a1Prime, a2Prime, CPrime1, CPrime2;
 				    double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
-				    curdist += Math.Pow(deltaC_prime_div_k_L_S_L, 2.0);
+                    curdist += sqr(deltaC_prime_div_k_L_S_L);
 				    if (curdist > mindist)
 					    continue;
 
 				    double barCPrime, barhPrime;
 				    double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
-				    curdist += Math.Pow(deltaH_prime_div_k_L_S_L, 2.0);
+                    curdist += sqr(deltaH_prime_div_k_L_S_L);
 				    if (curdist > mindist)
 					    continue;
 
@@ -224,15 +222,15 @@ namespace PnnQuant
 					    continue;
 			    }
 			    else {
-				    curdist += Math.Pow(lab2.L - lab1.L, 2.0);
+                    curdist += sqr(lab2.L - lab1.L);
 				    if (curdist > mindist)
 					    continue;
 
-				    curdist += Math.Pow(lab2.A - lab1.A, 2.0);
+                    curdist += sqr(lab2.A - lab1.A);
 				    if (curdist > mindist)
 					    continue;
 
-				    curdist += Math.Pow(lab2.B - lab1.B, 2.0);
+                    curdist += sqr(lab2.B - lab1.B);
 				    if (curdist > mindist)
 					    continue;
 			    }
@@ -261,7 +259,7 @@ namespace PnnQuant
                     CIELABConvertor.Lab lab2;
                     getLab(c2.ToArgb(), out lab2);
 
-                    closest[4] = (ushort)(Math.Pow(lab2.alpha - lab1.alpha, 2) + CIELABConvertor.CIEDE2000(lab2, lab1));
+                    closest[4] = (ushort)(sqr(lab2.alpha - lab1.alpha) + CIELABConvertor.CIEDE2000(lab2, lab1));
                     //closest[4] = (short) (Math.abs(lab2.alpha - lab1.alpha) + Math.abs(lab2.L - lab1.L) + Math.abs(lab2.A - lab1.A) + Math.abs(lab2.B - lab1.B));
 				if (closest[4] < closest[2]) {
 					closest[1] = closest[0];
@@ -292,18 +290,12 @@ namespace PnnQuant
         {
             int pixelIndex = 0;
             if (dither)
-            {
-                bool odd_scanline = false;
-                short[] row0, row1;
-                int a_pix, r_pix, g_pix, b_pix, dir, k;
+            {                                
                 const int DJ = 4;
                 const int DITHER_MAX = 20;
                 int err_len = (width + 2) * DJ;
                 int[] clamp = new int[DJ * 256];
-                int[] limtb = new int[512];
-                short[] erowerr = new short[err_len];
-                short[] orowerr = new short[err_len];
-                short[] lookup = new short[65536];
+                int[] limtb = new int[512];                
 
                 for (int i = 0; i < 256; ++i)
                 {
@@ -318,8 +310,14 @@ namespace PnnQuant
                 for (int i = -DITHER_MAX; i <= DITHER_MAX; i++)
                     limtb[i + 256] = i;
 
+                bool odd_scanline = false;
+                var erowerr = new short[err_len];
+                var orowerr = new short[err_len];
+                var lookup = new short[65536];
                 for (int i = 0; i < height; ++i)
                 {
+                    int dir;
+                    short[] row0, row1;
                     if (odd_scanline)
                     {
                         dir = -1;
@@ -339,10 +337,10 @@ namespace PnnQuant
                     for (int j = 0; j < width; ++j)
                     {
                         Color c = Color.FromArgb(pixels[pixelIndex]);
-                        r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];
-                        g_pix = clamp[((row0[cursor0 + 1] + 0x1008) >> 4) + c.G];
-                        b_pix = clamp[((row0[cursor0 + 2] + 0x1008) >> 4) + c.B];
-                        a_pix = clamp[((row0[cursor0 + 3] + 0x1008) >> 4) + c.A];
+                        int r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];
+                        int g_pix = clamp[((row0[cursor0 + 1] + 0x1008) >> 4) + c.G];
+                        int b_pix = clamp[((row0[cursor0 + 2] + 0x1008) >> 4) + c.B];
+                        int a_pix = clamp[((row0[cursor0 + 3] + 0x1008) >> 4) + c.A];
 
                         Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
                         int offset = getARGBIndex(c1.ToArgb());
@@ -362,7 +360,7 @@ namespace PnnQuant
                         b_pix = limtb[b_pix - c2.B + 256];
                         a_pix = limtb[a_pix - c2.A + 256];
 
-                        k = r_pix * 2;
+                        int k = r_pix * 2;
                         row1[cursor1 - DJ] = (short) r_pix;
                         row1[cursor1 + DJ] += (short) (r_pix += k);
                         row1[cursor1] += (short) (r_pix += k);
