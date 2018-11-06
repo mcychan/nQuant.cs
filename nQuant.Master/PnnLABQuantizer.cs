@@ -396,7 +396,7 @@ namespace PnnQuant
                 return true;
             }
 
-            if (hasTransparency || nMaxColors < 256)
+            if (hasTransparency || nMaxColors < 64)
             {
                 for (int i = 0; i < qPixels.Length; i++)
                     qPixels[i] = nearestColorIndex(palette, nMaxColors, pixels[i]);
