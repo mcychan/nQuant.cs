@@ -3,17 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
 	<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-	<AssemblyName>nQuant.Master</AssemblyName>
-    <Version>1.1.1</Version>
-	<AssemblyVersion>1.1.1.0</AssemblyVersion>
-	<FileVersion>1.1.1.0</FileVersion>
-    <Authors>Miller Cy Chan</Authors>
-    <Company>Miller Cy Chan</Company>
-	<PackageId>nQuant</PackageId>
-    <PackageReleaseNotes>1.1.1</PackageReleaseNotes>
-    <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageProjectUrl>http://imgv64.co.nf</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
