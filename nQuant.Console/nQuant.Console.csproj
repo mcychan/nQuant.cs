@@ -5,10 +5,11 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
 	<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-    <StartupObject>nQuant.Console</StartupObject>
-    <PackageId>nQuant.Console</PackageId>
+    <StartupObject>nQuant.ConsoleApp</StartupObject>
+    <PackageId>nQuant.ConsoleApp</PackageId>
     <Authors>Miller Cy Chan</Authors>
-    <AssemblyName>nQuant</AssemblyName>    
+    <AssemblyName>nQuant</AssemblyName>
+    <ApplicationIcon />    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
