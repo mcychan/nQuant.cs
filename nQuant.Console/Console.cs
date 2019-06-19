@@ -17,13 +17,18 @@ namespace nQuant
             System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
             System.Console.WriteLine("Copyright (C) 2018 - 2019 Miller Cy Chan.");
 
-            if(args.Length < 1)
+#if DEBUG
+            var sourcePath = @"samples\SE5x9.jpg";
+            maxColors = 128;
+#else
+            if (args.Length < 1)
             {
                PrintUsage();
                Environment.Exit(1);
             }
             var sourcePath = args[0];
             ProcessArgs(args);
+#endif
             if (!File.Exists(sourcePath))
             {
                 System.Console.WriteLine("The source file you specified does not exist.");
