@@ -8,8 +8,7 @@ namespace PnnQuant
     internal class CIELABConvertor
     {
         internal struct Lab {
-            internal int alpha;
-            internal float A, B, L;
+            internal float alpha, A, B, L;
 	    }
 
         internal static Lab RGB2LAB(Color c1)
@@ -29,12 +28,14 @@ namespace PnnQuant
 		    y = (y > 0.008856) ? Math.Pow(y, (1.0 / 3.0)) : (7.787 * y) + 16.0 / 116.0;
 		    z = (z > 0.008856) ? Math.Pow(z, (1.0 / 3.0)) : (7.787 * z) + 16.0 / 116.0;
 
-		    Lab lab = new Lab();
-		    lab.alpha = c1.A;
-		    lab.L = (float) ((116 * y) - 16);
-		    lab.A = (float) (500 * (x - y));
-		    lab.B = (float) (200 * (y - z));
-		    return lab;
+            Lab lab = new Lab
+            {
+                alpha = c1.A,
+                L = (float)((116 * y) - 16),
+                A = (float)(500 * (x - y)),
+                B = (float)(200 * (y - z))
+            };
+            return lab;
 	    }
 
         internal static Color LAB2RGB(Lab lab)
@@ -56,7 +57,7 @@ namespace PnnQuant
 		    g = (g > 0.0031308) ? (1.055 * Math.Pow(g, 1.0 / 2.4) - 0.055) : 12.92 * g;
 		    b = (b > 0.0031308) ? (1.055 * Math.Pow(b, 1.0 / 2.4) - 0.055) : 12.92 * b;
 
-            return Color.FromArgb(Math.Min(lab.alpha, Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, r)) * Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, g)) * Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, b)) * Byte.MaxValue));
+            return Color.FromArgb(Math.Min((int)lab.alpha, Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, r)) * Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, g)) * Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, b)) * Byte.MaxValue));
 	    }
 
 	    /*******************************************************************************
