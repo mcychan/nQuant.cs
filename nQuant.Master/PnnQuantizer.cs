@@ -188,8 +188,8 @@ namespace PnnQuant
             int k = 0;
             for (int i = 0; ; ++k)
             {
-                var alpha = (int)Math.Round(bins[i].ac);
-                palette.Entries[k] = Color.FromArgb(alpha, (int)Math.Round(bins[i].rc), (int)Math.Round(bins[i].gc), (int)Math.Round(bins[i].bc));
+                var alpha = Math.Clamp((int) bins[i].ac, Byte.MinValue, Byte.MaxValue);
+                palette.Entries[k] = Color.FromArgb(alpha, Math.Clamp((int) bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int) bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
                 if (m_transparentPixelIndex >= 0 && palette.Entries[k] == m_transparentColor)
                 {
                     Color temp = palette.Entries[0];
