@@ -7,7 +7,6 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double PR = .2126, PG = .7152, PB = .0722;
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
 
         private sealed class Pnnbin
@@ -202,7 +201,7 @@ namespace PnnQuant
                 lab1.alpha = (int)Math.Round(bins[i].ac);
                 lab1.L = bins[i].Lc; lab1.A = bins[i].Ac; lab1.B = bins[i].Bc;
                 palette.Entries[k] = CIELABConvertor.LAB2RGB(lab1);
-                if (hasTransparency && palette.Entries[k] == m_transparentColor)
+                if (m_transparentPixelIndex >= 0 && palette.Entries[k] == m_transparentColor)
                 {
                     Color temp = palette.Entries[0];
                     palette.Entries[0] = palette.Entries[k];
@@ -432,7 +431,7 @@ namespace PnnQuant
                 return true;
             }
 
-            if (hasTransparency || nMaxColors < 64)
+            if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
             {
                 for (int i = 0; i < qPixels.Length; i++)
                     qPixels[i] = nearestColorIndex(palette, nMaxColors, pixels[i]);
@@ -455,7 +454,8 @@ namespace PnnQuant
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
-            hasTransparency = hasSemiTransparency = false;
+            hasSemiTransparency = false;
+            m_transparentPixelIndex = -1;
             int pixelIndex = 0;
             var pixels = new int[bitmapWidth * bitmapHeight];
             if (bitDepth <= 16)
@@ -470,7 +470,7 @@ namespace PnnQuant
                             hasSemiTransparency = true;
                             if (color.A == 0)
                             {
-                                hasTransparency = true;
+                                m_transparentPixelIndex = pixelIndex;
                                 m_transparentColor = color;
                             }
                         }
@@ -516,7 +516,7 @@ namespace PnnQuant
                                 hasSemiTransparency = true;
                                 if (pixelAlpha == 0)
                                 {
-                                    hasTransparency = true;
+                                    m_transparentPixelIndex = pixelIndex;
                                     m_transparentColor = c;
                                 }
                             }
@@ -537,14 +537,15 @@ namespace PnnQuant
                 return ProcessImagePixels(dest, qPixels);
             }
 
-            if (hasSemiTransparency)
+            if (hasSemiTransparency || nMaxColors <= 32)
                 PR = PG = PB = 1;
+
             var palette = dest.Palette;
             if (nMaxColors > 2)
                 nMaxColors = pnnquan(pixels, palette, nMaxColors);
             else
             {
-                if (hasTransparency)
+                if (m_transparentPixelIndex >= 0)
                 {
                     palette.Entries[0] = Color.Transparent;
                     palette.Entries[1] = Color.Black;
