@@ -69,7 +69,7 @@ namespace PnnQuant
             bin1.nn = nn;
         }
 
-        private int pnnquan(int[] pixels, ColorPalette palette, int nMaxColors, bool quan_sqrt)
+        private void pnnquan(int[] pixels, ColorPalette palette, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
 
@@ -200,8 +200,6 @@ namespace PnnQuant
                 if ((i = bins[i].fw) == 0)
                     break;
             }
-
-            return k;
         }
 
         private ushort nearestColorIndex(ColorPalette palette, int nMaxColors, int pixel)
@@ -736,7 +734,7 @@ namespace PnnQuant
             var palette = dest.Palette;
             bool quan_sqrt = nMaxColors > Byte.MaxValue;
             if (nMaxColors > 2)
-                nMaxColors = pnnquan(pixels, palette, nMaxColors, quan_sqrt);
+                pnnquan(pixels, palette, nMaxColors, quan_sqrt);
             else
             {
                 if (m_transparentPixelIndex >= 0)
