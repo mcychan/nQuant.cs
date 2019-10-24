@@ -8,16 +8,17 @@ Either download nQuant from this site or add it to your Visual Studio project se
 If you do not use Nuget, add nQuant to your project and add a reference to it.
 If you are using C#, you would call nQuant as follows:
 
-            var quantizer = new PnnQuant.PnnQuantizer();
-            using(var bitmap = new Bitmap(sourcePath))
-            {
-                using (var dest = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format8bppIndexed))
-                {
-                    if (quantizer.QuantizeImage(bitmap, dest, maxColors, true))
-                        dest.Save(targetPath, ImageFormat.Png);
-                }
-            }
-
+```cs
+    var quantizer = new PnnQuant.PnnQuantizer();
+    using(var bitmap = new Bitmap(sourcePath))
+    {
+        using (var dest = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format8bppIndexed))
+        {
+            if (quantizer.QuantizeImage(bitmap, dest, maxColors, true))
+                dest.Save(targetPath, ImageFormat.Png);
+        }
+    }
+```
 
 If you are using the command line. Assuming you are in the same directory as nQuant.exe and nQuant.Master.dll, you would enter:
 nQuant yourImage.jpg /o yourNewImage.png
