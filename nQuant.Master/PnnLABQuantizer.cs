@@ -77,7 +77,7 @@ namespace PnnQuant
             bin1.nn = nn;
         }
 
-        private void pnnquan(int[] pixels, ColorPalette palette, int nMaxColors)
+        private void pnnquan(int[] pixels, Color[] palette, int nMaxColors)
         {
             var bins = new Pnnbin[65536];
 
@@ -87,7 +87,7 @@ namespace PnnQuant
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
                 Color c = Color.FromArgb(pixels[i]);
-                int index = getARGBIndex(pixels[i]);
+                int index = getARGBIndex(pixels[i], hasSemiTransparency, m_transparentPixelIndex);
                 CIELABConvertor.Lab lab1;
                 getLab(pixels[i], out lab1);
                 if (bins[index] == null)
@@ -193,19 +193,19 @@ namespace PnnQuant
             }
             heap = null;
 
-            /* Fill palette */
+            /* Fill palettes */
             int k = 0;
             for (int i = 0; ; ++k)
             {
                 CIELABConvertor.Lab lab1;
                 lab1.alpha = (int)Math.Round(bins[i].ac);
                 lab1.L = bins[i].Lc; lab1.A = bins[i].Ac; lab1.B = bins[i].Bc;
-                palette.Entries[k] = CIELABConvertor.LAB2RGB(lab1);
-                if (m_transparentPixelIndex >= 0 && palette.Entries[k] == m_transparentColor)
+                palette[k] = CIELABConvertor.LAB2RGB(lab1);
+                if (m_transparentPixelIndex >= 0 && palette[k] == m_transparentColor)
                 {
-                    Color temp = palette.Entries[0];
-                    palette.Entries[0] = palette.Entries[k];
-                    palette.Entries[k] = temp;
+                    Color temp = palette[0];
+                    palette[0] = palette[k];
+                    palette[k] = temp;
                 }
 
                 if ((i = bins[i].fw) == 0)
@@ -213,7 +213,7 @@ namespace PnnQuant
             }
         }
 
-        private ushort nearestColorIndex(ColorPalette palette, int nMaxColors, int argb)
+        private ushort nearestColorIndex(Color[] palette, int nMaxColors, int argb)
         {
             ushort k = 0;
             Color c = Color.FromArgb(argb);
@@ -224,7 +224,7 @@ namespace PnnQuant
 
             for (int i = 0; i < nMaxColors; ++i)
             {
-                Color c2 = palette.Entries[i];                
+                Color c2 = palette[i];                
 
                 double curdist = sqr(c2.A - c.A);
                 if (curdist > mindist)
@@ -272,7 +272,7 @@ namespace PnnQuant
             return k;
         }
 
-        private ushort closestColorIndex(ColorPalette palette, int nMaxColors, int pixel)
+        private ushort closestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
             ushort[] closest;
@@ -286,7 +286,7 @@ namespace PnnQuant
 
                 for (; k < nMaxColors; k++)
                 {
-                    Color c2 = palette.Entries[k];
+                    Color c2 = palette[k];
                     CIELABConvertor.Lab lab2;
                     getLab(c2.ToArgb(), out lab2);
 
@@ -319,7 +319,7 @@ namespace PnnQuant
             return k;
         }
 
-        private bool quantize_image(int[] pixels, ColorPalette palette, int nMaxColors, ushort[] qPixels, int width, int height, bool dither)
+        private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, ushort[] qPixels, int width, int height, bool dither)
         {
             int pixelIndex = 0;
             if (dither)
@@ -376,16 +376,21 @@ namespace PnnQuant
                         int a_pix = clamp[((row0[cursor0 + 3] + 0x1008) >> 4) + c.A];
 
                         Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        int offset = getARGBIndex(c1.ToArgb());
+                        int offset = getARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex);
                         if (lookup[offset] == 0)
                             lookup[offset] = (short)(nearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1);
                         qPixels[pixelIndex] = (ushort)(lookup[offset] - 1);
 
-                        Color c2 = palette.Entries[qPixels[pixelIndex]];
+                        Color c2 = palette[qPixels[pixelIndex]];
                         if (c2.A < Byte.MaxValue && c.A == Byte.MaxValue)
                         {
                             lookup[offset] = (short)(nearestColorIndex(palette, nMaxColors, pixels[pixelIndex]) + 1);
                             qPixels[pixelIndex] = (ushort)(lookup[offset] - 1);
+                        }
+                        if (nMaxColors > 256)
+                        {
+                            c2 = palette[qPixels[pixelIndex]];
+                            qPixels[pixelIndex] = (ushort)getARGBIndex(c2.ToArgb(), hasSemiTransparency, 1);
                         }
 
                         r_pix = limtb[r_pix - c2.R + 256];
@@ -530,43 +535,47 @@ namespace PnnQuant
             var qPixels = new ushort[bitmapWidth * bitmapHeight];
             if (nMaxColors > 256)
             {
+                dither = true;
                 hasSemiTransparency = false;
-                quantize_image(pixels, qPixels, bitmapWidth, bitmapHeight);
-                return ProcessImagePixels(dest, qPixels);
             }
 
             if (hasSemiTransparency || nMaxColors <= 32)
                 PR = PG = PB = 1;
 
             var palette = dest.Palette;
+            var palettes = palette.Entries;
+            if (palettes.Length != nMaxColors)
+                palettes = new Color[nMaxColors];
             if (nMaxColors > 2)
-                pnnquan(pixels, palette, nMaxColors);
+                pnnquan(pixels, palettes, nMaxColors);
             else
             {
                 if (m_transparentPixelIndex >= 0)
                 {
-                    palette.Entries[0] = Color.Transparent;
-                    palette.Entries[1] = Color.Black;
+                    palettes[0] = Color.Transparent;
+                    palettes[1] = Color.Black;
                 }
                 else
                 {
-                    palette.Entries[0] = Color.Black;
-                    palette.Entries[1] = Color.White;
+                    palettes[0] = Color.Black;
+                    palettes[1] = Color.White;
                 }
             }
 
-            quantize_image(pixels, palette, nMaxColors, qPixels, bitmapWidth, bitmapHeight, dither);
+            quantize_image(pixels, palettes, nMaxColors, qPixels, bitmapWidth, bitmapHeight, dither);
             if (m_transparentPixelIndex >= 0)
             {
                 var k = qPixels[m_transparentPixelIndex];
                 if (nMaxColors > 2)
-                    palette.Entries[k] = m_transparentColor;
-                else if (palette.Entries[k] != m_transparentColor)
-                    Swap(ref palette.Entries[0], ref palette.Entries[1]);
+                    palettes[k] = m_transparentColor;
+                else if (palettes[k] != m_transparentColor)
+                    Swap(ref palettes[0], ref palettes[1]);
             }
             pixelMap.Clear();
             closestMap.Clear();
 
+            if(nMaxColors > 256)
+                return ProcessImagePixels(dest, qPixels);
             return ProcessImagePixels(dest, palette, qPixels);
         }
 
