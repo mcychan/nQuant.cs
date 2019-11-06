@@ -48,7 +48,8 @@ namespace nQuant
             {
                 try
                 {
-                    using (var dest = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format8bppIndexed))
+                    var pixelFormat = (maxColors > 256) ? PixelFormat.Format16bppArgb1555 : (maxColors > 16) ? PixelFormat.Format8bppIndexed : (maxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
+                    using (var dest = new Bitmap(bitmap.Width, bitmap.Height, pixelFormat))
                     {
                         if (quantizer.QuantizeImage(bitmap, dest, maxColors, true))
                         {
@@ -61,7 +62,11 @@ namespace nQuant
                 }
                 catch (Exception q)
                 {
+                #if (DEBUG)
+                    System.Console.WriteLine(q.StackTrace);
+                #else
                     System.Console.WriteLine(q.Message);
+                #endif
                 }
             }
             System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
