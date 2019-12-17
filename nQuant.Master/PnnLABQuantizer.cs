@@ -45,7 +45,8 @@ namespace PnnQuant
 
                 CIELABConvertor.Lab lab2;
                 lab2.alpha = bins[i].ac; lab2.L = bins[i].Lc; lab2.A = bins[i].Ac; lab2.B = bins[i].Bc;
-                double nerr = nerr2 * sqr(lab2.alpha - lab1.alpha);
+                double alphaDiff = lab2.alpha - lab1.alpha;
+                double nerr = nerr2 * sqr(alphaDiff) * alphaDiff / 3.0;
                 if (nerr >= err)
                     continue;
 
