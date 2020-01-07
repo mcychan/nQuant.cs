@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Threading.Tasks;
 
 namespace PnnQuant
 {
@@ -495,31 +496,31 @@ namespace PnnQuant
                     }
 
                     // First loop: gather color information
-                    for (uint y = 0; y < bitmapHeight; y++)
+                    Parallel.For(0, bitmapHeight, y =>
                     {
-                        var pPixelSource = pRowSource;
+                        var pPixelSource = pRowSource + (y * strideSource);
                         // For each row...
-                        for (uint x = 0; x < bitmapWidth; x++)
+                        for (int x = 0; x < bitmapWidth; ++x)
                         {	// ...for each pixel...
+                            int pixelIndex = y * bitmapWidth + x;
                             byte pixelBlue = *pPixelSource++;
                             byte pixelGreen = *pPixelSource++;
                             byte pixelRed = *pPixelSource++;
                             byte pixelAlpha = bitDepth < 32 ? Byte.MaxValue : *pPixelSource++;
 
-                            var c = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
+                            var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
                             if (pixelAlpha < Byte.MaxValue)
                             {
                                 hasSemiTransparency = true;
                                 if (pixelAlpha == 0)
                                 {
                                     m_transparentPixelIndex = pixelIndex;
-                                    m_transparentColor = c;
+                                    m_transparentColor = argb;
                                 }
                             }
-                            pixels[pixelIndex++] = c.ToArgb();
+                            pixels[pixelIndex] = argb.ToArgb();
                         }
-                        pRowSource += strideSource;
-                    }
+                    });
                 }
 
                 source.UnlockBits(data);
