@@ -15,7 +15,7 @@ namespace nQuant
         public static void Main(string[] args)
         {
             System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
-            System.Console.WriteLine("Copyright (C) 2018 - 2019 Miller Cy Chan.");
+            System.Console.WriteLine("Copyright (C) 2018 - 2020 Miller Cy Chan.");
 
 #if DEBUG
             var sourcePath = @"samples\SE5x9.jpg";
