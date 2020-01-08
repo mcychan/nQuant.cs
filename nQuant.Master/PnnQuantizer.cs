@@ -24,8 +24,9 @@ namespace PnnQuant
         {
             internal float ac, rc, gc, bc;
             internal int cnt;
-            internal int nn, fw, bk, tm, mtm;
+            internal int tm, mtm;
             internal double err;
+            internal Pnnbin fw = null, bk = null, nn = null;
         }
 
         protected int getARGBIndex(int argb, bool hasSemiTransparency, int transparentPixelIndex)
@@ -45,7 +46,7 @@ namespace PnnQuant
 
         private void find_nn(Pnnbin[] bins, int idx)
         {
-            int nn = 0;
+            Pnnbin nn = null;
             double err = 1e100;
 
             var bin1 = bins[idx];
@@ -54,23 +55,23 @@ namespace PnnQuant
             var wr = bin1.rc;
             var wg = bin1.gc;
             var wb = bin1.bc;
-            for (int i = bin1.fw; i != 0; i = bins[i].fw)
+            for (Pnnbin bin = bin1.fw; bin != null; bin = bin.fw)
             {
                 double nerr, n2;
 
-                nerr = sqr(bins[i].ac - wa) + sqr(bins[i].rc - wr) + sqr(bins[i].gc - wg) + sqr(bins[i].bc - wb);
-                n2 = bins[i].cnt;
+                nerr = sqr(bin.ac - wa) + sqr(bin.rc - wr) + sqr(bin.gc - wg) + sqr(bin.bc - wb);
+                n2 = bin.cnt;
                 nerr *= (n1 * n2) / (n1 + n2);
                 if (nerr >= err)
                     continue;
                 err = nerr;
-                nn = i;
+                nn = bin;
             }
             bin1.err = err;
             bin1.nn = nn;
         }
 
-        private void pnnquan(int[] pixels, ColorPalette palette, int nMaxColors, bool quan_sqrt)
+        private void pnnquan(int[] pixels, ref ColorPalette palette, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
 
@@ -110,11 +111,9 @@ namespace PnnQuant
 
             for (int i = 0; i < maxbins - 1; i++)
             {
-                bins[i].fw = (i + 1);
-                bins[i + 1].bk = i;
+                bins[i].fw = bins[i + 1];
+                bins[i + 1].bk = bins[i];
             }
-            // !!! Already zeroed out by calloc()
-            //	bins[0].bk = bins[i].fw = 0;
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
@@ -144,7 +143,7 @@ namespace PnnQuant
                     int b1 = heap[1];
                     tb = bins[b1]; /* One with least error */
                     /* Is stored error up to date? */
-                    if ((tb.tm >= tb.mtm) && (bins[tb.nn].mtm <= tb.tm))
+                    if ((tb.tm >= tb.mtm) && (tb.nn.mtm <= tb.tm))
                         break;
                     if (tb.mtm == 0xFFFF) /* Deleted node */
                         b1 = heap[1] = heap[heap[0]--];
@@ -167,7 +166,7 @@ namespace PnnQuant
                 }
 
                 /* Do a merge */
-                var nb = bins[tb.nn];
+                var nb = tb.nn;
                 float n1 = tb.cnt;
                 float n2 = nb.cnt;
                 float d = 1.0f / (n1 + n2);
@@ -179,18 +178,18 @@ namespace PnnQuant
                 tb.mtm = ++i;
 
                 /* Unchain deleted bin */
-                bins[nb.bk].fw = nb.fw;
-                bins[nb.fw].bk = nb.bk;
+                nb.bk.fw = nb.fw;
+                nb.fw.bk = nb.bk;
                 nb.mtm = 0xFFFF;
             }
             heap = null;
 
             /* Fill palette */
             int k = 0;
-            for (int i = 0; ; ++k)
+            for (Pnnbin bin1 = bins[0]; ; ++k)
             {
-                var alpha = Math.Clamp((int)bins[i].ac, Byte.MinValue, Byte.MaxValue);
-                palette.Entries[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
+                var alpha = Math.Clamp((int)bin1.ac, Byte.MinValue, Byte.MaxValue);
+                palette.Entries[k] = Color.FromArgb(alpha, Math.Clamp((int)bin1.rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bin1.gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bin1.bc, Byte.MinValue, Byte.MaxValue));
                 if (m_transparentPixelIndex >= 0 && palette.Entries[k] == m_transparentColor)
                 {
                     Color temp = palette.Entries[0];
@@ -198,12 +197,12 @@ namespace PnnQuant
                     palette.Entries[k] = temp;
                 }
 
-                if ((i = bins[i].fw) == 0)
+                if ((bin1 = bin1.fw) == null)
                     break;
             }
         }
 
-        private ushort nearestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        private ushort nearestColorIndex(ref Color[] palettes, int nMaxColors, int pixel)
         {
             ushort k = 0;
             Color c = Color.FromArgb(pixel);
@@ -211,7 +210,7 @@ namespace PnnQuant
             double mindist = int.MaxValue;
             for (int i = 0; i < nMaxColors; i++)
             {
-                Color c2 = palette[i];
+                Color c2 = palettes[i];
                 double curdist = sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
@@ -234,7 +233,7 @@ namespace PnnQuant
             return k;
         }
 
-        private ushort closestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        private ushort closestColorIndex(ref Color[] palettes, int nMaxColors, int pixel)
         {
             ushort k = 0;
             Color c = Color.FromArgb(pixel);
@@ -247,7 +246,7 @@ namespace PnnQuant
 
                 for (; k < nMaxColors; k++)
                 {
-                    Color c2 = palette[k];
+                    Color c2 = palettes[k];
                     closest[4] = (ushort)(Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B));
                     if (closest[4] < closest[2])
                     {
@@ -387,7 +386,7 @@ namespace PnnQuant
             return true;
         }
 
-        private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, ushort[] qPixels, int width, int height, bool dither)
+        private bool quantize_image(int[] pixels, Color[] palettes, int nMaxColors, ushort[] qPixels, int width, int height, bool dither)
         {
             int pixelIndex = 0;
             if (dither)
@@ -446,10 +445,10 @@ namespace PnnQuant
                         Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
                         int offset = getARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex);
                         if (lookup[offset] == 0)
-                            lookup[offset] = (short)(nearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1);
+                            lookup[offset] = (short)(nearestColorIndex(ref palettes, nMaxColors, c1.ToArgb()) + 1);
                         qPixels[pixelIndex] = (ushort)(lookup[offset] - 1);
 
-                        Color c2 = palette[qPixels[pixelIndex]];
+                        Color c2 = palettes[qPixels[pixelIndex]];
 
                         r_pix = limtb[r_pix - c2.R + 256];
                         g_pix = limtb[g_pix - c2.G + 256];
@@ -495,12 +494,12 @@ namespace PnnQuant
             if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
             {
                 for (int i = 0; i < qPixels.Length; i++)
-                    qPixels[i] = nearestColorIndex(palette, nMaxColors, pixels[i]);
+                    qPixels[i] = nearestColorIndex(ref palettes, nMaxColors, pixels[i]);
             }
             else
             {
                 for (int i = 0; i < qPixels.Length; i++)
-                    qPixels[i] = closestColorIndex(palette, nMaxColors, pixels[i]);
+                    qPixels[i] = closestColorIndex(ref palettes, nMaxColors, pixels[i]);
             }
 
             return true;
@@ -735,7 +734,7 @@ namespace PnnQuant
             }
             bool quan_sqrt = nMaxColors > Byte.MaxValue;
             if (nMaxColors > 2)
-                pnnquan(pixels, palette, nMaxColors, quan_sqrt);
+                pnnquan(pixels, ref palette, nMaxColors, quan_sqrt);
             else
             {
                 if (m_transparentPixelIndex >= 0)
