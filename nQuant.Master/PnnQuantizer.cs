@@ -44,12 +44,11 @@ namespace PnnQuant
             return value * value;
         }
 
-        private void find_nn(Pnnbin[] bins, int idx)
+        private void find_nn(Pnnbin bin1)
         {
             Pnnbin nn = null;
             double err = 1e100;
 
-            var bin1 = bins[idx];
             var n1 = bin1.cnt;
             var wa = bin1.ac;
             var wr = bin1.rc;
@@ -119,7 +118,7 @@ namespace PnnQuant
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
-                find_nn(bins, i);
+                find_nn(bins[i]);
                 /* Push slot on heap */
                 double err = bins[i].err;
                 for (l = ++heap[0]; l > 1; l = l2)
@@ -149,7 +148,7 @@ namespace PnnQuant
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
                     {
-                        find_nn(bins, b1);
+                        find_nn(bins[b1]);
                         tb.tm = i;
                     }
                     /* Push slot down */
@@ -178,8 +177,10 @@ namespace PnnQuant
                 tb.mtm = ++i;
 
                 /* Unchain deleted bin */
-                nb.bk.fw = nb.fw;
-                nb.fw.bk = nb.bk;
+                if(nb.bk != null)
+                    nb.bk.fw = nb.fw;
+                if(nb.fw != null)
+                    nb.fw.bk = nb.bk;
                 nb.mtm = 0xFFFF;
             }
             heap = null;

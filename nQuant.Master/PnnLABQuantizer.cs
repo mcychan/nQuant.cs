@@ -29,12 +29,11 @@ namespace PnnQuant
             }
         }
 
-        private void find_nn(Pnnbin[] bins, int idx)
+        private void find_nn(Pnnbin bin1)
         {
             Pnnbin nn = null;
             double err = int.MaxValue;
 
-            var bin1 = bins[idx];
             int n1 = bin1.cnt;
             CIELABConvertor.Lab lab1;
             lab1.alpha = bin1.ac; lab1.L = bin1.Lc; lab1.A = bin1.Ac; lab1.B = bin1.Bc;
@@ -128,7 +127,7 @@ namespace PnnQuant
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
-                find_nn(bins, i);
+                find_nn(bins[i]);
                 /* Push slot on heap */
                 double err = bins[i].err;
 
@@ -159,7 +158,7 @@ namespace PnnQuant
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
                     {
-                        find_nn(bins, b1);
+                        find_nn(bins[b1]);
                         tb.tm = i;
                     }
                     /* Push slot down */
@@ -188,8 +187,10 @@ namespace PnnQuant
                 tb.mtm = ++i;
 
                 /* Unchain deleted bin */
-                nb.bk.fw = nb.fw;
-                nb.fw.bk = nb.bk;
+                if (nb.bk != null)
+                    nb.bk.fw = nb.fw;
+                if (nb.fw != null)
+                    nb.fw.bk = nb.bk;
                 nb.mtm = 0xFFFF;
             }
             heap = null;
