@@ -444,14 +444,16 @@ namespace PnnQuant
             return true;
         }
 
-        public override Bitmap QuantizeImage(Bitmap source, Bitmap dest, int nMaxColors, bool dither)
+        public override Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
             int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
-            if (!IsValidFormat(dest.PixelFormat, nMaxColors))
-                return dest;
 
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
+
+            Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
+            if (!IsValidFormat(pixelFormat, nMaxColors))
+                return dest;
 
             hasSemiTransparency = false;
             m_transparentPixelIndex = -1;

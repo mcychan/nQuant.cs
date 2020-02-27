@@ -564,14 +564,16 @@ namespace PnnQuant
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
 
-        public virtual Bitmap QuantizeImage(Bitmap source, Bitmap dest, int nMaxColors, bool dither)
+        public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
-            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
-            if (!IsValidFormat(dest.PixelFormat, nMaxColors))
-                return dest;
+            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);            
 
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
+
+            Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
+            if (!IsValidFormat(pixelFormat, nMaxColors))
+                return dest;
 
             hasSemiTransparency = false;
             m_transparentPixelIndex = -1;
