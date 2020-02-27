@@ -69,7 +69,7 @@ namespace PnnQuant
             bin1.nn = nn;
         }
 
-        private void pnnquan(int[] pixels, ColorPalette palette, int nMaxColors, bool quan_sqrt)
+        private void pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
 
@@ -189,12 +189,12 @@ namespace PnnQuant
             for (int i = 0; ; ++k)
             {
                 var alpha = Math.Clamp((int)bins[i].ac, Byte.MinValue, Byte.MaxValue);
-                palette.Entries[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
-                if (m_transparentPixelIndex >= 0 && palette.Entries[k] == m_transparentColor)
+                palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
+                if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
                 {
-                    Color temp = palette.Entries[0];
-                    palette.Entries[0] = palette.Entries[k];
-                    palette.Entries[k] = temp;
+                    Color temp = palettes[0];
+                    palettes[0] = palettes[k];
+                    palettes[k] = temp;
                 }
 
                 if ((i = bins[i].fw) == 0)
@@ -275,118 +275,7 @@ namespace PnnQuant
             return k;
         }
 
-        protected bool quantize_image(int[] pixels, ushort[] qPixels, int width, int height)
-        {
-            int pixelIndex = 0;
-            bool odd_scanline = false;
-            short[] row0, row1;
-            int a_pix, r_pix, g_pix, b_pix, dir, k;
-            const int DJ = 4;
-            const int DITHER_MAX = 20;
-            int err_len = (width + 2) * DJ;
-            int[] clamp = new int[DJ * 256];
-            int[] limtb = new int[512];
-            short[] erowerr = new short[err_len];
-            short[] orowerr = new short[err_len];
-            int[] lookup = new int[65536];
-
-            for (int i = 0; i < 256; ++i)
-            {
-                clamp[i] = 0;
-                clamp[i + 256] = i;
-                clamp[i + 512] = Byte.MaxValue;
-                clamp[i + 768] = Byte.MaxValue;
-
-                limtb[i] = -DITHER_MAX;
-                limtb[i + 256] = DITHER_MAX;
-            }
-            for (int i = -DITHER_MAX; i <= DITHER_MAX; i++)
-                limtb[i + 256] = i;
-
-            for (int i = 0; i < height; ++i)
-            {
-                if (odd_scanline)
-                {
-                    dir = -1;
-                    pixelIndex += (width - 1);
-                    row0 = orowerr;
-                    row1 = erowerr;
-                }
-                else
-                {
-                    dir = 1;
-                    row0 = erowerr;
-                    row1 = orowerr;
-                }
-
-                int cursor0 = DJ, cursor1 = (width * DJ);
-                row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
-                for (int j = 0; j < width; ++j)
-                {
-                    Color c = Color.FromArgb(pixels[pixelIndex]);
-
-                    r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];
-                    g_pix = clamp[((row0[cursor0 + 1] + 0x1008) >> 4) + c.G];
-                    b_pix = clamp[((row0[cursor0 + 2] + 0x1008) >> 4) + c.B];
-                    a_pix = clamp[((row0[cursor0 + 3] + 0x1008) >> 4) + c.A];
-
-                    Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                    int offset = getARGBIndex(c1.ToArgb(), hasSemiTransparency, 1);
-                    if (lookup[offset] == 0)
-                    {
-                        Color rgba1 = Color.FromArgb(c1.A, (c1.R & 0xF8), (c1.G & 0xFC), (c1.B & 0xF8));
-                        if (hasSemiTransparency)
-                            rgba1 = Color.FromArgb((c1.A & 0xF0), (c1.R & 0xF0), (c1.G & 0xF0), (c1.B & 0xF0));
-                        else if (m_transparentPixelIndex >= 0)
-                            rgba1 = Color.FromArgb((c1.A & 0x80), (c1.R & 0xF8), (c1.G & 0xF8), (c1.B & 0xF8));
-                        lookup[offset] = rgba1.ToArgb();
-                    }
-
-                    qPixels[pixelIndex] = (ushort)offset;
-                    Color c2 = Color.FromArgb(lookup[offset]);
-
-                    r_pix = limtb[r_pix - c2.R + 256];
-                    g_pix = limtb[g_pix - c2.G + 256];
-                    b_pix = limtb[b_pix - c2.B + 256];
-                    a_pix = limtb[a_pix - c2.A + 256];
-
-                    k = r_pix * 2;
-                    row1[cursor1 - DJ] = (short)r_pix;
-                    row1[cursor1 + DJ] += (short)(r_pix += k);
-                    row1[cursor1] += (short)(r_pix += k);
-                    row0[cursor0 + DJ] += (short)(r_pix += k);
-
-                    k = g_pix * 2;
-                    row1[cursor1 + 1 - DJ] = (short)g_pix;
-                    row1[cursor1 + 1 + DJ] += (short)(g_pix += k);
-                    row1[cursor1 + 1] += (short)(g_pix += k);
-                    row0[cursor0 + 1 + DJ] += (short)(g_pix += k);
-
-                    k = b_pix * 2;
-                    row1[cursor1 + 2 - DJ] = (short)b_pix;
-                    row1[cursor1 + 2 + DJ] += (short)(b_pix += k);
-                    row1[cursor1 + 2] += (short)(b_pix += k);
-                    row0[cursor0 + 2 + DJ] += (short)(b_pix += k);
-
-                    k = a_pix * 2;
-                    row1[cursor1 + 3 - DJ] = (short)a_pix;
-                    row1[cursor1 + 3 + DJ] += (short)(a_pix += k);
-                    row1[cursor1 + 3] += (short)(a_pix += k);
-                    row0[cursor0 + 3 + DJ] += (short)(a_pix += k);
-
-                    cursor0 += DJ;
-                    cursor1 -= DJ;
-                    pixelIndex += dir;
-                }
-                if ((i % 2) == 1)
-                    pixelIndex += width + 1;
-
-                odd_scanline = !odd_scanline;
-            }
-            return true;
-        }
-
-        private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, ushort[] qPixels, int width, int height, bool dither)
+        private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, int[] qPixels, int width, int height, bool dither)
         {
             int pixelIndex = 0;
             if (dither)
@@ -449,6 +338,8 @@ namespace PnnQuant
                         qPixels[pixelIndex] = (ushort)(lookup[offset] - 1);
 
                         Color c2 = palette[qPixels[pixelIndex]];
+                        if (nMaxColors > 256)
+                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : getARGBIndex(c2.ToArgb(), hasSemiTransparency, m_transparentPixelIndex);
 
                         r_pix = limtb[r_pix - c2.R + 256];
                         g_pix = limtb[g_pix - c2.G + 256];
@@ -505,7 +396,7 @@ namespace PnnQuant
             return true;
         }
 
-        protected bool ProcessImagePixels(Bitmap dest, ColorPalette palette, ushort[] qPixels)
+        protected Bitmap ProcessImagePixels(Bitmap dest, ColorPalette palette, int[] qPixels)
         {
             dest.Palette = palette;
 
@@ -577,19 +468,27 @@ namespace PnnQuant
             }
 
             dest.UnlockBits(targetData);
-            return true;
+            return dest;
         }
 
-        protected bool ProcessImagePixels(Bitmap dest, ushort[] qPixels)
+        protected Bitmap ProcessImagePixels(Bitmap dest, int[] qPixels, bool hasSemiTransparency, int transparentPixelIndex)
         {
             int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
             if (bpp < 16)
-                return false;
+                return dest;            
 
             int w = dest.Width;
             int h = dest.Height;
 
-            BitmapData targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);
+            if (hasSemiTransparency && dest.PixelFormat < PixelFormat.Format32bppArgb)
+                dest = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            else if (transparentPixelIndex >= 0 && dest.PixelFormat < PixelFormat.Format16bppArgb1555)
+                dest = new Bitmap(w, h, PixelFormat.Format16bppArgb1555);
+            else if (dest.PixelFormat != PixelFormat.Format16bppRgb565)
+                dest = new Bitmap(w, h, PixelFormat.Format16bppRgb565);
+
+            bpp = Image.GetPixelFormatSize(dest.PixelFormat);
+            BitmapData targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);            
 
             int pixelIndex = 0;
             int strideDest;
@@ -607,22 +506,50 @@ namespace PnnQuant
                     strideDest = -targetData.Stride;
                 }
 
-                // Second loop: fill indexed bitmap
-                for (int y = 0; y < h; y++)
+                if (bpp == 32)
                 {
-                    // For each row...
-                    for (int x = 0; x < w * 2;)
-                    {
-                        short argb = (short)qPixels[pixelIndex++];
-                        pRowDest[x++] = (byte)(argb & 0xFF);
-                        pRowDest[x++] = (byte)(argb >> 8);
+                    for (int y = 0; y < h; ++y)
+                    {   // For each row...
+                        for (int x = 0; x < w * 4;)
+                        {
+                            Color c = Color.FromArgb(qPixels[pixelIndex++]);
+                            pRowDest[x++] = c.B;
+                            pRowDest[x++] = c.G;
+                            pRowDest[x++] = c.R;
+                            pRowDest[x++] = c.A;
+                        }
+                        pRowDest += strideDest;
                     }
-                    pRowDest += strideDest;
+                }
+                else if (bpp == 16)
+                {
+                    for (int y = 0; y < h; ++y)
+                    {   // For each row...
+                        for (int x = 0; x < w * 2;)
+                        {
+                            short argb = (short)qPixels[pixelIndex++];
+                            pRowDest[x++] = (byte)(argb & 0xFF);
+                            pRowDest[x++] = (byte)(argb >> 8);
+                        }
+                        pRowDest += strideDest;
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < h; ++y)
+                    {   // For each row...
+                        for (int x = 0; x < w; ++x)
+                        {
+                            short argb = (short)qPixels[pixelIndex++];
+                            pRowDest[x] = (byte) argb;
+                        }
+                        pRowDest += strideDest;
+                    }
                 }
             }
 
             dest.UnlockBits(targetData);
-            return true;
+            return dest;
         }
         protected static void Swap<T>(ref T x, ref T y)
         {
@@ -637,11 +564,11 @@ namespace PnnQuant
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
 
-        public virtual bool QuantizeImage(Bitmap source, Bitmap dest, int nMaxColors, bool dither)
+        public virtual Bitmap QuantizeImage(Bitmap source, Bitmap dest, int nMaxColors, bool dither)
         {
             int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
             if (!IsValidFormat(dest.PixelFormat, nMaxColors))
-                return false;
+                return dest;
 
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
@@ -722,43 +649,48 @@ namespace PnnQuant
                 source.UnlockBits(data);
             }
 
-            var qPixels = new ushort[bitmapWidth * bitmapHeight];            
+            var qPixels = new int[bitmapWidth * bitmapHeight];
 
             var palette = dest.Palette;
+            var palettes = palette.Entries;
+            if (palettes.Length != nMaxColors)
+                palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
-            {
-                hasSemiTransparency = false;
-                quantize_image(pixels, qPixels, bitmapWidth, bitmapHeight);
-                return ProcessImagePixels(dest, qPixels);
-            }
+                dither = true;
+
             bool quan_sqrt = nMaxColors > Byte.MaxValue;
             if (nMaxColors > 2)
-                pnnquan(pixels, palette, nMaxColors, quan_sqrt);
+                pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
             {
                 if (m_transparentPixelIndex >= 0)
                 {
-                    palette.Entries[0] = Color.Transparent;
-                    palette.Entries[1] = Color.Black;
+                    palettes[0] = Color.Transparent;
+                    palettes[1] = Color.Black;
                 }
                 else
                 {
-                    palette.Entries[0] = Color.Black;
-                    palette.Entries[1] = Color.White;
+                    palettes[0] = Color.Black;
+                    palettes[1] = Color.White;
                 }
             }
 
-            quantize_image(pixels, palette.Entries, nMaxColors, qPixels, bitmapWidth, bitmapHeight, dither);
+            quantize_image(pixels, palettes, nMaxColors, qPixels, bitmapWidth, bitmapHeight, dither);
             if (m_transparentPixelIndex >= 0)
             {
                 var k = qPixels[m_transparentPixelIndex];
                 if (nMaxColors > 2)
-                    palette.Entries[k] = m_transparentColor;
-                else if (palette.Entries[k] != m_transparentColor)
-                    Swap(ref palette.Entries[0], ref palette.Entries[1]);
+                    palettes[k] = m_transparentColor;
+                else if (palettes[k] != m_transparentColor)
+                    Swap(ref palettes[0], ref palettes[1]);
             }
             closestMap.Clear();
 
+            if (nMaxColors > 256)
+                return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
+
+            for (int i = 0; i < palette.Entries.Length; ++i)
+                palette.Entries[i] = palettes[i];
             return ProcessImagePixels(dest, palette, qPixels);
         }
     }
