@@ -12,10 +12,16 @@ If you are using C#, you would call nQuant as follows:
     var quantizer = new PnnQuant.PnnQuantizer();
     using(var bitmap = new Bitmap(sourcePath))
     {
-        using (var dest = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format8bppIndexed))
+        try
+        {                    
+            var dest = new Bitmap(bitmap.Width, bitmap.Height, pixelFormat);
+            dest = quantizer.QuantizeImage(bitmap, dest, maxColors, true);
+            dest.Save(targetPath, ImageFormat.Png);
+            System.Console.WriteLine("Converted image: " + targetPath);
+        }
+        catch (Exception q)
         {
-            if (quantizer.QuantizeImage(bitmap, dest, maxColors, true))
-                dest.Save(targetPath, ImageFormat.Png);
+            System.Console.WriteLine(q.StackTrace);
         }
     }
 ```
