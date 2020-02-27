@@ -59,7 +59,7 @@ namespace nQuant
                 #if (DEBUG)
                     System.Console.WriteLine(q.StackTrace);
                 #else
-                    System.Console.WriteLine(q.StackTrace);
+                    System.Console.WriteLine(q.Message);
                     System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", pixelFormat.ToString(), maxColors);
 #endif
                 }
