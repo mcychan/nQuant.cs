@@ -44,29 +44,24 @@ namespace nQuant
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             PnnQuant.PnnQuantizer quantizer = new PnnQuant.PnnLABQuantizer();
-            using(var bitmap = new Bitmap(sourcePath))
+            var pixelFormat = (maxColors > 256) ? PixelFormat.Format16bppArgb1555 : (maxColors > 16) ? PixelFormat.Format8bppIndexed : (maxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
+            using (var bitmap = new Bitmap(sourcePath))
             {
                 try
-                {
-                    var pixelFormat = (maxColors > 256) ? PixelFormat.Format16bppArgb1555 : (maxColors > 16) ? PixelFormat.Format8bppIndexed : (maxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
-                    using (var dest = new Bitmap(bitmap.Width, bitmap.Height, pixelFormat))
-                    {
-                        if (quantizer.QuantizeImage(bitmap, dest, maxColors, true))
-                        {
-                            dest.Save(targetPath, ImageFormat.Png);
-                            System.Console.WriteLine("Converted image: " + targetPath);
-                        }
-                        else
-                            System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", dest.PixelFormat.ToString(), maxColors);
-                    }
+                {                    
+                    var dest = new Bitmap(bitmap.Width, bitmap.Height, pixelFormat);
+                    dest = quantizer.QuantizeImage(bitmap, dest, maxColors, true);
+                    dest.Save(targetPath, ImageFormat.Png);
+                    System.Console.WriteLine("Converted image: " + targetPath);
                 }
                 catch (Exception q)
                 {
                 #if (DEBUG)
                     System.Console.WriteLine(q.StackTrace);
                 #else
-                    System.Console.WriteLine(q.Message);
-                #endif
+                    System.Console.WriteLine(q.StackTrace);
+                    System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", pixelFormat.ToString(), maxColors);
+#endif
                 }
             }
             System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
