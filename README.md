@@ -14,10 +14,11 @@ If you are using C#, you would call nQuant as follows:
     {
         try
         {                    
-            var dest = new Bitmap(bitmap.Width, bitmap.Height, pixelFormat);
-            dest = quantizer.QuantizeImage(bitmap, dest, maxColors, true);
-            dest.Save(targetPath, ImageFormat.Png);
-            System.Console.WriteLine("Converted image: " + targetPath);
+            using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, true))
+            {
+                dest.Save(targetPath, ImageFormat.Png);
+                System.Console.WriteLine("Converted image: " + targetPath);
+            }
         }
         catch (Exception q)
         {
