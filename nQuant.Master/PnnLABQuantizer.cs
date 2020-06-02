@@ -8,6 +8,7 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
+        private double PR = .2126, PG = .7152, PB = .0722;
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
         {
@@ -16,7 +17,6 @@ namespace PnnQuant
             internal int nn, fw, bk, tm, mtm;
             internal double err;
         }
-
         private void getLab(int argb, out CIELABConvertor.Lab lab1)
         {
             Color c = Color.FromArgb(argb);
@@ -26,7 +26,6 @@ namespace PnnQuant
                 pixelMap[argb] = lab1;
             }
         }
-
         private void find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
@@ -77,7 +76,6 @@ namespace PnnQuant
             bin1.err = err;
             bin1.nn = nn;
         }
-
         private void pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
@@ -235,15 +233,15 @@ namespace PnnQuant
 
                 if (nMaxColors > 32)
                 {
-                    curdist += sqr(c2.R - c.R);
+                    curdist += PR * sqr(c2.R - c.R);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += sqr(c2.G - c.G);
+                    curdist += PG * sqr(c2.G - c.G);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += sqr(c2.B - c.B);
+                    curdist += PB * sqr(c2.B - c.B);
                     if (curdist > mindist)
                         continue;
 
@@ -274,7 +272,6 @@ namespace PnnQuant
             }
             return k;
         }
-
         private ushort closestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
@@ -321,7 +318,6 @@ namespace PnnQuant
             closestMap[pixel] = closest;
             return k;
         }
-
         private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, int[] qPixels, int width, int height, bool dither)
         {
             int pixelIndex = 0;
@@ -443,7 +439,6 @@ namespace PnnQuant
 
             return true;
         }        
-
         public override Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
             int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
@@ -465,7 +460,10 @@ namespace PnnQuant
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
-                dither = true;               
+                dither = true;
+
+            if (hasSemiTransparency || nMaxColors <= 32)
+                PR = PG = PB = 1;
 
             bool quan_sqrt = nMaxColors > Byte.MaxValue;
             if (nMaxColors > 2)

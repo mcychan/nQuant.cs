@@ -27,7 +27,6 @@ namespace PnnQuant
             internal int nn, fw, bk, tm, mtm;
             internal double err;
         }
-
         protected int GetARGBIndex(int argb, bool hasSemiTransparency)
         {
             Color c = Color.FromArgb(argb);
@@ -35,18 +34,15 @@ namespace PnnQuant
                 return (c.A & 0xF0) << 8 | (c.R & 0xF0) << 4 | (c.G & 0xF0) | (c.B >> 4);
             return (c.R & 0xF8) << 8 | (c.G & 0xFC) << 3 | (c.B >> 3);
         }
-
         protected int GetARGB1555(int argb)
         {
             Color c = Color.FromArgb(argb);
             return (c.A & 0x80) << 8 | (c.R & 0xF8) << 7 | (c.G & 0xF8) << 2 | (c.B >> 3);
         }
-
         protected double sqr(double value)
         {
             return value * value;
         }
-
         private void find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
@@ -73,7 +69,6 @@ namespace PnnQuant
             bin1.err = err;
             bin1.nn = nn;
         }
-
         private void pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
@@ -206,7 +201,6 @@ namespace PnnQuant
                     break;
             }
         }
-
         private ushort nearestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
@@ -237,7 +231,6 @@ namespace PnnQuant
             }
             return k;
         }
-
         private ushort closestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
@@ -279,7 +272,6 @@ namespace PnnQuant
             closestMap[pixel] = closest;
             return k;
         }
-
         protected int[] CalcDitherPixel(Color c, int[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
         {
             int[] ditherPixel = new int[4];
@@ -296,7 +288,7 @@ namespace PnnQuant
                 ditherPixel[3] = c.A;
 	        }
             return ditherPixel;
-        }
+        }		
         private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, int[] qPixels, int width, int height, bool dither)
         {
             int pixelIndex = 0;
@@ -418,7 +410,6 @@ namespace PnnQuant
 
             return true;
         }
-
         protected Bitmap ProcessImagePixels(Bitmap dest, ColorPalette palette, int[] qPixels)
         {
             dest.Palette = palette;
@@ -493,7 +484,6 @@ namespace PnnQuant
             dest.UnlockBits(targetData);
             return dest;
         }
-
         protected Bitmap ProcessImagePixels(Bitmap dest, int[] qPixels, bool hasSemiTransparency, int transparentPixelIndex)
         {
             int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
@@ -580,13 +570,11 @@ namespace PnnQuant
             y = x;
             x = t;
         }
-
         protected bool IsValidFormat(PixelFormat pixelFormat, int nMaxColors)
         {
             int bitDepth = Image.GetPixelFormatSize(pixelFormat);
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
-
         protected bool GrabPixels(Bitmap source, int[] pixels)
         {
             int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
@@ -705,7 +693,6 @@ namespace PnnQuant
 
             return true;
         }
-
         public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
             int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);            
