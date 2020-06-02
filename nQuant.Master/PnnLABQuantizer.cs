@@ -8,7 +8,6 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double PR = .2126, PG = .7152, PB = .0722;
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
         {
@@ -89,7 +88,7 @@ namespace PnnQuant
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
                 Color c = Color.FromArgb(pixels[i]);
-                int index = getARGBIndex(pixels[i], hasSemiTransparency, m_transparentPixelIndex);
+                int index = GetARGBIndex(pixels[i], hasSemiTransparency);
                 CIELABConvertor.Lab lab1;
                 getLab(pixels[i], out lab1);
                 if (bins[index] == null)
@@ -236,15 +235,15 @@ namespace PnnQuant
 
                 if (nMaxColors > 32)
                 {
-                    curdist += PR * sqr(c2.R - c.R);
+                    curdist += sqr(c2.R - c.R);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PG * sqr(c2.G - c.G);
+                    curdist += sqr(c2.G - c.G);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PB * sqr(c2.B - c.B);
+                    curdist += sqr(c2.B - c.B);
                     if (curdist > mindist)
                         continue;
 
@@ -374,20 +373,21 @@ namespace PnnQuant
                     for (int j = 0; j < width; ++j)
                     {
                         Color c = Color.FromArgb(pixels[pixelIndex]);
-                        int r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];
-                        int g_pix = clamp[((row0[cursor0 + 1] + 0x1008) >> 4) + c.G];
-                        int b_pix = clamp[((row0[cursor0 + 2] + 0x1008) >> 4) + c.B];
-                        int a_pix = clamp[((row0[cursor0 + 3] + 0x1008) >> 4) + c.A];
+                        int[] ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, hasSemiTransparency);
+                        int r_pix = ditherPixel[0];
+                        int g_pix = ditherPixel[1];
+                        int b_pix = ditherPixel[2];
+                        int a_pix = ditherPixel[3];
 
                         Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        int offset = getARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex);
+                        int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency);
                         if (lookup[offset] == 0)
                             lookup[offset] = (short)(nearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1);
                         qPixels[pixelIndex] = (ushort)(lookup[offset] - 1);
 
                         Color c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : getARGBIndex(c2.ToArgb(), hasSemiTransparency, m_transparentPixelIndex);
+                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGB1555(c2.ToArgb());
 
                         r_pix = limtb[r_pix - c2.R + 256];
                         g_pix = limtb[g_pix - c2.G + 256];
@@ -442,7 +442,7 @@ namespace PnnQuant
             }
 
             return true;
-        }
+        }        
 
         public override Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
@@ -454,82 +454,10 @@ namespace PnnQuant
             Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             if (!IsValidFormat(pixelFormat, nMaxColors))
                 return dest;
-
-            hasSemiTransparency = false;
-            m_transparentPixelIndex = -1;
             
             var pixels = new int[bitmapWidth * bitmapHeight];
-            if (bitDepth <= 16)
-            {
-                int pixelIndex = 0;
-                for (int y = 0; y < bitmapHeight; y++)
-                {
-                    for (int x = 0; x < bitmapWidth; x++)
-                    {
-                        Color color = source.GetPixel(x, y);
-                        if (color.A < Byte.MaxValue)
-                        {
-                            hasSemiTransparency = true;
-                            if (color.A == 0)
-                            {
-                                m_transparentPixelIndex = pixelIndex;
-                                m_transparentColor = color;
-                            }
-                        }
-                        pixels[pixelIndex++] = color.ToArgb();
-                    }
-                }
-            }
-
-            // Lock bits on 3x8 source bitmap
-            else
-            {
-                BitmapData data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, source.PixelFormat);
-                int strideSource;
-
-                unsafe
-                {
-                    var pRowSource = (byte*)data.Scan0;
-
-                    // Compensate for possible negative stride
-                    if (data.Stride > 0)
-                        strideSource = data.Stride;
-                    else
-                    {
-                        pRowSource += bitmapHeight * data.Stride;
-                        strideSource = -data.Stride;
-                    }
-
-                    // First loop: gather color information
-                    Parallel.For(0, bitmapHeight, y =>
-                    {
-                        var pPixelSource = pRowSource + (y * strideSource);
-                        // For each row...
-                        for (int x = 0; x < bitmapWidth; ++x)
-                        {	// ...for each pixel...
-                            int pixelIndex = y * bitmapWidth + x;
-                            byte pixelBlue = *pPixelSource++;
-                            byte pixelGreen = *pPixelSource++;
-                            byte pixelRed = *pPixelSource++;
-                            byte pixelAlpha = bitDepth < 32 ? Byte.MaxValue : *pPixelSource++;
-
-                            var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
-                            if (pixelAlpha < Byte.MaxValue)
-                            {
-                                hasSemiTransparency = true;
-                                if (pixelAlpha == 0)
-                                {
-                                    m_transparentPixelIndex = pixelIndex;
-                                    m_transparentColor = argb;
-                                }
-                            }
-                            pixels[pixelIndex] = argb.ToArgb();
-                        }
-                    });
-                }
-
-                source.UnlockBits(data);
-            }
+            if (!GrabPixels(source, pixels))
+                return dest;
 
             var qPixels = new int[bitmapWidth * bitmapHeight];
             var palette = dest.Palette;
@@ -538,9 +466,6 @@ namespace PnnQuant
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
                 dither = true;               
-
-            if (hasSemiTransparency || nMaxColors <= 32)
-                PR = PG = PB = 1;
 
             bool quan_sqrt = nMaxColors > Byte.MaxValue;
             if (nMaxColors > 2)
@@ -574,7 +499,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
 
-            for (int i = 0; i < palette.Entries.Length; ++i)
+            for (int i = 0; i < palettes.Length; ++i)
                 palette.Entries[i] = palettes[i];
             return ProcessImagePixels(dest, palette, qPixels);
         }

@@ -19,6 +19,7 @@ namespace PnnQuant
         protected Random rand = new Random();
         protected Dictionary<int, ushort[]> closestMap = new Dictionary<int, ushort[]>();
 
+        protected const int PropertyTagIndexTransparent = 0x5104;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -27,14 +28,18 @@ namespace PnnQuant
             internal double err;
         }
 
-        protected int getARGBIndex(int argb, bool hasSemiTransparency, int transparentPixelIndex)
+        protected int GetARGBIndex(int argb, bool hasSemiTransparency)
         {
             Color c = Color.FromArgb(argb);
             if (hasSemiTransparency)
                 return (c.A & 0xF0) << 8 | (c.R & 0xF0) << 4 | (c.G & 0xF0) | (c.B >> 4);
-            if (transparentPixelIndex >= 0)
-                return (c.A & 0x80) << 8 | (c.R & 0xF8) << 7 | (c.G & 0xF8) << 2 | (c.B >> 3);
             return (c.R & 0xF8) << 8 | (c.G & 0xFC) << 3 | (c.B >> 3);
+        }
+
+        protected int GetARGB1555(int argb)
+        {
+            Color c = Color.FromArgb(argb);
+            return (c.A & 0x80) << 8 | (c.R & 0xF8) << 7 | (c.G & 0xF8) << 2 | (c.B >> 3);
         }
 
         protected double sqr(double value)
@@ -79,7 +84,7 @@ namespace PnnQuant
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
                 Color c = Color.FromArgb(pixels[i]);
-                int index = getARGBIndex(pixels[i], hasSemiTransparency, m_transparentPixelIndex);
+                int index = GetARGBIndex(pixels[i], hasSemiTransparency);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += c.A;
@@ -275,6 +280,23 @@ namespace PnnQuant
             return k;
         }
 
+        protected int[] CalcDitherPixel(Color c, int[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
+        {
+            int[] ditherPixel = new int[4];
+            if (hasSemiTransparency) {
+                ditherPixel[0] = clamp[((rowerr[cursor] + 0x1008) >> 4) + c.R];
+                ditherPixel[1] = clamp[((rowerr[cursor + 1] + 0x1008) >> 4) + c.G];
+                ditherPixel[2] = clamp[((rowerr[cursor + 2] + 0x1008) >> 4) + c.B];
+                ditherPixel[3] = clamp[((rowerr[cursor + 3] + 0x1008) >> 4) + c.A];
+	        }
+	        else {
+                ditherPixel[0] = clamp[((rowerr[cursor] + 0x2010) >> 5) + c.R];
+                ditherPixel[1] = clamp[((rowerr[cursor + 1] + 0x4020) >> 6) + c.G];
+                ditherPixel[2] = clamp[((rowerr[cursor + 2] + 0x2010) >> 5) + c.B];
+                ditherPixel[3] = c.A;
+	        }
+            return ditherPixel;
+        }
         private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, int[] qPixels, int width, int height, bool dither)
         {
             int pixelIndex = 0;
@@ -326,20 +348,21 @@ namespace PnnQuant
                     for (int j = 0; j < width; j++)
                     {
                         Color c = Color.FromArgb(pixels[pixelIndex]);
-                        int r_pix = clamp[((row0[cursor0] + 0x1008) >> 4) + c.R];
-                        int g_pix = clamp[((row0[cursor0 + 1] + 0x1008) >> 4) + c.G];
-                        int b_pix = clamp[((row0[cursor0 + 2] + 0x1008) >> 4) + c.B];
-                        int a_pix = clamp[((row0[cursor0 + 3] + 0x1008) >> 4) + c.A];
+                        int[] ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, hasSemiTransparency);
+                        int r_pix = ditherPixel[0];
+                        int g_pix = ditherPixel[1];
+                        int b_pix = ditherPixel[2];
+                        int a_pix = ditherPixel[3];
 
                         Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        int offset = getARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex);
+                        int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency);
                         if (lookup[offset] == 0)
                             lookup[offset] = (short)(nearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1);
                         qPixels[pixelIndex] = (ushort)(lookup[offset] - 1);
 
                         Color c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : getARGBIndex(c2.ToArgb(), hasSemiTransparency, m_transparentPixelIndex);
+                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGB1555(c2.ToArgb());
 
                         r_pix = limtb[r_pix - c2.R + 256];
                         g_pix = limtb[g_pix - c2.G + 256];
@@ -564,48 +587,24 @@ namespace PnnQuant
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
 
-        public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
+        protected bool GrabPixels(Bitmap source, int[] pixels)
         {
-            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);            
+            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
 
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
-            Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
-            if (!IsValidFormat(pixelFormat, nMaxColors))
-                return dest;
-
             hasSemiTransparency = false;
             m_transparentPixelIndex = -1;
-            
-            var pixels = new int[bitmapWidth * bitmapHeight];
-            if (bitDepth <= 16)
-            {
-                int pixelIndex = 0;
-                for (int y = 0; y < bitmapHeight; ++y)
-                {
-                    for (int x = 0; x < bitmapWidth; ++x)
-                    {
-                        Color color = source.GetPixel(x, y);
-                        if (color.A < Byte.MaxValue)
-                        {
-                            hasSemiTransparency = true;
-                            if (color.A == 0)
-                            {
-                                m_transparentPixelIndex = pixelIndex;
-                                m_transparentColor = color;
-                            }
-                        }
-                        pixels[pixelIndex++] = color.ToArgb();
-                    }
-                }
-            }
 
-            // Lock bits on 3x8 source bitmap
-            else
+            int pixelIndex = 0, strideSource;
+            BitmapData data;
+            if ((source.PixelFormat & PixelFormat.Indexed) != 0)
             {
-                BitmapData data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, source.PixelFormat);
-                int strideSource;
+                var palette = source.Palette;
+                var palettes = palette.Entries;
+
+                data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, source.PixelFormat);
 
                 unsafe
                 {
@@ -626,30 +625,101 @@ namespace PnnQuant
                         var pPixelSource = pRowSource + (y * strideSource);
                         // For each row...
                         for (int x = 0; x < bitmapWidth; ++x)
-                        {	// ...for each pixel...
-                            int pixelIndex = y * bitmapWidth + x;
-                            byte pixelBlue = *pPixelSource++;
-                            byte pixelGreen = *pPixelSource++;
-                            byte pixelRed = *pPixelSource++;
-                            byte pixelAlpha = bitDepth < 32 ? Byte.MaxValue : *pPixelSource++;
+                        {   // ...for each pixel...
+                            byte pixelAlpha = Byte.MaxValue;
 
-                            var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
+                            byte index = *pPixelSource++;
+                            var argb = palettes[index];
+                            if (index == m_transparentPixelIndex)
+                                pixelAlpha = 0;
+
                             if (pixelAlpha < Byte.MaxValue)
                             {
                                 hasSemiTransparency = true;
                                 if (pixelAlpha == 0)
                                 {
-                                    m_transparentPixelIndex = pixelIndex;
                                     m_transparentColor = argb;
+                                    m_transparentPixelIndex = pixelIndex;
                                 }
                             }
-                            pixels[pixelIndex] = argb.ToArgb();
+                            pixels[pixelIndex++] = argb.ToArgb();
                         }
                     });
+                    source.UnlockBits(data);
+                }                
+
+                var pPropertyItem = source.GetPropertyItem(PropertyTagIndexTransparent);
+                if (pPropertyItem != null)
+                {
+                    m_transparentPixelIndex = pPropertyItem.Value[0];
+                    Color c = palettes[m_transparentPixelIndex];
+                    m_transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
+                }
+                return true;
+            }
+                        
+            data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+
+            unsafe
+            {
+                var pRowSource = (byte*)data.Scan0;
+
+                // Compensate for possible negative stride
+                if (data.Stride > 0)
+                    strideSource = data.Stride;
+                else
+                {
+                    pRowSource += bitmapHeight * data.Stride;
+                    strideSource = -data.Stride;
                 }
 
-                source.UnlockBits(data);
+                // First loop: gather color information
+                Parallel.For(0, bitmapHeight, y =>
+                {
+                    var pPixelSource = pRowSource + (y * strideSource);
+                    // For each row...
+                    for (int x = 0; x < bitmapWidth; ++x)
+                    {   // ...for each pixel...
+                        int pixelIndex = y * bitmapWidth + x;
+                        byte pixelBlue = *pPixelSource++;
+                        byte pixelGreen = *pPixelSource++;
+                        byte pixelRed = *pPixelSource++;
+                        byte pixelAlpha = *pPixelSource++;
+
+                        var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
+                        if (pixelAlpha < Byte.MaxValue)
+                        {
+                            hasSemiTransparency = true;
+                            if (pixelAlpha == 0)
+                            {
+                                m_transparentPixelIndex = pixelIndex;
+                                m_transparentColor = argb;
+                            }
+                        }
+                        pixels[pixelIndex] = argb.ToArgb();
+                    }
+                });
             }
+
+            source.UnlockBits(data);
+
+            return true;
+        }
+
+        public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
+        {
+            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);            
+
+            int bitmapWidth = source.Width;
+            int bitmapHeight = source.Height;
+
+            Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
+            if (!IsValidFormat(pixelFormat, nMaxColors))
+                return dest;
+            
+            var pixels = new int[bitmapWidth * bitmapHeight];
+            if(!GrabPixels(source, pixels))
+                return dest;
 
             var qPixels = new int[bitmapWidth * bitmapHeight];
 
@@ -691,7 +761,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
 
-            for (int i = 0; i < palette.Entries.Length; ++i)
+            for (int i = 0; i < palettes.Length; ++i)
                 palette.Entries[i] = palettes[i];
             return ProcessImagePixels(dest, palette, qPixels);
         }
