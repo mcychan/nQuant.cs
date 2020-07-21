@@ -8,7 +8,7 @@
     <Authors>Miller Cy Chan</Authors>
 	<Copyright>Copyright Miller Cy Chan 2018</Copyright>
     <PackageVersion>1.1.0</PackageVersion>
-	<PackageIconUrl>https://i.stack.imgur.com/DoLON.png</PackageIconUrl>
+	<PackageIcon>ImgV64.png</PackageIcon>
 	<PackageProjectUrl>http://imgv64.rf.gd</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+	<None Include="res\ImgV64.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 
 </Project>

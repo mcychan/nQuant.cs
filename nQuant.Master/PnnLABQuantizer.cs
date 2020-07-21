@@ -26,7 +26,7 @@ namespace PnnQuant
                 pixelMap[argb] = lab1;
             }
         }
-        private void find_nn(Pnnbin[] bins, int idx)
+        private void find_nn(Pnnbin[] bins, int idx, int nMaxColors)
         {
             int nn = 0;
             double err = int.MaxValue;
@@ -49,24 +49,40 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
-                nerr += nerr2 * sqr(deltaL_prime_div_k_L_S_L);
-                if (nerr >= err)
-                    continue;
+                if (nMaxColors > 32)
+                {
+                    double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
+                    nerr += nerr2 * sqr(deltaL_prime_div_k_L_S_L);
+                    if (nerr >= err)
+                        continue;
 
-                double a1Prime, a2Prime, CPrime1, CPrime2;
-                double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
-                nerr += nerr2 * sqr(deltaC_prime_div_k_L_S_L);
-                if (nerr >= err)
-                    continue;
+                    double a1Prime, a2Prime, CPrime1, CPrime2;
+                    double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
+                    nerr += nerr2 * sqr(deltaC_prime_div_k_L_S_L);
+                    if (nerr >= err)
+                        continue;
 
-                double barCPrime, barhPrime;
-                double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
-                nerr += nerr2 * sqr(deltaH_prime_div_k_L_S_L);
-                if (nerr >= err)
-                    continue;
+                    double barCPrime, barhPrime;
+                    double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
+                    nerr += nerr2 * sqr(deltaH_prime_div_k_L_S_L);
+                    if (nerr >= err)
+                        continue;
 
-                nerr += nerr2 * CIELABConvertor.R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
+                    nerr += nerr2 * CIELABConvertor.R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
+                }
+                else
+                {
+                    nerr += nerr2 * sqr(lab2.L - lab1.L);
+                    if (nerr >= err)
+                        continue;
+
+                    nerr += nerr2 * sqr(lab2.A - lab1.A);
+                    if (nerr >= err)
+                        continue;
+
+                    nerr += nerr2 * sqr(lab2.B - lab1.B);
+                }
+
                 if (nerr >= err)
                     continue;
 
@@ -128,7 +144,7 @@ namespace PnnQuant
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
-                find_nn(bins, i);
+                find_nn(bins, i, nMaxColors);
                 /* Push slot on heap */
                 double err = bins[i].err;
 
@@ -159,7 +175,7 @@ namespace PnnQuant
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
                     {
-                        find_nn(bins, b1);
+                        find_nn(bins, b1, nMaxColors);
                         tb.tm = i;
                     }
                     /* Push slot down */
@@ -242,31 +258,34 @@ namespace PnnQuant
                         continue;
 
                     curdist += PB * sqr(c2.B - c.B);
-                    if (curdist > mindist)
-                        continue;
-
-                    mindist = curdist;
                 }
                 else
                 {
                     CIELABConvertor.Lab lab2;
                     getLab(c2.ToArgb(), out lab2);
 
-                    curdist += sqr(lab2.L - lab1.L);
+                    double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
+                    curdist += sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += sqr(lab2.A - lab1.A);
+                    double a1Prime, a2Prime, CPrime1, CPrime2;
+                    double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
+                    curdist += sqr(deltaC_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += sqr(lab2.B - lab1.B);
+                    double barCPrime, barhPrime;
+                    double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
+                    curdist += sqr(deltaH_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
-                    mindist = curdist;
+                    curdist += CIELABConvertor.R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
                 }
 
+                if (curdist > mindist)
+                    continue;
                 mindist = curdist;
                 k = (ushort)i;
             }
@@ -462,7 +481,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 dither = true;
 
-            if (hasSemiTransparency || nMaxColors <= 32)
+            if (hasSemiTransparency)
                 PR = PG = PB = 1;
 
             bool quan_sqrt = nMaxColors > Byte.MaxValue;
