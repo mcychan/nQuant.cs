@@ -484,7 +484,7 @@ namespace PnnQuant
             if (hasSemiTransparency)
                 PR = PG = PB = 1;
 
-            bool quan_sqrt = nMaxColors <= 64;
+            bool quan_sqrt = nMaxColors >= 64;
             if (nMaxColors > 2)
                 pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
