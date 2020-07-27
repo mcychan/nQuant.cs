@@ -283,7 +283,7 @@ namespace PnnQuant
 	        }
 	        else {
                 ditherPixel[0] = clamp[((rowerr[cursor] + 0x2010) >> 5) + c.R];
-                ditherPixel[1] = clamp[((rowerr[cursor + 1] + 0x1008) >> 4) + c.G];
+                ditherPixel[1] = clamp[((rowerr[cursor + 1] + 0x4020) >> 6) + c.G];
                 ditherPixel[2] = clamp[((rowerr[cursor + 2] + 0x2010) >> 5) + c.B];
                 ditherPixel[3] = c.A;
 	        }
@@ -717,7 +717,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 dither = true;
 
-            bool quan_sqrt = nMaxColors > Byte.MaxValue;
+            bool quan_sqrt = nMaxColors <= 64;
             if (nMaxColors > 2)
                 pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else

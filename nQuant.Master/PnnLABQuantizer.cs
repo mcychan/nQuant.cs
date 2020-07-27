@@ -49,7 +49,7 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                if (nMaxColors > 32)
+                if (rand.NextDouble() < nMaxColors / 256.0)
                 {
                     double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     nerr += nerr2 * sqr(deltaL_prime_div_k_L_S_L);
@@ -247,7 +247,7 @@ namespace PnnQuant
                 if (curdist > mindist)
                     continue;
 
-                if (nMaxColors > 32)
+                if (rand.NextDouble() < nMaxColors / 256.0)
                 {
                     curdist += PR * sqr(c2.R - c.R);
                     if (curdist > mindist)
@@ -484,7 +484,7 @@ namespace PnnQuant
             if (hasSemiTransparency)
                 PR = PG = PB = 1;
 
-            bool quan_sqrt = nMaxColors > Byte.MaxValue;
+            bool quan_sqrt = nMaxColors <= 64;
             if (nMaxColors > 2)
                 pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
