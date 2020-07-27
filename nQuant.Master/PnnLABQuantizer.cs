@@ -247,7 +247,7 @@ namespace PnnQuant
                 if (curdist > mindist)
                     continue;
 
-                if (rand.NextDouble() < nMaxColors / 256.0)
+                if (nMaxColors > 32)
                 {
                     curdist += PR * sqr(c2.R - c.R);
                     if (curdist > mindist)
