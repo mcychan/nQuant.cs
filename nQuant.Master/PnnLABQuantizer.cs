@@ -35,6 +35,7 @@ namespace PnnQuant
             int n1 = bin1.cnt;
             CIELABConvertor.Lab lab1;
             lab1.alpha = bin1.ac; lab1.L = bin1.Lc; lab1.A = bin1.Ac; lab1.B = bin1.Bc;
+            bool crossover = rand.NextDouble() < nMaxColors / 256.0;
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
                 double n2 = bins[i].cnt;
@@ -49,7 +50,7 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                if (rand.NextDouble() < nMaxColors / 256.0)
+                if (crossover)
                 {
                     double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     nerr += nerr2 * sqr(deltaL_prime_div_k_L_S_L);
