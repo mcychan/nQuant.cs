@@ -717,9 +717,8 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 dither = true;
 
-            bool quan_sqrt = nMaxColors >= 64;
             if (nMaxColors > 2)
-                pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
+                pnnquan(pixels, palettes, nMaxColors, true);
             else
             {
                 if (m_transparentPixelIndex >= 0)
