@@ -130,7 +130,7 @@ namespace PnnQuant
                 bins[i].Ac *= d;
                 bins[i].Bc *= d;
 
-                if(quan_sqrt)
+                if (quan_sqrt)
                     bins[i].cnt = (int)Math.Sqrt(bins[i].cnt);
                 bins[maxbins++] = bins[i];
             }
@@ -144,7 +144,7 @@ namespace PnnQuant
             //	bins[0].bk = bins[i].fw = 0;
 
             int h, l, l2;
-            ratio = quan_sqrt ? 0.003125 * nMaxColors : 1.0;
+            ratio = 0.003125 * nMaxColors;
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
@@ -461,7 +461,7 @@ namespace PnnQuant
             }
 
             return true;
-        }        
+        }
         public override Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
             int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
@@ -472,7 +472,7 @@ namespace PnnQuant
             Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             if (!IsValidFormat(pixelFormat, nMaxColors))
                 return dest;
-            
+
             var pixels = new int[bitmapWidth * bitmapHeight];
             if (!GrabPixels(source, pixels))
                 return dest;
@@ -504,7 +504,7 @@ namespace PnnQuant
                     palettes[1] = Color.White;
                 }
             }
-                        
+
             quantize_image(pixels, palettes, nMaxColors, qPixels, bitmapWidth, bitmapHeight, dither);
             if (m_transparentPixelIndex >= 0)
             {
