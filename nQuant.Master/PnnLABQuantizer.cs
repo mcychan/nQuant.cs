@@ -9,7 +9,7 @@ namespace PnnQuant
     public class PnnLABQuantizer : PnnQuantizer
     {
         private double PR = .2126, PG = .7152, PB = .0722;
-        private double ratio = 320.0;
+        private double ratio = 1.0;
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
         {
@@ -36,7 +36,7 @@ namespace PnnQuant
             int n1 = bin1.cnt;
             CIELABConvertor.Lab lab1;
             lab1.alpha = bin1.ac; lab1.L = bin1.Lc; lab1.A = bin1.Ac; lab1.B = bin1.Bc;
-            bool crossover = rand.NextDouble() < nMaxColors / ratio;
+            bool crossover = rand.NextDouble() < ratio;
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
                 double n2 = bins[i].cnt;
@@ -144,7 +144,7 @@ namespace PnnQuant
             //	bins[0].bk = bins[i].fw = 0;
 
             int h, l, l2;
-            ratio = quan_sqrt ? 320.0 : 256.0;
+            ratio = quan_sqrt ? 0.003125 * nMaxColors : 1.0;
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
