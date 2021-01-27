@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 /* Fast pairwise nearest neighbor based algorithm for multilevel thresholding
 Copyright (C) 2004-2016 Mark Tyler and Dmitry Groshev
-Copyright (c) 2018 Miller Cy Chan
+Copyright (c) 2018-2021 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
 namespace PnnQuant
@@ -316,7 +316,6 @@ namespace PnnQuant
                 bool odd_scanline = false;
                 var erowerr = new short[err_len];
                 var orowerr = new short[err_len];
-                var lookup = new short[65536];
                 for (int i = 0; i < height; ++i)
                 {
                     int dir;
@@ -347,10 +346,7 @@ namespace PnnQuant
                         int a_pix = ditherPixel[3];
 
                         Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency);
-                        if (lookup[offset] == 0)
-                            lookup[offset] = (short)(nearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1);
-                        qPixels[pixelIndex] = (ushort)(lookup[offset] - 1);
+                        qPixels[pixelIndex] = nearestColorIndex(palette, nMaxColors, c1.ToArgb());
 
                         Color c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
