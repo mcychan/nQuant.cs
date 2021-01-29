@@ -162,7 +162,7 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-			ratio = 0.003125 * nMaxColors;
+			ratio = sqr(nMaxColors) / pixelMap.Count;
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
@@ -461,8 +461,6 @@ namespace PnnQuant
         }
         public override Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
-            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
-
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
