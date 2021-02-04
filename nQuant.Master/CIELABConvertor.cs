@@ -8,7 +8,7 @@ namespace PnnQuant
     internal class CIELABConvertor
     {
         internal struct Lab {
-            internal float alpha, A, B, L;
+            internal double alpha, A, B, L;
 	    }
 
         internal static Lab RGB2LAB(Color c1)
@@ -31,9 +31,9 @@ namespace PnnQuant
             Lab lab = new Lab
             {
                 alpha = c1.A,
-                L = (float)((116 * y) - 16),
-                A = (float)(500 * (x - y)),
-                B = (float)(200 * (y - z))
+                L = (116 * y) - 16,
+                A = 500 * (x - y),
+                B = 200 * (y - z)
             };
             return lab;
 	    }

@@ -13,7 +13,7 @@ namespace PnnQuant
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
         {
-            internal float ac, Lc, Ac, Bc;
+            internal double ac, Lc, Ac, Bc;
             internal int cnt;
             internal int nn, fw, bk, tm, mtm;
             internal double err;
@@ -120,7 +120,7 @@ namespace PnnQuant
                 if (bins[i] == null)
                     continue;
 
-                float d = 1.0f / (float)bins[i].cnt;
+                double d = 1.0 / (double) bins[i].cnt;
                 bins[i].ac *= d;
                 bins[i].Lc *= d;
                 bins[i].Ac *= d;
@@ -194,9 +194,9 @@ namespace PnnQuant
 
                 /* Do a merge */
                 var nb = bins[tb.nn];
-                float n1 = tb.cnt;
-                float n2 = nb.cnt;
-                float d = 1.0f / (n1 + n2);
+                double n1 = tb.cnt;
+                double n2 = nb.cnt;
+                double d = 1.0 / (n1 + n2);
                 tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
                 tb.Lc = d * (n1 * tb.Lc + n2 * nb.Lc);
                 tb.Ac = d * (n1 * tb.Ac + n2 * nb.Ac);
@@ -338,123 +338,7 @@ namespace PnnQuant
             closestMap[pixel] = closest;
             return k;
         }
-        private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, int[] qPixels, int width, int height, bool dither)
-        {
-            int pixelIndex = 0;
-            if (dither)
-            {
-                const int DJ = 4;
-                const int DITHER_MAX = 20;
-                int err_len = (width + 2) * DJ;
-                int[] clamp = new int[DJ * 256];
-                int[] limtb = new int[512];
 
-                for (int i = 0; i < 256; ++i)
-                {
-                    clamp[i] = 0;
-                    clamp[i + 256] = i;
-                    clamp[i + 512] = Byte.MaxValue;
-                    clamp[i + 768] = Byte.MaxValue;
-
-                    limtb[i] = -DITHER_MAX;
-                    limtb[i + 256] = DITHER_MAX;
-                }
-                for (int i = -DITHER_MAX; i <= DITHER_MAX; i++)
-                    limtb[i + 256] = i;
-
-                bool odd_scanline = false;
-                var erowerr = new short[err_len];
-                var orowerr = new short[err_len];
-                for (int i = 0; i < height; ++i)
-                {
-                    int dir;
-                    short[] row0, row1;
-                    if (odd_scanline)
-                    {
-                        dir = -1;
-                        pixelIndex += (width - 1);
-                        row0 = orowerr;
-                        row1 = erowerr;
-                    }
-                    else
-                    {
-                        dir = 1;
-                        row0 = erowerr;
-                        row1 = orowerr;
-                    }
-
-                    int cursor0 = DJ, cursor1 = width * DJ;
-                    row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
-                    for (int j = 0; j < width; ++j)
-                    {
-                        Color c = Color.FromArgb(pixels[pixelIndex]);
-                        int[] ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, hasSemiTransparency);
-                        int r_pix = ditherPixel[0];
-                        int g_pix = ditherPixel[1];
-                        int b_pix = ditherPixel[2];
-                        int a_pix = ditherPixel[3];
-
-                        Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        qPixels[pixelIndex] = nearestColorIndex(palette, nMaxColors, c1.ToArgb());
-
-                        Color c2 = palette[qPixels[pixelIndex]];
-                        if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGB1555(c2.ToArgb());
-
-                        r_pix = limtb[r_pix - c2.R + 256];
-                        g_pix = limtb[g_pix - c2.G + 256];
-                        b_pix = limtb[b_pix - c2.B + 256];
-                        a_pix = limtb[a_pix - c2.A + 256];
-
-                        int k = r_pix * 2;
-                        row1[cursor1 - DJ] = (short)r_pix;
-                        row1[cursor1 + DJ] += (short)(r_pix += k);
-                        row1[cursor1] += (short)(r_pix += k);
-                        row0[cursor0 + DJ] += (short)(r_pix += k);
-
-                        k = g_pix * 2;
-                        row1[cursor1 + 1 - DJ] = (short)g_pix;
-                        row1[cursor1 + 1 + DJ] += (short)(g_pix += k);
-                        row1[cursor1 + 1] += (short)(g_pix += k);
-                        row0[cursor0 + 1 + DJ] += (short)(g_pix += k);
-
-                        k = b_pix * 2;
-                        row1[cursor1 + 2 - DJ] = (short)b_pix;
-                        row1[cursor1 + 2 + DJ] += (short)(b_pix += k);
-                        row1[cursor1 + 2] += (short)(b_pix += k);
-                        row0[cursor0 + 2 + DJ] += (short)(b_pix += k);
-
-                        k = a_pix * 2;
-                        row1[cursor1 + 3 - DJ] = (short)a_pix;
-                        row1[cursor1 + 3 + DJ] += (short)(a_pix += k);
-                        row1[cursor1 + 3] += (short)(a_pix += k);
-                        row0[cursor0 + 3 + DJ] += (short)(a_pix += k);
-
-                        cursor0 += DJ;
-                        cursor1 -= DJ;
-                        pixelIndex += dir;
-                    }
-                    if ((i % 2) == 1)
-                        pixelIndex += width + 1;
-
-                    odd_scanline = !odd_scanline;
-                }
-                return true;
-            }
-
-            if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
-            {
-                for (int i = 0; i < qPixels.Length; i++)
-                    qPixels[i] = nearestColorIndex(palette, nMaxColors, pixels[i]);
-            }
-            else
-            {
-                for (int i = 0; i < qPixels.Length; i++)
-                    qPixels[i] = closestColorIndex(palette, nMaxColors, pixels[i]);
-            }
-
-            return true;
-        }
         public override Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
             int bitmapWidth = source.Width;
@@ -467,8 +351,7 @@ namespace PnnQuant
             var pixels = new int[bitmapWidth * bitmapHeight];
             if (!GrabPixels(source, pixels))
                 return dest;
-
-            var qPixels = new int[bitmapWidth * bitmapHeight];
+            
             var palette = dest.Palette;
             var palettes = palette.Entries;
             if (palettes.Length != nMaxColors)
@@ -479,7 +362,7 @@ namespace PnnQuant
             if (hasSemiTransparency)
                 PR = PG = PB = 1;
 
-            bool quan_sqrt = nMaxColors > 64;
+            bool quan_sqrt = true;
             if (nMaxColors > 2)
                 pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
@@ -496,7 +379,7 @@ namespace PnnQuant
                 }
             }
 
-            quantize_image(pixels, palettes, nMaxColors, qPixels, bitmapWidth, bitmapHeight, dither);
+            var qPixels = quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
             if (m_transparentPixelIndex >= 0)
             {
                 var k = qPixels[m_transparentPixelIndex];

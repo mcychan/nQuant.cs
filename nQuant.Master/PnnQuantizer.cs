@@ -22,7 +22,7 @@ namespace PnnQuant
         protected const int PropertyTagIndexTransparent = 0x5104;
         private sealed class Pnnbin
         {
-            internal float ac, rc, gc, bc;
+            internal double ac, rc, gc, bc;
             internal int cnt;
             internal int nn, fw, bk, tm, mtm;
             internal double err;
@@ -97,7 +97,7 @@ namespace PnnQuant
                 if (bins[i] == null)
                     continue;
 
-                float d = 1.0f / (float)bins[i].cnt;
+                double d = 1.0 / (double)bins[i].cnt;
                 bins[i].ac *= d;
                 bins[i].rc *= d;
                 bins[i].gc *= d;
@@ -167,9 +167,9 @@ namespace PnnQuant
 
                 /* Do a merge */
                 var nb = bins[tb.nn];
-                float n1 = tb.cnt;
-                float n2 = nb.cnt;
-                float d = 1.0f / (n1 + n2);
+                double n1 = tb.cnt;
+                double n2 = nb.cnt;
+                double d = 1.0 / (n1 + n2);
                 tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
                 tb.rc = d * (n1 * tb.rc + n2 * nb.rc);
                 tb.gc = d * (n1 * tb.gc + n2 * nb.gc);
@@ -288,9 +288,10 @@ namespace PnnQuant
                 ditherPixel[3] = c.A;
 	        }
             return ditherPixel;
-        }		
-        private bool quantize_image(int[] pixels, Color[] palette, int nMaxColors, int[] qPixels, int width, int height, bool dither)
+        }
+        protected int[] quantize_image(int[] pixels, Color[] palette, int nMaxColors, int width, int height, bool dither)
         {
+            var qPixels = new int[width * height];
             int pixelIndex = 0;
             if (dither)
             {
@@ -390,7 +391,7 @@ namespace PnnQuant
 
                     odd_scanline = !odd_scanline;
                 }
-                return true;
+                return qPixels;
             }
 
             if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
@@ -404,7 +405,7 @@ namespace PnnQuant
                     qPixels[i] = closestColorIndex(palette, nMaxColors, pixels[i]);
             }
 
-            return true;
+            return qPixels;
         }
         protected Bitmap ProcessImagePixels(Bitmap dest, ColorPalette palette, int[] qPixels)
         {
@@ -704,8 +705,6 @@ namespace PnnQuant
             if(!GrabPixels(source, pixels))
                 return dest;
 
-            var qPixels = new int[bitmapWidth * bitmapHeight];
-
             var palette = dest.Palette;
             var palettes = palette.Entries;
             if (palettes.Length != nMaxColors)
@@ -729,7 +728,7 @@ namespace PnnQuant
                 }
             }
 
-            quantize_image(pixels, palettes, nMaxColors, qPixels, bitmapWidth, bitmapHeight, dither);
+            var qPixels = quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
             if (m_transparentPixelIndex >= 0)
             {
                 var k = qPixels[m_transparentPixelIndex];
