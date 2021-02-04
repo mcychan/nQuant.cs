@@ -36,7 +36,6 @@ namespace PnnQuant
             int n1 = bin1.cnt;
             CIELABConvertor.Lab lab1;
             lab1.alpha = bin1.ac; lab1.L = bin1.Lc; lab1.A = bin1.Ac; lab1.B = bin1.Bc;
-            bool crossover = rand.NextDouble() < ratio;
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
                 double n2 = bins[i].cnt;
@@ -51,40 +50,37 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                if (crossover)
-                {
-                    double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
-                    nerr += nerr2 * sqr(deltaL_prime_div_k_L_S_L);
-                    if (nerr >= err)
-                        continue;
+                nerr += (1 - ratio) * nerr2 * sqr(lab2.L - lab1.L);
+                if (nerr >= err)
+                    continue;
 
-                    double a1Prime, a2Prime, CPrime1, CPrime2;
-                    double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
-                    nerr += nerr2 * sqr(deltaC_prime_div_k_L_S_L);
-                    if (nerr >= err)
-                        continue;
+                nerr += (1 - ratio) * nerr2 * sqr(lab2.A - lab1.A);
+                if (nerr >= err)
+                    continue;
 
-                    double barCPrime, barhPrime;
-                    double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
-                    nerr += nerr2 * sqr(deltaH_prime_div_k_L_S_L);
-                    if (nerr >= err)
-                        continue;
+                nerr += (1 - ratio) * nerr2 * sqr(lab2.B - lab1.B);
 
-                    nerr += nerr2 * CIELABConvertor.R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
-                }
-                else
-                {
-                    nerr += nerr2 * sqr(lab2.L - lab1.L);
-                    if (nerr >= err)
-                        continue;
+                if (nerr >= err)
+                    continue;
 
-                    nerr += nerr2 * sqr(lab2.A - lab1.A);
-                    if (nerr >= err)
-                        continue;
+                double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
+                nerr += ratio * nerr2 * sqr(deltaL_prime_div_k_L_S_L);
+                if (nerr >= err)
+                    continue;
 
-                    nerr += nerr2 * sqr(lab2.B - lab1.B);
-                }
+                double a1Prime, a2Prime, CPrime1, CPrime2;
+                double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
+                nerr += ratio * nerr2 * sqr(deltaC_prime_div_k_L_S_L);
+                if (nerr >= err)
+                    continue;
 
+                double barCPrime, barhPrime;
+                double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
+                nerr += ratio * nerr2 * sqr(deltaH_prime_div_k_L_S_L);
+                if (nerr >= err)
+                    continue;
+
+                nerr += ratio * nerr2 * CIELABConvertor.R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
@@ -162,7 +158,7 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-			ratio = sqr(nMaxColors) / pixelMap.Count;
+			ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.25) / pixelMap.Count);
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
@@ -483,7 +479,7 @@ namespace PnnQuant
             if (hasSemiTransparency)
                 PR = PG = PB = 1;
 
-            bool quan_sqrt = rand.NextDouble() < nMaxColors / 64.0;
+            bool quan_sqrt = true;
             if (nMaxColors > 2)
                 pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
