@@ -39,11 +39,11 @@ namespace PnnQuant
             Color c = Color.FromArgb(argb);
             return (c.A & 0x80) << 8 | (c.R & 0xF8) << 7 | (c.G & 0xF8) << 2 | (c.B >> 3);
         }
-        protected double sqr(double value)
+        protected double Sqr(double value)
         {
             return value * value;
         }
-        private void find_nn(Pnnbin[] bins, int idx)
+        private void Find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
             double err = 1e100;
@@ -58,7 +58,7 @@ namespace PnnQuant
             {
                 double nerr, n2;
 
-                nerr = sqr(bins[i].ac - wa) + sqr(bins[i].rc - wr) + sqr(bins[i].gc - wg) + sqr(bins[i].bc - wb);
+                nerr = Sqr(bins[i].ac - wa) + Sqr(bins[i].rc - wr) + Sqr(bins[i].gc - wg) + Sqr(bins[i].bc - wb);
                 n2 = bins[i].cnt;
                 nerr *= (n1 * n2) / (n1 + n2);
                 if (nerr >= err)
@@ -69,7 +69,7 @@ namespace PnnQuant
             bin1.err = err;
             bin1.nn = nn;
         }
-        private void pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
+        private void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
 
@@ -119,7 +119,7 @@ namespace PnnQuant
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
-                find_nn(bins, i);
+                Find_nn(bins, i);
                 /* Push slot on heap */
                 double err = bins[i].err;
                 for (l = ++heap[0]; l > 1; l = l2)
@@ -149,7 +149,7 @@ namespace PnnQuant
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
                     {
-                        find_nn(bins, b1);
+                        Find_nn(bins, b1);
                         tb.tm = i;
                     }
                     /* Push slot down */
@@ -182,7 +182,6 @@ namespace PnnQuant
                 bins[nb.fw].bk = nb.bk;
                 nb.mtm = 0xFFFF;
             }
-            heap = null;
 
             /* Fill palette */
             int k = 0;
@@ -191,38 +190,34 @@ namespace PnnQuant
                 var alpha = Math.Clamp((int)bins[i].ac, Byte.MinValue, Byte.MaxValue);
                 palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
                 if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
-                {
-                    Color temp = palettes[0];
-                    palettes[0] = palettes[k];
-                    palettes[k] = temp;
-                }
+                    Swap(ref palettes[0], ref palettes[k]);
 
                 if ((i = bins[i].fw) == 0)
                     break;
             }
         }
-        private ushort nearestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        protected virtual ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
             Color c = Color.FromArgb(pixel);
 
-            double mindist = int.MaxValue;
+            double mindist = 1e100;
             for (int i = 0; i < nMaxColors; i++)
             {
                 Color c2 = palette[i];
-                double curdist = sqr(c2.A - c.A);
+                double curdist = Sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
 
-                curdist += sqr(c2.R - c.R);
+                curdist += Sqr(c2.R - c.R);
                 if (curdist > mindist)
                     continue;
 
-                curdist += sqr(c2.G - c.G);
+                curdist += Sqr(c2.G - c.G);
                 if (curdist > mindist)
                     continue;
 
-                curdist += sqr(c2.B - c.B);
+                curdist += Sqr(c2.B - c.B);
                 if (curdist > mindist)
                     continue;
 
@@ -231,13 +226,12 @@ namespace PnnQuant
             }
             return k;
         }
-        private ushort closestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        protected virtual ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
             Color c = Color.FromArgb(pixel);
 
-            ushort[] closest;
-            if (!closestMap.TryGetValue(pixel, out closest))
+            if (!closestMap.TryGetValue(pixel, out ushort[] closest))
             {
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;
@@ -272,7 +266,7 @@ namespace PnnQuant
             closestMap[pixel] = closest;
             return k;
         }
-        protected int[] CalcDitherPixel(Color c, int[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
+        protected int[] CalcDitherPixel(Color c, short[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
         {
             int[] ditherPixel = new int[4];
             if (hasSemiTransparency) {
@@ -289,7 +283,7 @@ namespace PnnQuant
 	        }
             return ditherPixel;
         }
-        protected int[] quantize_image(int[] pixels, Color[] palette, int nMaxColors, int width, int height, bool dither)
+        protected int[] Quantize_image(int[] pixels, Color[] palette, int nMaxColors, int width, int height, bool dither)
         {
             var qPixels = new int[width * height];
             int pixelIndex = 0;
@@ -298,7 +292,7 @@ namespace PnnQuant
                 const int DJ = 4;
                 const int DITHER_MAX = 20;
                 int err_len = (width + 2) * DJ;
-                int[] clamp = new int[DJ * 256];
+                short[] clamp = new short[DJ * 256];
                 int[] limtb = new int[512];
 
                 for (int i = 0; i < 256; ++i)
@@ -314,23 +308,16 @@ namespace PnnQuant
                 for (int i = -DITHER_MAX; i <= DITHER_MAX; ++i)
                     limtb[i + 256] = i;
 
-                bool odd_scanline = false;
+                int dir = 1;
+                short[] row0 = null, row1 = null;
                 var erowerr = new short[err_len];
                 var orowerr = new short[err_len];
                 for (int i = 0; i < height; ++i)
                 {
-                    int dir;
-                    short[] row0, row1;
-                    if (odd_scanline)
-                    {
-                        dir = -1;
-                        pixelIndex += (int)(width - 1);
-                        row0 = orowerr;
-                        row1 = erowerr;
-                    }
+                    if (dir < 0)
+                        pixelIndex += width - 1;
                     else
                     {
-                        dir = 1;
                         row0 = erowerr;
                         row1 = orowerr;
                     }
@@ -347,7 +334,7 @@ namespace PnnQuant
                         int a_pix = ditherPixel[3];
 
                         Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        qPixels[pixelIndex] = nearestColorIndex(palette, nMaxColors, c1.ToArgb());
+                        qPixels[pixelIndex] = NearestColorIndex(palette, nMaxColors, c1.ToArgb());
 
                         Color c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
@@ -389,7 +376,8 @@ namespace PnnQuant
                     if ((i % 2) == 1)
                         pixelIndex += width + 1;
 
-                    odd_scanline = !odd_scanline;
+                    dir *= -1;
+                    Swap(ref row0, ref row1);
                 }
                 return qPixels;
             }
@@ -397,12 +385,12 @@ namespace PnnQuant
             if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
             {
                 for (int i = 0; i < qPixels.Length; i++)
-                    qPixels[i] = nearestColorIndex(palette, nMaxColors, pixels[i]);
+                    qPixels[i] = NearestColorIndex(palette, nMaxColors, pixels[i]);
             }
             else
             {
                 for (int i = 0; i < qPixels.Length; i++)
-                    qPixels[i] = closestColorIndex(palette, nMaxColors, pixels[i]);
+                    qPixels[i] = ClosestColorIndex(palette, nMaxColors, pixels[i]);
             }
 
             return qPixels;
@@ -549,10 +537,7 @@ namespace PnnQuant
                     for (int y = 0; y < h; ++y)
                     {   // For each row...
                         for (int x = 0; x < w; ++x)
-                        {
-                            short argb = (short)qPixels[pixelIndex++];
-                            pRowDest[x] = (byte) argb;
-                        }
+                            pRowDest[x] = (byte) qPixels[pixelIndex++];
                         pRowDest += strideDest;
                     }
                 }
@@ -692,8 +677,6 @@ namespace PnnQuant
         }
         public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
-            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);            
-
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
@@ -713,7 +696,7 @@ namespace PnnQuant
                 dither = true;
 
             if (nMaxColors > 2)
-                pnnquan(pixels, palettes, nMaxColors, true);
+                Pnnquan(pixels, palettes, nMaxColors, true);
             else
             {
                 if (m_transparentPixelIndex >= 0)
@@ -728,7 +711,7 @@ namespace PnnQuant
                 }
             }
 
-            var qPixels = quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
+            var qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
             if (m_transparentPixelIndex >= 0)
             {
                 var k = qPixels[m_transparentPixelIndex];

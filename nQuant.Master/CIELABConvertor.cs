@@ -183,11 +183,9 @@ namespace PnnQuant
         internal static double CIEDE2000(Lab lab1, Lab lab2)
 	    {
 		    double deltaL_prime_div_k_L_S_L = L_prime_div_k_L_S_L(lab1, lab2);
-		    double a1Prime, a2Prime, CPrime1, CPrime2;
-		    double deltaC_prime_div_k_L_S_L = C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
-		    double barCPrime, barhPrime;
-            double deltaH_prime_div_k_L_S_L = H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
-		    double deltaR_T = R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
+            double deltaC_prime_div_k_L_S_L = C_prime_div_k_L_S_L(lab1, lab2, out double a1Prime, out double a2Prime, out double CPrime1, out double CPrime2);
+            double deltaH_prime_div_k_L_S_L = H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out double barCPrime, out double barhPrime);
+            double deltaR_T = R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
 		    return
 			    Math.Pow(deltaL_prime_div_k_L_S_L, 2.0) +
 			    Math.Pow(deltaC_prime_div_k_L_S_L, 2.0) +

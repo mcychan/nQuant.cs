@@ -18,19 +18,18 @@ namespace PnnQuant
             internal int nn, fw, bk, tm, mtm;
             internal double err;
         }
-        private void getLab(int argb, out CIELABConvertor.Lab lab1)
+        private void GetLab(int argb, out CIELABConvertor.Lab lab1)
         {
-            Color c = Color.FromArgb(argb);
             if (!pixelMap.TryGetValue(argb, out lab1))
             {
-                lab1 = CIELABConvertor.RGB2LAB(c);
+                lab1 = CIELABConvertor.RGB2LAB(Color.FromArgb(argb));
                 pixelMap[argb] = lab1;
             }
         }
-        private void find_nn(Pnnbin[] bins, int idx, int nMaxColors)
+        private void Find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
-            double err = int.MaxValue;
+            double err = 1e100;
 
             var bin1 = bins[idx];
             int n1 = bin1.cnt;
@@ -46,37 +45,35 @@ namespace PnnQuant
                 CIELABConvertor.Lab lab2;
                 lab2.alpha = bins[i].ac; lab2.L = bins[i].Lc; lab2.A = bins[i].Ac; lab2.B = bins[i].Bc;
                 double alphaDiff = lab2.alpha - lab1.alpha;
-                double nerr = nerr2 * sqr(alphaDiff) * alphaDiff / 3.0;
+                double nerr = nerr2 * Sqr(alphaDiff) * alphaDiff / 3.0;
                 if (nerr >= err)
                     continue;
 
-                nerr += (1 - ratio) * nerr2 * sqr(lab2.L - lab1.L);
+                nerr += (1 - ratio) * nerr2 * Sqr(lab2.L - lab1.L);
                 if (nerr >= err)
                     continue;
 
-                nerr += (1 - ratio) * nerr2 * sqr(lab2.A - lab1.A);
+                nerr += (1 - ratio) * nerr2 * Sqr(lab2.A - lab1.A);
                 if (nerr >= err)
                     continue;
 
-                nerr += (1 - ratio) * nerr2 * sqr(lab2.B - lab1.B);
+                nerr += (1 - ratio) * nerr2 * Sqr(lab2.B - lab1.B);
 
                 if (nerr >= err)
                     continue;
 
                 double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
-                nerr += ratio * nerr2 * sqr(deltaL_prime_div_k_L_S_L);
+                nerr += ratio * nerr2 * Sqr(deltaL_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
-                double a1Prime, a2Prime, CPrime1, CPrime2;
-                double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
-                nerr += ratio * nerr2 * sqr(deltaC_prime_div_k_L_S_L);
+                double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out double a1Prime, out double a2Prime, out double CPrime1, out double CPrime2);
+                nerr += ratio * nerr2 * Sqr(deltaC_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
-                double barCPrime, barhPrime;
-                double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
-                nerr += ratio * nerr2 * sqr(deltaH_prime_div_k_L_S_L);
+                double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out double barCPrime, out double barhPrime);
+                nerr += ratio * nerr2 * Sqr(deltaH_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
@@ -90,7 +87,7 @@ namespace PnnQuant
             bin1.err = err;
             bin1.nn = nn;
         }
-        private void pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
+        private void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
 
@@ -99,13 +96,11 @@ namespace PnnQuant
             {
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
-                Color c = Color.FromArgb(pixels[i]);
                 int index = GetARGBIndex(pixels[i], hasSemiTransparency);
-                CIELABConvertor.Lab lab1;
-                getLab(pixels[i], out lab1);
+                GetLab(pixels[i], out CIELABConvertor.Lab lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                bins[index].ac += c.A;
+                bins[index].ac += lab1.alpha;
                 bins[index].Lc += lab1.L;
                 bins[index].Ac += lab1.A;
                 bins[index].Bc += lab1.B;
@@ -144,7 +139,7 @@ namespace PnnQuant
             /* Initialize nearest neighbors and build heap of them */
             for (int i = 0; i < maxbins; i++)
             {
-                find_nn(bins, i, nMaxColors);
+                Find_nn(bins, i);
                 /* Push slot on heap */
                 double err = bins[i].err;
 
@@ -176,7 +171,7 @@ namespace PnnQuant
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
                     {
-                        find_nn(bins, b1, nMaxColors);
+                        Find_nn(bins, b1);
                         tb.tm = i;
                     }
                     /* Push slot down */
@@ -209,7 +204,6 @@ namespace PnnQuant
                 bins[nb.fw].bk = nb.bk;
                 nb.mtm = 0xFFFF;
             }
-            heap = null;
 
             /* Fill palette */
             int k = 0;
@@ -220,65 +214,57 @@ namespace PnnQuant
                 lab1.L = bins[i].Lc; lab1.A = bins[i].Ac; lab1.B = bins[i].Bc;
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
                 if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
-                {
-                    Color temp = palettes[0];
-                    palettes[0] = palettes[k];
-                    palettes[k] = temp;
-                }
+                    Swap(ref palettes[0], ref palettes[k]);
 
                 if ((i = bins[i].fw) == 0)
                     break;
             }
         }
 
-        private ushort nearestColorIndex(Color[] palette, int nMaxColors, int argb)
+        protected override ushort NearestColorIndex(Color[] palette, int nMaxColors, int argb)
         {
             ushort k = 0;
             Color c = Color.FromArgb(argb);
 
-            double mindist = int.MaxValue;
-            CIELABConvertor.Lab lab1;
-            getLab(argb, out lab1);
+            double mindist = 1e100;
+            GetLab(argb, out CIELABConvertor.Lab lab1);
 
             for (int i = 0; i < nMaxColors; ++i)
             {
                 Color c2 = palette[i];
 
-                double curdist = sqr(c2.A - c.A);
+                double curdist = Sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
 
                 if (nMaxColors > 32)
                 {
-                    curdist += PR * sqr(c2.R - c.R);
+                    curdist += PR * Sqr(c2.R - c.R);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PG * sqr(c2.G - c.G);
+                    curdist += PG * Sqr(c2.G - c.G);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PB * sqr(c2.B - c.B);
+                    curdist += PB * Sqr(c2.B - c.B);
                 }
                 else
                 {
-                    CIELABConvertor.Lab lab2;
-                    getLab(c2.ToArgb(), out lab2);
+                    GetLab(c2.ToArgb(), out CIELABConvertor.Lab lab2);
 
                     double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
-                    curdist += sqr(deltaL_prime_div_k_L_S_L);
+                    curdist += Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
-                    double a1Prime, a2Prime, CPrime1, CPrime2;
-                    double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out a1Prime, out a2Prime, out CPrime1, out CPrime2);
-                    curdist += sqr(deltaC_prime_div_k_L_S_L);
+                    double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out double a1Prime, out double a2Prime, out double CPrime1, out double CPrime2);
+                    curdist += Sqr(deltaC_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
-                    double barCPrime, barhPrime;
-                    double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out barCPrime, out barhPrime);
-                    curdist += sqr(deltaH_prime_div_k_L_S_L);
+                    double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out double barCPrime, out double barhPrime);
+                    curdist += Sqr(deltaH_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
@@ -292,25 +278,21 @@ namespace PnnQuant
             }
             return k;
         }
-        private ushort closestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        protected override ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
-            ushort[] closest;
-            Color c = Color.FromArgb(pixel);
-            if (!closestMap.TryGetValue(pixel, out closest))
+            if (!closestMap.TryGetValue(pixel, out ushort[] closest))
             {
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;
-                CIELABConvertor.Lab lab1;
-                getLab(pixel, out lab1);
+                GetLab(pixel, out CIELABConvertor.Lab lab1);
 
                 for (; k < nMaxColors; k++)
                 {
                     Color c2 = palette[k];
-                    CIELABConvertor.Lab lab2;
-                    getLab(c2.ToArgb(), out lab2);
+                    GetLab(c2.ToArgb(), out CIELABConvertor.Lab lab2);
 
-                    closest[4] = (ushort)(sqr(lab2.alpha - lab1.alpha) + CIELABConvertor.CIEDE2000(lab2, lab1));
+                    closest[4] = (ushort)(Sqr(lab2.alpha - lab1.alpha) + CIELABConvertor.CIEDE2000(lab2, lab1));
                     //closest[4] = (short) (Math.abs(lab2.alpha - lab1.alpha) + Math.abs(lab2.L - lab1.L) + Math.abs(lab2.A - lab1.A) + Math.abs(lab2.B - lab1.B));
                     if (closest[4] < closest[2])
                     {
@@ -364,7 +346,7 @@ namespace PnnQuant
 
             bool quan_sqrt = true;
             if (nMaxColors > 2)
-                pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
+                Pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
             {
                 if (m_transparentPixelIndex >= 0)
@@ -379,7 +361,7 @@ namespace PnnQuant
                 }
             }
 
-            var qPixels = quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
+            var qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
             if (m_transparentPixelIndex >= 0)
             {
                 var k = qPixels[m_transparentPixelIndex];
