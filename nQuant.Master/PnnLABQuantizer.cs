@@ -126,9 +126,9 @@ namespace PnnQuant
                 bins[maxbins++] = bins[i];
             }
 
-            for (int i = 0; i < maxbins - 1; i++)
+            for (int i = 0; i < maxbins - 1; ++i)
             {
-                bins[i].fw = (i + 1);
+                bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
             }
             // !!! Already zeroed out by calloc()
@@ -158,7 +158,7 @@ namespace PnnQuant
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
             {
-                Pnnbin tb = null;
+                Pnnbin tb;
                 /* Use heap to find which bins to merge */
                 for (; ; )
                 {
@@ -210,7 +210,7 @@ namespace PnnQuant
             for (int i = 0; ; ++k)
             {
                 CIELABConvertor.Lab lab1;
-                lab1.alpha = (int)Math.Round(bins[i].ac);
+                lab1.alpha = bins[i].ac;
                 lab1.L = bins[i].Lc; lab1.A = bins[i].Ac; lab1.B = bins[i].Bc;
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
                 if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
@@ -344,7 +344,7 @@ namespace PnnQuant
             if (hasSemiTransparency)
                 PR = PG = PB = 1;
 
-            bool quan_sqrt = true;
+            bool quan_sqrt = nMaxColors > 64;
             if (nMaxColors > 2)
                 Pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
