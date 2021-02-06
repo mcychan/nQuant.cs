@@ -109,7 +109,7 @@ namespace PnnQuant
 
             for (int i = 0; i < maxbins - 1; i++)
             {
-                bins[i].fw = (i + 1);
+                bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
             }
             // !!! Already zeroed out by calloc()
@@ -136,7 +136,7 @@ namespace PnnQuant
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
             {
-                Pnnbin tb = null;
+                Pnnbin tb;
                 /* Use heap to find which bins to merge */
                 for (; ; )
                 {
@@ -266,7 +266,7 @@ namespace PnnQuant
             closestMap[pixel] = closest;
             return k;
         }
-        protected int[] CalcDitherPixel(Color c, short[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
+        protected int[] CalcDitherPixel(Color c, byte[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
         {
             int[] ditherPixel = new int[4];
             if (hasSemiTransparency) {
@@ -292,13 +292,13 @@ namespace PnnQuant
                 const int DJ = 4;
                 const int DITHER_MAX = 20;
                 int err_len = (width + 2) * DJ;
-                short[] clamp = new short[DJ * 256];
-                int[] limtb = new int[512];
+                byte[] clamp = new byte[DJ * 256];
+                short[] limtb = new short[512];
 
                 for (int i = 0; i < 256; ++i)
                 {
                     clamp[i] = 0;
-                    clamp[i + 256] = (short)i;
+                    clamp[i + 256] = (byte)i;
                     clamp[i + 512] = Byte.MaxValue;
                     clamp[i + 768] = Byte.MaxValue;
 
@@ -306,21 +306,15 @@ namespace PnnQuant
                     limtb[i + 256] = DITHER_MAX;
                 }
                 for (int i = -DITHER_MAX; i <= DITHER_MAX; ++i)
-                    limtb[i + 256] = i;
+                    limtb[i + 256] = (short) i;
 
                 int dir = 1;
-                short[] row0 = null, row1 = null;
-                var erowerr = new short[err_len];
-                var orowerr = new short[err_len];
+                var row0 = new short[err_len];
+                var row1 = new short[err_len];
                 for (int i = 0; i < height; ++i)
                 {
                     if (dir < 0)
                         pixelIndex += width - 1;
-                    else
-                    {
-                        row0 = erowerr;
-                        row1 = orowerr;
-                    }
 
                     int cursor0 = DJ, cursor1 = width * DJ;
                     row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
