@@ -101,7 +101,7 @@ namespace PnnQuant
                 bins[maxbins++] = bins[i];
             }
 
-            for (int i = 0; i < maxbins - 1; i++)
+            for (int i = 0; i < maxbins - 1; ++i)
             {
                 bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
@@ -383,8 +383,11 @@ namespace PnnQuant
 
             return qPixels;
         }
-        protected Bitmap ProcessImagePixels(Bitmap dest, ColorPalette palette, int[] qPixels)
+        protected Bitmap ProcessImagePixels(Bitmap dest, Color[] palettes, int[] qPixels)
         {
+            var palette = dest.Palette;
+            for (int i = 0; i < palettes.Length; ++i)
+                palette.Entries[i] = palettes[i];
             dest.Palette = palette;
 
             int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
@@ -666,7 +669,7 @@ namespace PnnQuant
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
-            Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
+            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             if (!IsValidFormat(pixelFormat, nMaxColors))
                 return dest;
             
@@ -674,8 +677,7 @@ namespace PnnQuant
             if(!GrabPixels(source, pixels))
                 return dest;
 
-            var palette = dest.Palette;
-            var palettes = palette.Entries;
+            var palettes = dest.Palette.Entries;
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
@@ -710,10 +712,8 @@ namespace PnnQuant
 
             if (nMaxColors > 256)
                 return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
-
-            for (int i = 0; i < palettes.Length; ++i)
-                palette.Entries[i] = palettes[i];
-            return ProcessImagePixels(dest, palette, qPixels);
+            
+            return ProcessImagePixels(dest, palettes, qPixels);
         }
     }
 

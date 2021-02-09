@@ -112,11 +112,11 @@ namespace PnnQuant
 			    hPrime1 = 0.0f;
 		    else {
 			    hPrime1 = (float)Math.Atan2(lab1.B, a1Prime);
-			    /*
+				/*
 			    * This must be converted to a hue angle in degrees between 0
-			    * and 360 by addition of 2􏰏 to negative hue angles.
+			    * and 360 by addition of 2π to negative hue angles.
 			    */
-			    if (hPrime1 < 0)
+				if (hPrime1 < 0)
 				    hPrime1 += deg360InRad;
 		    }
 			float hPrime2;
@@ -124,11 +124,11 @@ namespace PnnQuant
 			    hPrime2 = 0.0f;
 		    else {
 			    hPrime2 = (float)Math.Atan2(lab2.B, a2Prime);
-			    /*
+				/*
 			    * This must be converted to a hue angle in degrees between 0
-			    * and 360 by addition of 2􏰏 to negative hue angles.
+			    * and 360 by addition of 2π to negative hue angles.
 			    */
-			    if (hPrime2 < 0)
+				if (hPrime2 < 0)
 				    hPrime2 += deg360InRad;
 		    }
 			float deltahPrime;

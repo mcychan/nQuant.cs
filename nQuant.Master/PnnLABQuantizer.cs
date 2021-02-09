@@ -224,16 +224,16 @@ namespace PnnQuant
         protected override ushort NearestColorIndex(Color[] palette, int nMaxColors, int argb)
         {
             ushort k = 0;
-            Color c = Color.FromArgb(argb);
+            var c = Color.FromArgb(argb);
 
-            double mindist = 1e100;
+            var mindist = 1e100;
             GetLab(argb, out var lab1);
 
             for (int i = 0; i < nMaxColors; ++i)
             {
                 Color c2 = palette[i];
 
-                double curdist = Sqr(c2.A - c.A);
+                var curdist = Sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
 
@@ -289,8 +289,8 @@ namespace PnnQuant
 
                 for (; k < nMaxColors; k++)
                 {
-                    Color c2 = palette[k];
-                    GetLab(c2.ToArgb(), out CIELABConvertor.Lab lab2);
+                    var c2 = palette[k];
+                    GetLab(c2.ToArgb(), out var lab2);
 
                     closest[4] = (ushort)(Sqr(lab2.alpha - lab1.alpha) + CIELABConvertor.CIEDE2000(lab2, lab1));
                     //closest[4] = (short) (Math.abs(lab2.alpha - lab1.alpha) + Math.abs(lab2.L - lab1.L) + Math.abs(lab2.A - lab1.A) + Math.abs(lab2.B - lab1.B));
@@ -326,7 +326,7 @@ namespace PnnQuant
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
-            Bitmap dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
+            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             if (!IsValidFormat(pixelFormat, nMaxColors))
                 return dest;
 
@@ -334,8 +334,7 @@ namespace PnnQuant
             if (!GrabPixels(source, pixels))
                 return dest;
             
-            var palette = dest.Palette;
-            var palettes = palette.Entries;
+            var palettes = dest.Palette.Entries;
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
@@ -376,9 +375,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
 
-            for (int i = 0; i < palettes.Length; ++i)
-                palette.Entries[i] = palettes[i];
-            return ProcessImagePixels(dest, palette, qPixels);
+            return ProcessImagePixels(dest, palettes, qPixels);
         }
 
     }
