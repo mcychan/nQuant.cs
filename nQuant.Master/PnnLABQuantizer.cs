@@ -122,7 +122,7 @@ namespace PnnQuant
                 bins[i].Bc *= d;
 
                 if (quan_sqrt)
-                    bins[i].cnt = (int)Math.Sqrt(bins[i].cnt);
+                    bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.7);
                 bins[maxbins++] = bins[i];
             }
 
@@ -285,7 +285,7 @@ namespace PnnQuant
             {
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;
-                GetLab(pixel, out CIELABConvertor.Lab lab1);
+                GetLab(pixel, out var lab1);
 
                 for (; k < nMaxColors; k++)
                 {
@@ -344,7 +344,7 @@ namespace PnnQuant
             if (hasSemiTransparency)
                 PR = PG = PB = 1;
 
-            bool quan_sqrt = nMaxColors > 64;
+            bool quan_sqrt = true;
             if (nMaxColors > 2)
                 Pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
             else
