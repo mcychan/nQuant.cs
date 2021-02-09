@@ -13,10 +13,10 @@ namespace PnnQuant
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
         {
-            internal double ac, Lc, Ac, Bc;
+            internal float ac, Lc, Ac, Bc;
             internal int cnt;
             internal int nn, fw, bk, tm, mtm;
-            internal double err;
+            internal float err;
         }
         private void GetLab(int argb, out CIELABConvertor.Lab lab1)
         {
@@ -29,7 +29,7 @@ namespace PnnQuant
         private void Find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
-            double err = 1e100;
+            float err = (float) 1e100;
 
             var bin1 = bins[idx];
             int n1 = bin1.cnt;
@@ -37,8 +37,8 @@ namespace PnnQuant
             lab1.alpha = bin1.ac; lab1.L = bin1.Lc; lab1.A = bin1.Ac; lab1.B = bin1.Bc;
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
-                double n2 = bins[i].cnt;
-                double nerr2 = (n1 * n2) / (n1 + n2);
+                float n2 = bins[i].cnt;
+                float nerr2 = (n1 * n2) / (n1 + n2);
                 if (nerr2 >= err)
                     continue;
 
@@ -62,17 +62,17 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
+                var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                 nerr += ratio * nerr2 * Sqr(deltaL_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
-                double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out double a1Prime, out double a2Prime, out double CPrime1, out double CPrime2);
+                var deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out var a1Prime, out var a2Prime, out var CPrime1, out var CPrime2);
                 nerr += ratio * nerr2 * Sqr(deltaC_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
-                double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out double barCPrime, out double barhPrime);
+                var deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out var barCPrime, out var barhPrime);
                 nerr += ratio * nerr2 * Sqr(deltaH_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
@@ -81,7 +81,7 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                err = nerr;
+                err = (float) nerr;
                 nn = i;
             }
             bin1.err = err;
@@ -92,18 +92,18 @@ namespace PnnQuant
             var bins = new Pnnbin[65536];
 
             /* Build histogram */
-            for (int i = 0; i < pixels.Length; ++i)
+            foreach (var pixel in pixels)
             {
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
-                int index = GetARGBIndex(pixels[i], hasSemiTransparency);
-                GetLab(pixels[i], out CIELABConvertor.Lab lab1);
+                int index = GetARGBIndex(pixel, hasSemiTransparency);
+                GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                bins[index].ac += lab1.alpha;
-                bins[index].Lc += lab1.L;
-                bins[index].Ac += lab1.A;
-                bins[index].Bc += lab1.B;
+                bins[index].ac += (float) lab1.alpha;
+                bins[index].Lc += (float) lab1.L;
+                bins[index].Ac += (float) lab1.A;
+                bins[index].Bc += (float) lab1.B;
                 bins[index].cnt++;
             }
 
@@ -115,7 +115,7 @@ namespace PnnQuant
                 if (bins[i] == null)
                     continue;
 
-                double d = 1.0 / (double) bins[i].cnt;
+                var d = 1.0f / (float) bins[i].cnt;
                 bins[i].ac *= d;
                 bins[i].Lc *= d;
                 bins[i].Ac *= d;
@@ -137,11 +137,11 @@ namespace PnnQuant
             int h, l, l2;
             ratio = 0.0;
             /* Initialize nearest neighbors and build heap of them */
-            for (int i = 0; i < maxbins; i++)
+            for (int i = 0; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
                 /* Push slot on heap */
-                double err = bins[i].err;
+                var err = bins[i].err;
 
                 for (l = ++heap[0]; l > 1; l = l2)
                 {
@@ -153,7 +153,7 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-			ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.25) / pixelMap.Count);
+			ratio = Math.Min(1.0, Sqr(nMaxColors) / pixelMap.Count);
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
@@ -175,7 +175,7 @@ namespace PnnQuant
                         tb.tm = i;
                     }
                     /* Push slot down */
-                    double err = bins[b1].err;
+                    var err = bins[b1].err;
                     for (l = 1; (l2 = l + l) <= heap[0]; l = l2)
                     {
                         if ((l2 < heap[0]) && (bins[heap[l2]].err > bins[heap[l2 + 1]].err))
@@ -189,9 +189,9 @@ namespace PnnQuant
 
                 /* Do a merge */
                 var nb = bins[tb.nn];
-                double n1 = tb.cnt;
-                double n2 = nb.cnt;
-                double d = 1.0 / (n1 + n2);
+                var n1 = tb.cnt;
+                var n2 = nb.cnt;
+                var d = 1.0f / (n1 + n2);
                 tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
                 tb.Lc = d * (n1 * tb.Lc + n2 * nb.Lc);
                 tb.Ac = d * (n1 * tb.Ac + n2 * nb.Ac);
@@ -227,7 +227,7 @@ namespace PnnQuant
             Color c = Color.FromArgb(argb);
 
             double mindist = 1e100;
-            GetLab(argb, out CIELABConvertor.Lab lab1);
+            GetLab(argb, out var lab1);
 
             for (int i = 0; i < nMaxColors; ++i)
             {
@@ -251,19 +251,19 @@ namespace PnnQuant
                 }
                 else
                 {
-                    GetLab(c2.ToArgb(), out CIELABConvertor.Lab lab2);
+                    GetLab(c2.ToArgb(), out var lab2);
 
-                    double deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
+                    var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
-                    double deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out double a1Prime, out double a2Prime, out double CPrime1, out double CPrime2);
+                    var deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out var a1Prime, out var a2Prime, out var CPrime1, out var CPrime2);
                     curdist += Sqr(deltaC_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
-                    double deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out double barCPrime, out double barhPrime);
+                    var deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out var barCPrime, out var barhPrime);
                     curdist += Sqr(deltaH_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
@@ -281,7 +281,7 @@ namespace PnnQuant
         protected override ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
-            if (!closestMap.TryGetValue(pixel, out ushort[] closest))
+            if (!closestMap.TryGetValue(pixel, out var closest))
             {
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;

@@ -22,10 +22,10 @@ namespace PnnQuant
         protected const int PropertyTagIndexTransparent = 0x5104;
         private sealed class Pnnbin
         {
-            internal double ac, rc, gc, bc;
+            internal float ac, rc, gc, bc;
             internal int cnt;
             internal int nn, fw, bk, tm, mtm;
-            internal double err;
+            internal float err;
         }
         protected int GetARGBIndex(int argb, bool hasSemiTransparency)
         {
@@ -34,11 +34,7 @@ namespace PnnQuant
                 return (c.A & 0xF0) << 8 | (c.R & 0xF0) << 4 | (c.G & 0xF0) | (c.B >> 4);
             return (c.R & 0xF8) << 8 | (c.G & 0xFC) << 3 | (c.B >> 3);
         }
-        protected int GetARGB1555(int argb)
-        {
-            Color c = Color.FromArgb(argb);
-            return (c.A & 0x80) << 8 | (c.R & 0xF8) << 7 | (c.G & 0xF8) << 2 | (c.B >> 3);
-        }
+
         protected double Sqr(double value)
         {
             return value * value;
@@ -56,17 +52,15 @@ namespace PnnQuant
             var wb = bin1.bc;
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
-                double nerr, n2;
-
-                nerr = Sqr(bins[i].ac - wa) + Sqr(bins[i].rc - wr) + Sqr(bins[i].gc - wg) + Sqr(bins[i].bc - wb);
-                n2 = bins[i].cnt;
+                var nerr = Sqr(bins[i].ac - wa) + Sqr(bins[i].rc - wr) + Sqr(bins[i].gc - wg) + Sqr(bins[i].bc - wb);
+                var n2 = bins[i].cnt;
                 nerr *= (n1 * n2) / (n1 + n2);
                 if (nerr >= err)
                     continue;
                 err = nerr;
                 nn = i;
             }
-            bin1.err = err;
+            bin1.err = (float) err;
             bin1.nn = nn;
         }
         private void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
@@ -74,12 +68,12 @@ namespace PnnQuant
             var bins = new Pnnbin[65536];
 
             /* Build histogram */
-            for (int i = 0; i < pixels.Length; ++i)
+            foreach (var pixel in pixels)
             {
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
-                Color c = Color.FromArgb(pixels[i]);
-                int index = GetARGBIndex(pixels[i], hasSemiTransparency);
+                var c = Color.FromArgb(pixel);
+                int index = GetARGBIndex(pixel, hasSemiTransparency);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += c.A;
@@ -97,7 +91,7 @@ namespace PnnQuant
                 if (bins[i] == null)
                     continue;
 
-                double d = 1.0 / (double)bins[i].cnt;
+                var d = 1.0f / (float)bins[i].cnt;
                 bins[i].ac *= d;
                 bins[i].rc *= d;
                 bins[i].gc *= d;
@@ -153,7 +147,7 @@ namespace PnnQuant
                         tb.tm = i;
                     }
                     /* Push slot down */
-                    double err = bins[b1].err;
+                    var err = bins[b1].err;
                     for (l = 1; (l2 = l + l) <= heap[0]; l = l2)
                     {
                         if ((l2 < heap[0]) && (bins[heap[l2]].err > bins[heap[l2 + 1]].err))
@@ -167,9 +161,9 @@ namespace PnnQuant
 
                 /* Do a merge */
                 var nb = bins[tb.nn];
-                double n1 = tb.cnt;
-                double n2 = nb.cnt;
-                double d = 1.0 / (n1 + n2);
+                var n1 = tb.cnt;
+                var n2 = nb.cnt;
+                var d = 1.0f / (n1 + n2);
                 tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
                 tb.rc = d * (n1 * tb.rc + n2 * nb.rc);
                 tb.gc = d * (n1 * tb.gc + n2 * nb.gc);
@@ -199,13 +193,13 @@ namespace PnnQuant
         protected virtual ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
-            Color c = Color.FromArgb(pixel);
+            var c = Color.FromArgb(pixel);
 
-            double mindist = 1e100;
+            var mindist = 1e100;
             for (int i = 0; i < nMaxColors; i++)
             {
-                Color c2 = palette[i];
-                double curdist = Sqr(c2.A - c.A);
+                var c2 = palette[i];
+                var curdist = Sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
 
@@ -229,9 +223,9 @@ namespace PnnQuant
         protected virtual ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
-            Color c = Color.FromArgb(pixel);
+            var c = Color.FromArgb(pixel);
 
-            if (!closestMap.TryGetValue(pixel, out ushort[] closest))
+            if (!closestMap.TryGetValue(pixel, out var closest))
             {
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;
@@ -266,9 +260,9 @@ namespace PnnQuant
             closestMap[pixel] = closest;
             return k;
         }
-        protected int[] CalcDitherPixel(Color c, byte[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
+        protected int[] CalcDitherPixel(Color c, short[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
         {
-            int[] ditherPixel = new int[4];
+            var ditherPixel = new int[4];
             if (hasSemiTransparency) {
                 ditherPixel[0] = clamp[((rowerr[cursor] + 0x1008) >> 4) + c.R];
                 ditherPixel[1] = clamp[((rowerr[cursor + 1] + 0x1008) >> 4) + c.G];
@@ -292,13 +286,13 @@ namespace PnnQuant
                 const int DJ = 4;
                 const int DITHER_MAX = 20;
                 int err_len = (width + 2) * DJ;
-                byte[] clamp = new byte[DJ * 256];
-                short[] limtb = new short[512];
+                var clamp = new short[DJ * 256];
+                var limtb = new short[512];
 
                 for (int i = 0; i < 256; ++i)
                 {
                     clamp[i] = 0;
-                    clamp[i + 256] = (byte)i;
+                    clamp[i + 256] = (short)i;
                     clamp[i + 512] = Byte.MaxValue;
                     clamp[i + 768] = Byte.MaxValue;
 
@@ -320,17 +314,17 @@ namespace PnnQuant
                     row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
                     for (int j = 0; j < width; j++)
                     {
-                        Color c = Color.FromArgb(pixels[pixelIndex]);
+                        var c = Color.FromArgb(pixels[pixelIndex]);
                         int[] ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, hasSemiTransparency);
                         int r_pix = ditherPixel[0];
                         int g_pix = ditherPixel[1];
                         int b_pix = ditherPixel[2];
                         int a_pix = ditherPixel[3];
 
-                        Color c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+                        var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
                         qPixels[pixelIndex] = NearestColorIndex(palette, nMaxColors, c1.ToArgb());
 
-                        Color c2 = palette[qPixels[pixelIndex]];
+                        var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
                             qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false);
 
@@ -421,7 +415,7 @@ namespace PnnQuant
                     for (int x = 0; x < w; x++)
                     {	// ...for each pixel...
                         byte nibbles = 0;
-                        byte index = (byte)qPixels[pixelIndex++];
+                        var index = (byte)qPixels[pixelIndex++];
 
                         switch (bpp)
                         {
@@ -504,7 +498,7 @@ namespace PnnQuant
                     {   // For each row...
                         for (int x = 0; x < w * 4;)
                         {
-                            Color c = Color.FromArgb(qPixels[pixelIndex++]);
+                            var c = Color.FromArgb(qPixels[pixelIndex++]);
                             pRowDest[x++] = c.B;
                             pRowDest[x++] = c.G;
                             pRowDest[x++] = c.R;
@@ -519,7 +513,7 @@ namespace PnnQuant
                     {   // For each row...
                         for (int x = 0; x < w * 2;)
                         {
-                            short argb = (short)qPixels[pixelIndex++];
+                            var argb = (short)qPixels[pixelIndex++];
                             pRowDest[x++] = (byte)(argb & 0xFF);
                             pRowDest[x++] = (byte)(argb >> 8);
                         }
@@ -553,8 +547,6 @@ namespace PnnQuant
         }
         protected bool GrabPixels(Bitmap source, int[] pixels)
         {
-            int bitDepth = Image.GetPixelFormatSize(source.PixelFormat);
-
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
