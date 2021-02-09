@@ -231,7 +231,7 @@ namespace PnnQuant
 
             for (int i = 0; i < nMaxColors; ++i)
             {
-                Color c2 = palette[i];
+                var c2 = palette[i];
 
                 var curdist = Sqr(c2.A - c.A);
                 if (curdist > mindist)

@@ -29,7 +29,7 @@ namespace PnnQuant
         }
         protected int GetARGBIndex(int argb, bool hasSemiTransparency)
         {
-            Color c = Color.FromArgb(argb);
+            var c = Color.FromArgb(argb);
             if (hasSemiTransparency)
                 return (c.A & 0xF0) << 8 | (c.R & 0xF0) << 4 | (c.G & 0xF0) | (c.B >> 4);
             return (c.R & 0xF8) << 8 | (c.G & 0xFC) << 3 | (c.B >> 3);
@@ -477,7 +477,7 @@ namespace PnnQuant
                 dest = new Bitmap(w, h, PixelFormat.Format16bppRgb565);
 
             bpp = Image.GetPixelFormatSize(dest.PixelFormat);
-            BitmapData targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);            
+            var targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);            
 
             int pixelIndex = 0;
             int strideDest;
