@@ -153,7 +153,10 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-			ratio = Math.Min(1.0, Sqr(nMaxColors) / pixelMap.Count);
+            if (nMaxColors < 64)
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.45) / maxbins);
+            else
+                ratio = Math.Min(1.0, Sqr(nMaxColors / pixelMap.Count));
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
