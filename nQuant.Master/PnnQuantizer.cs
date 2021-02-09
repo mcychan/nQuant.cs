@@ -42,7 +42,7 @@ namespace PnnQuant
         private void Find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
-            double err = 1e100;
+            var err = 1e100;
 
             var bin1 = bins[idx];
             var n1 = bin1.cnt;
@@ -394,7 +394,7 @@ namespace PnnQuant
             int w = dest.Width;
             int h = dest.Height;
 
-            BitmapData targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);
+            var targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);
 
             int pixelIndex = 0;
             int strideDest;
