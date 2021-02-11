@@ -44,7 +44,7 @@ namespace PnnQuant
 
                 CIELABConvertor.Lab lab2;
                 lab2.alpha = bins[i].ac; lab2.L = bins[i].Lc; lab2.A = bins[i].Ac; lab2.B = bins[i].Bc;
-                double alphaDiff = lab2.alpha - lab1.alpha;
+                double alphaDiff = hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
                 double nerr = nerr2 * Sqr(alphaDiff) * alphaDiff / 3.0;
                 if (nerr >= err)
                     continue;
@@ -154,9 +154,9 @@ namespace PnnQuant
             }
 
             if (nMaxColors < 64)
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.45) / maxbins);
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.42) / maxbins);
             else
-                ratio = Math.Min(1.0, Sqr(nMaxColors / pixelMap.Count));
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
@@ -257,7 +257,8 @@ namespace PnnQuant
                         if (curdist > mindist)
                             continue;
 
-                        curdist += .333 * Sqr(lab2.B - lab1.B);
+                        var yDiff = Math.Abs(lab2.B - lab1.B);
+                        curdist += yDiff * Sqr(yDiff) / 3.0;
                     }
                 }
                 else
