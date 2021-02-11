@@ -8,7 +8,6 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double PR = .2126, PG = .7152, PB = .0722;
         private double ratio = 1.0;
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
@@ -240,22 +239,21 @@ namespace PnnQuant
                 if (curdist > mindist)
                     continue;
 
+                GetLab(c2.ToArgb(), out var lab2);
                 if (nMaxColors > 32)
                 {
-                    curdist += PR * Sqr(c2.R - c.R);
+                    curdist += Sqr(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PG * Sqr(c2.G - c.G);
+                    curdist += Sqr(lab2.A - lab1.A);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PB * Sqr(c2.B - c.B);
+                    curdist += Sqr(lab2.B - lab1.B);
                 }
                 else
                 {
-                    GetLab(c2.ToArgb(), out var lab2);
-
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
@@ -342,9 +340,6 @@ namespace PnnQuant
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
                 dither = true;
-
-            if (hasSemiTransparency)
-                PR = PG = PB = 1;
 
             bool quan_sqrt = true;
             if (nMaxColors > 2)
