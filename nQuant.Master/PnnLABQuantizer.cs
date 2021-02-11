@@ -8,6 +8,7 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
+        private double PR = .2126, PG = .7152, PB = .0722;
         private double ratio = 1.0;
         private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
@@ -28,7 +29,7 @@ namespace PnnQuant
         private void Find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
-            float err = (float) 1e100;
+            float err = (float)1e100;
 
             var bin1 = bins[idx];
             int n1 = bin1.cnt;
@@ -80,7 +81,7 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                err = (float) nerr;
+                err = (float)nerr;
                 nn = i;
             }
             bin1.err = err;
@@ -99,10 +100,10 @@ namespace PnnQuant
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                bins[index].ac += (float) lab1.alpha;
-                bins[index].Lc += (float) lab1.L;
-                bins[index].Ac += (float) lab1.A;
-                bins[index].Bc += (float) lab1.B;
+                bins[index].ac += (float)lab1.alpha;
+                bins[index].Lc += (float)lab1.L;
+                bins[index].Ac += (float)lab1.A;
+                bins[index].Bc += (float)lab1.B;
                 bins[index].cnt++;
             }
 
@@ -114,7 +115,7 @@ namespace PnnQuant
                 if (bins[i] == null)
                     continue;
 
-                var d = 1.0f / (float) bins[i].cnt;
+                var d = 1.0f / (float)bins[i].cnt;
                 bins[i].ac *= d;
                 bins[i].Lc *= d;
                 bins[i].Ac *= d;
@@ -239,21 +240,22 @@ namespace PnnQuant
                 if (curdist > mindist)
                     continue;
 
-                GetLab(c2.ToArgb(), out var lab2);
                 if (nMaxColors > 32)
                 {
-                    curdist += Sqr(lab2.L - lab1.L);
+                    curdist += PR * Sqr(c2.R - c.R);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += Sqr(lab2.A - lab1.A);
+                    curdist += PG * Sqr(c2.G - c.G);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += Sqr(lab2.B - lab1.B);
+                    curdist += PB * Sqr(c2.B - c.B);
                 }
                 else
                 {
+                    GetLab(c2.ToArgb(), out var lab2);
+
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
@@ -334,12 +336,15 @@ namespace PnnQuant
             var pixels = new int[bitmapWidth * bitmapHeight];
             if (!GrabPixels(source, pixels))
                 return dest;
-            
+
             var palettes = dest.Palette.Entries;
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
                 dither = true;
+
+            if (hasSemiTransparency)
+                PR = PG = PB = 1;
 
             bool quan_sqrt = true;
             if (nMaxColors > 2)
