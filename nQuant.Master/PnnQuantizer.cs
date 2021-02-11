@@ -558,7 +558,7 @@ namespace PnnQuant
 
             int pixelIndex = 0, strideSource;
             BitmapData data;
-            if ((source.PixelFormat & PixelFormat.Indexed) != 0)
+            if (source.PixelFormat == PixelFormat.Format8bppIndexed)
             {
                 var palette = source.Palette;
                 var palettes = palette.Entries;
