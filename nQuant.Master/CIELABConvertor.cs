@@ -7,8 +7,6 @@ namespace PnnQuant
 {
     internal class CIELABConvertor
     {
-		private const double M_PI = 3.14159265358979323846;
-
 		internal struct Lab {
             internal double alpha, A, B, L;
 	    }
@@ -69,7 +67,7 @@ namespace PnnQuant
 
 	    private static float Deg2Rad(float deg)
 	    {
-		    return (float) (deg * (M_PI / 180.0));
+		    return (float) (deg * (Math.PI / 180.0));
 	    }
 
 	    internal static float L_prime_div_k_L_S_L(Lab lab1, Lab lab2)

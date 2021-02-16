@@ -18,6 +18,7 @@ namespace PnnQuant
         protected Color m_transparentColor = Color.Transparent;
         protected Random rand = new Random();
         protected Dictionary<int, ushort[]> closestMap = new Dictionary<int, ushort[]>();
+        protected Dictionary<int, ushort> nearestMap = new Dictionary<int, ushort>();
 
         protected const int PropertyTagIndexTransparent = 0x5104;
         private sealed class Pnnbin
@@ -192,7 +193,9 @@ namespace PnnQuant
         }
         protected virtual ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
-            ushort k = 0;
+            if (nearestMap.TryGetValue(pixel, out var k))
+                return k;
+
             var c = Color.FromArgb(pixel);
 
             var mindist = 1e100;
@@ -218,6 +221,7 @@ namespace PnnQuant
                 mindist = curdist;
                 k = (ushort)i;
             }
+            nearestMap[pixel] = k;
             return k;
         }
         protected virtual ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
@@ -709,6 +713,7 @@ namespace PnnQuant
                     Swap(ref palettes[0], ref palettes[1]);
             }
             closestMap.Clear();
+            nearestMap.Clear();
 
             if (nMaxColors > 256)
                 return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);

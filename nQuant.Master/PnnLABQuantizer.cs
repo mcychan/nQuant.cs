@@ -122,7 +122,7 @@ namespace PnnQuant
                 bins[i].Bc *= d;
 
                 if (quan_sqrt)
-                    bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.7);
+                    bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.6);
                 bins[maxbins++] = bins[i];
             }
 
@@ -154,7 +154,7 @@ namespace PnnQuant
             }
 
             if (nMaxColors < 64)
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.42) / maxbins);
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.19) / maxbins);
             else
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             /* Merge bins which increase error the least */
@@ -226,7 +226,9 @@ namespace PnnQuant
 
         protected override ushort NearestColorIndex(Color[] palette, int nMaxColors, int argb)
         {
-            ushort k = 0;
+            if (nearestMap.TryGetValue(argb, out var k))
+                return k;
+
             var c = Color.FromArgb(argb);
 
             var mindist = 1e100;
@@ -286,6 +288,7 @@ namespace PnnQuant
                 mindist = curdist;
                 k = (ushort)i;
             }
+            nearestMap[argb] = k;
             return k;
         }
         protected override ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
@@ -381,6 +384,7 @@ namespace PnnQuant
             }
             pixelMap.Clear();
             closestMap.Clear();
+            nearestMap.Clear();
 
             if (nMaxColors > 256)
                 return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
