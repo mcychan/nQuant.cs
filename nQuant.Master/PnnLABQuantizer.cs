@@ -259,8 +259,7 @@ namespace PnnQuant
                         if (curdist > mindist)
                             continue;
 
-                        var yDiff = Math.Abs(lab2.B - lab1.B);
-                        curdist += yDiff * Sqr(yDiff) / 3.0;
+                        curdist += Sqr(lab2.B - lab1.B) / 3.0;
                     }
                 }
                 else
