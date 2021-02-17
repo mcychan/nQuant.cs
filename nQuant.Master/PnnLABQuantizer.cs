@@ -110,7 +110,8 @@ namespace PnnQuant
             /* Cluster nonempty bins at one end of array */
             int maxbins = 0;
             var heap = new int[65537];
-            for (int i = 0; i < bins.Length; ++i)
+            int i = 0;
+            for (; i < bins.Length; ++i)
             {
                 if (bins[i] == null)
                     continue;
@@ -121,23 +122,27 @@ namespace PnnQuant
                 bins[i].Ac *= d;
                 bins[i].Bc *= d;
 
-                if (quan_sqrt)
-                    bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.6);
                 bins[maxbins++] = bins[i];
             }
 
-            for (int i = 0; i < maxbins - 1; ++i)
+            if (Sqr(nMaxColors) / maxbins < .022)
+                quan_sqrt = false;
+            
+            for (i = 0; i < maxbins - 1; ++i)
             {
                 bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
+
+                if (quan_sqrt)
+                    bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.6);
             }
-            // !!! Already zeroed out by calloc()
-            //	bins[0].bk = bins[i].fw = 0;
+            if (quan_sqrt)
+                bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.6);
 
             int h, l, l2;
             ratio = 0.0;
             /* Initialize nearest neighbors and build heap of them */
-            for (int i = 0; i < maxbins; ++i)
+            for (i = 0; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
                 /* Push slot on heap */
@@ -153,13 +158,15 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-            if (nMaxColors < 64)
+            if (quan_sqrt && nMaxColors < 64)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.19) / maxbins);
+            else if (!quan_sqrt)
+                ratio = .75;
             else
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
-            for (int i = 0; i < extbins;)
+            for (i = 0; i < extbins;)
             {
                 Pnnbin tb;
                 /* Use heap to find which bins to merge */
@@ -210,7 +217,7 @@ namespace PnnQuant
 
             /* Fill palette */
             int k = 0;
-            for (int i = 0; ; ++k)
+            for (i = 0; ; ++k)
             {
                 CIELABConvertor.Lab lab1;
                 lab1.alpha = bins[i].ac;
@@ -259,7 +266,7 @@ namespace PnnQuant
                         if (curdist > mindist)
                             continue;
 
-                        curdist += Sqr(lab2.B - lab1.B) / 3.0;
+                        curdist += Sqr(lab2.B - lab1.B) / 2.0;
                     }
                 }
                 else
