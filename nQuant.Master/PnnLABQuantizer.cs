@@ -241,8 +241,7 @@ namespace PnnQuant
                 var curdist = Sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
-
-                GetLab(c2.ToArgb(), out var lab2);
+                
                 if (nMaxColors > 32)
                 {
                     curdist += PR * Sqr(c2.R - c.R);
@@ -259,12 +258,14 @@ namespace PnnQuant
                         if (curdist > mindist)
                             continue;
 
-                        var yDiff = Math.Abs(lab2.B - lab1.B);
-                        curdist += yDiff * Sqr(yDiff) / 3.0;
+                        var luma1 = c.R * PR + c.G * PG + c.B * PB;
+                        var luma2 = c2.R * PR + c2.G * PG + c2.B * PB;
+                        curdist += Sqr(luma1 - luma2) / 3.0;
                     }
                 }
                 else
-                {  
+                {
+                    GetLab(c2.ToArgb(), out var lab2);
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
