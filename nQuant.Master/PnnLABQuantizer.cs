@@ -160,7 +160,7 @@ namespace PnnQuant
             }
 
             if (quan_sqrt && nMaxColors < 64)
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.19) / maxbins);
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.0) / maxbins);
             else if (!quan_sqrt)
                 ratio = .75;
             else
