@@ -125,7 +125,8 @@ namespace PnnQuant
                 bins[maxbins++] = bins[i];
             }
 
-            if (Sqr(nMaxColors) / maxbins < .022)
+            var proportional = Sqr(nMaxColors) / maxbins;
+            if (proportional < .022 || proportional > .5)
                 quan_sqrt = false;
             
             for (i = 0; i < maxbins - 1; ++i)
