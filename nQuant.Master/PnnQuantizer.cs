@@ -16,9 +16,9 @@ namespace PnnQuant
         protected bool hasSemiTransparency = false;
         protected int m_transparentPixelIndex = -1;
         protected Color m_transparentColor = Color.Transparent;
-        protected Random rand = new Random();
-        protected Dictionary<int, ushort[]> closestMap = new Dictionary<int, ushort[]>();
-        protected Dictionary<int, ushort> nearestMap = new Dictionary<int, ushort>();
+        protected readonly Random rand = new Random();
+        protected readonly Dictionary<int, ushort[]> closestMap = new Dictionary<int, ushort[]>();
+        protected readonly Dictionary<int, ushort> nearestMap = new Dictionary<int, ushort>();
 
         protected const int PropertyTagIndexTransparent = 0x5104;
         private sealed class Pnnbin
@@ -64,7 +64,7 @@ namespace PnnQuant
             bin1.err = (float) err;
             bin1.nn = nn;
         }
-        private void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
+        protected virtual void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
 

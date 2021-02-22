@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Threading.Tasks;
 
 namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double PR = .299, PG = .587, PB = .114;
+        private readonly double PR = .299, PG = .587, PB = .114;
         private double ratio = 1.0;
-        private Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
+        private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
         {
             internal float ac, Lc, Ac, Bc;
@@ -87,7 +85,7 @@ namespace PnnQuant
             bin1.err = err;
             bin1.nn = nn;
         }
-        private void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
+        protected override void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
             var bins = new Pnnbin[65536];
 
@@ -126,7 +124,7 @@ namespace PnnQuant
             }
 
             var proportional = Sqr(nMaxColors) / maxbins;
-            if (proportional < .022 || proportional > .5)
+            if ((proportional < .022 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = false;
             
             for (i = 0; i < maxbins - 1; ++i)
@@ -161,10 +159,10 @@ namespace PnnQuant
 
             if (quan_sqrt && nMaxColors < 64)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.0) / maxbins);
-            else if (!quan_sqrt)
-                ratio = .75;
+            else if (quan_sqrt)
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);            
             else
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
+                ratio = .75;
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (i = 0; i < extbins;)
@@ -339,65 +337,7 @@ namespace PnnQuant
 
             closestMap[pixel] = closest;
             return k;
-        }
-
-        public override Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
-        {
-            int bitmapWidth = source.Width;
-            int bitmapHeight = source.Height;
-
-            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
-            if (!IsValidFormat(pixelFormat, nMaxColors))
-                return dest;
-
-            var pixels = new int[bitmapWidth * bitmapHeight];
-            if (!GrabPixels(source, pixels))
-                return dest;
-
-            var palettes = dest.Palette.Entries;
-            if (palettes.Length != nMaxColors)
-                palettes = new Color[nMaxColors];
-            if (nMaxColors > 256)
-                dither = true;
-
-            if (hasSemiTransparency)
-                PR = PG = PB = 1;
-
-            bool quan_sqrt = true;
-            if (nMaxColors > 2)
-                Pnnquan(pixels, palettes, nMaxColors, quan_sqrt);
-            else
-            {
-                if (m_transparentPixelIndex >= 0)
-                {
-                    palettes[0] = Color.Transparent;
-                    palettes[1] = Color.Black;
-                }
-                else
-                {
-                    palettes[0] = Color.Black;
-                    palettes[1] = Color.White;
-                }
-            }
-
-            var qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
-            if (m_transparentPixelIndex >= 0)
-            {
-                var k = qPixels[m_transparentPixelIndex];
-                if (nMaxColors > 2)
-                    palettes[k] = m_transparentColor;
-                else if (palettes[k] != m_transparentColor)
-                    Swap(ref palettes[0], ref palettes[1]);
-            }
-            pixelMap.Clear();
-            closestMap.Clear();
-            nearestMap.Clear();
-
-            if (nMaxColors > 256)
-                return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
-
-            return ProcessImagePixels(dest, palettes, qPixels);
-        }
+        }       
 
     }
 }
