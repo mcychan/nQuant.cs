@@ -204,7 +204,7 @@ namespace PnnQuant
                 var nb = bins[tb.nn];
                 var n1 = tb.cnt;
                 var n2 = nb.cnt;
-                var d = 1.0f / (n1 + n2);
+                var d = 1.0f / (float)(n1 + n2);
                 tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
                 tb.Lc = d * (n1 * tb.Lc + n2 * nb.Lc);
                 tb.Ac = d * (n1 * tb.Ac + n2 * nb.Ac);

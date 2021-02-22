@@ -293,8 +293,8 @@ namespace PnnQuant
             int pixelIndex = 0;
             if (dither)
             {
-                const int DJ = 4;
-                const int DITHER_MAX = 20;
+                const short DJ = 4;
+                const short DITHER_MAX = 20;
                 int err_len = (width + 2) * DJ;
                 var clamp = new short[DJ * 256];
                 var limtb = new short[512];
@@ -322,10 +322,10 @@ namespace PnnQuant
 
                     int cursor0 = DJ, cursor1 = width * DJ;
                     row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
-                    for (int j = 0; j < width; j++)
+                    for (int j = 0; j < width; ++j)
                     {
                         var c = Color.FromArgb(pixels[pixelIndex]);
-                        int[] ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, hasSemiTransparency);
+                        var ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, hasSemiTransparency);
                         int r_pix = ditherPixel[0];
                         int g_pix = ditherPixel[1];
                         int b_pix = ditherPixel[2];
@@ -382,12 +382,12 @@ namespace PnnQuant
 
             if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
             {
-                for (int i = 0; i < qPixels.Length; i++)
+                for (int i = 0; i < qPixels.Length; ++i)
                     qPixels[i] = NearestColorIndex(palette, nMaxColors, pixels[i]);
             }
             else
             {
-                for (int i = 0; i < qPixels.Length; i++)
+                for (int i = 0; i < qPixels.Length; ++i)
                     qPixels[i] = ClosestColorIndex(palette, nMaxColors, pixels[i]);
             }
 
@@ -423,9 +423,9 @@ namespace PnnQuant
                 }
 
                 // Second loop: fill indexed bitmap
-                for (int y = 0; y < h; y++)
+                for (int y = 0; y < h; ++y)
                 {	// For each row...
-                    for (int x = 0; x < w; x++)
+                    for (int x = 0; x < w; ++x)
                     {	// ...for each pixel...
                         byte nibbles = 0;
                         var index = (byte)qPixels[pixelIndex++];
