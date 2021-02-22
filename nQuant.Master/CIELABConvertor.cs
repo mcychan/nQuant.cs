@@ -58,7 +58,7 @@ namespace PnnQuant
 		    b = (b > 0.0031308) ? (float)(1.055 * Math.Pow(b, 1.0 / 2.4) - 0.055) : 12.92f * b;
 
             var alpha = Math.Clamp((int) lab.alpha, Byte.MinValue, Byte.MaxValue);
-            return Color.FromArgb(alpha, (int)(Math.Max(0, Math.Min(1, r)) * Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, g)) * Byte.MaxValue), (int)(Math.Max(0, Math.Min(1, b)) * Byte.MaxValue));
+            return Color.FromArgb(alpha, Math.Clamp((int)(r * Byte.MaxValue), Byte.MinValue, Byte.MaxValue), Math.Clamp((int)(g * Byte.MaxValue), Byte.MinValue, Byte.MaxValue), Math.Clamp((int)(b * Byte.MaxValue), Byte.MinValue, Byte.MaxValue));
 	    }
 
 	    /*******************************************************************************

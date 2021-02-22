@@ -31,8 +31,10 @@ namespace PnnQuant
 
             var bin1 = bins[idx];
             int n1 = bin1.cnt;
-            CIELABConvertor.Lab lab1;
-            lab1.alpha = bin1.ac; lab1.L = bin1.Lc; lab1.A = bin1.Ac; lab1.B = bin1.Bc;
+            var lab1 = new CIELABConvertor.Lab
+            {
+                alpha = bin1.ac, L = bin1.Lc, A = bin1.Ac, B = bin1.Bc
+            };
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
                 float n2 = bins[i].cnt;
@@ -40,8 +42,10 @@ namespace PnnQuant
                 if (nerr2 >= err)
                     continue;
 
-                CIELABConvertor.Lab lab2;
-                lab2.alpha = bins[i].ac; lab2.L = bins[i].Lc; lab2.A = bins[i].Ac; lab2.B = bins[i].Bc;
+                var lab2 = new CIELABConvertor.Lab
+                {
+                    alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
+                };
                 double alphaDiff = hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
                 double nerr = nerr2 * Sqr(alphaDiff) * alphaDiff / 3.0;
                 if (nerr >= err)
@@ -218,9 +222,10 @@ namespace PnnQuant
             int k = 0;
             for (i = 0; ; ++k)
             {
-                CIELABConvertor.Lab lab1;
-                lab1.alpha = bins[i].ac;
-                lab1.L = bins[i].Lc; lab1.A = bins[i].Ac; lab1.B = bins[i].Bc;
+                var lab1 = new CIELABConvertor.Lab
+                {
+                    alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
+                };
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
                 if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
                     Swap(ref palettes[0], ref palettes[k]);
@@ -305,7 +310,7 @@ namespace PnnQuant
                 closest[2] = closest[3] = ushort.MaxValue;
                 GetLab(pixel, out var lab1);
 
-                for (; k < nMaxColors; k++)
+                for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
                     GetLab(c2.ToArgb(), out var lab2);

@@ -118,7 +118,7 @@ namespace PnnQuant
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
-            for (i = 0; i < maxbins; i++)
+            for (i = 0; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
                 /* Push slot on heap */
@@ -240,7 +240,7 @@ namespace PnnQuant
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;
 
-                for (; k < nMaxColors; k++)
+                for (; k < nMaxColors; ++k)
                 {
                     Color c2 = palette[k];
                     closest[4] = (ushort)(Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B));
