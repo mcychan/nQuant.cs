@@ -294,23 +294,24 @@ namespace PnnQuant
             if (dither)
             {
                 const short DJ = 4;
+                const short BLOCK_SIZE = 256;
                 const short DITHER_MAX = 20;
                 int err_len = (width + 2) * DJ;
-                var clamp = new short[DJ * 256];
-                var limtb = new short[512];
+                var clamp = new short[DJ * BLOCK_SIZE];
+                var limtb = new short[2 * BLOCK_SIZE];
 
-                for (int i = 0; i < 256; ++i)
+                for (int i = 0; i < BLOCK_SIZE; ++i)
                 {
                     clamp[i] = 0;
-                    clamp[i + 256] = (short)i;
-                    clamp[i + 512] = Byte.MaxValue;
-                    clamp[i + 768] = Byte.MaxValue;
+                    clamp[i + BLOCK_SIZE] = (short) i;
+                    clamp[i + BLOCK_SIZE * 2] = Byte.MaxValue;
+                    clamp[i + BLOCK_SIZE * 3] = Byte.MaxValue;
 
                     limtb[i] = -DITHER_MAX;
-                    limtb[i + 256] = DITHER_MAX;
+                    limtb[i + BLOCK_SIZE] = DITHER_MAX;
                 }
                 for (int i = -DITHER_MAX; i <= DITHER_MAX; ++i)
-                    limtb[i + 256] = (short) i;
+                    limtb[i + BLOCK_SIZE] = (short) i;
 
                 int dir = 1;
                 var row0 = new short[err_len];
@@ -338,10 +339,10 @@ namespace PnnQuant
                         if (nMaxColors > 256)
                             qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false);
 
-                        r_pix = limtb[r_pix - c2.R + 256];
-                        g_pix = limtb[g_pix - c2.G + 256];
-                        b_pix = limtb[b_pix - c2.B + 256];
-                        a_pix = limtb[a_pix - c2.A + 256];
+                        r_pix = limtb[r_pix - c2.R + BLOCK_SIZE];
+                        g_pix = limtb[g_pix - c2.G + BLOCK_SIZE];
+                        b_pix = limtb[b_pix - c2.B + BLOCK_SIZE];
+                        a_pix = limtb[a_pix - c2.A + BLOCK_SIZE];
 
                         int k = r_pix * 2;
                         row1[cursor1 - DJ] = (short)r_pix;
