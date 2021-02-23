@@ -158,7 +158,7 @@ namespace PnnQuant
                     for (l = 1; (l2 = l + l) <= heap[0]; l = l2)
                     {
                         if ((l2 < heap[0]) && (bins[heap[l2]].err > bins[heap[l2 + 1]].err))
-                            l2++;
+                            ++l2;
                         if (err <= bins[h = heap[l2]].err)
                             break;
                         heap[l] = h;
@@ -204,8 +204,8 @@ namespace PnnQuant
 
             var c = Color.FromArgb(pixel);
 
-            var mindist = 1e100;
-            for (int i = 0; i < nMaxColors; i++)
+            double mindist = short.MaxValue;
+            for (int i = 0; i < nMaxColors; ++i)
             {
                 var c2 = palette[i];
                 var curdist = Sqr(c2.A - c.A);
@@ -270,7 +270,7 @@ namespace PnnQuant
             closestMap[pixel] = closest;
             return k;
         }
-        protected int[] CalcDitherPixel(Color c, short[] clamp, short[] rowerr, int cursor, bool hasSemiTransparency)
+        protected int[] CalcDitherPixel(Color c, short[] clamp, int[] rowerr, int cursor, bool hasSemiTransparency)
         {
             var ditherPixel = new int[4];
             if (hasSemiTransparency) {
@@ -300,22 +300,22 @@ namespace PnnQuant
                 var clamp = new short[DJ * BLOCK_SIZE];
                 var limtb = new short[2 * BLOCK_SIZE];
 
-                for (int i = 0; i < BLOCK_SIZE; ++i)
+                for (short i = 0; i < BLOCK_SIZE; ++i)
                 {
                     clamp[i] = 0;
-                    clamp[i + BLOCK_SIZE] = (short) i;
+                    clamp[i + BLOCK_SIZE] = i;
                     clamp[i + BLOCK_SIZE * 2] = Byte.MaxValue;
                     clamp[i + BLOCK_SIZE * 3] = Byte.MaxValue;
 
                     limtb[i] = -DITHER_MAX;
                     limtb[i + BLOCK_SIZE] = DITHER_MAX;
                 }
-                for (int i = -DITHER_MAX; i <= DITHER_MAX; ++i)
-                    limtb[i + BLOCK_SIZE] = (short) i;
+                for (short i = -DITHER_MAX; i <= DITHER_MAX; ++i)
+                    limtb[i + BLOCK_SIZE] = i;
 
                 int dir = 1;
-                var row0 = new short[err_len];
-                var row1 = new short[err_len];
+                var row0 = new int[err_len];
+                var row1 = new int[err_len];
                 for (int i = 0; i < height; ++i)
                 {
                     if (dir < 0)
@@ -345,28 +345,28 @@ namespace PnnQuant
                         a_pix = limtb[a_pix - c2.A + BLOCK_SIZE];
 
                         int k = r_pix * 2;
-                        row1[cursor1 - DJ] = (short)r_pix;
-                        row1[cursor1 + DJ] += (short)(r_pix += k);
-                        row1[cursor1] += (short)(r_pix += k);
-                        row0[cursor0 + DJ] += (short)(r_pix += k);
+                        row1[cursor1 - DJ] = r_pix;
+                        row1[cursor1 + DJ] += (r_pix += k);
+                        row1[cursor1] += (r_pix += k);
+                        row0[cursor0 + DJ] += (r_pix += k);
 
                         k = g_pix * 2;
-                        row1[cursor1 + 1 - DJ] = (short)g_pix;
-                        row1[cursor1 + 1 + DJ] += (short)(g_pix += k);
-                        row1[cursor1 + 1] += (short)(g_pix += k);
-                        row0[cursor0 + 1 + DJ] += (short)(g_pix += k);
+                        row1[cursor1 + 1 - DJ] = g_pix;
+                        row1[cursor1 + 1 + DJ] += (g_pix += k);
+                        row1[cursor1 + 1] += (g_pix += k);
+                        row0[cursor0 + 1 + DJ] += (g_pix += k);
 
                         k = b_pix * 2;
-                        row1[cursor1 + 2 - DJ] = (short)b_pix;
-                        row1[cursor1 + 2 + DJ] += (short)(b_pix += k);
-                        row1[cursor1 + 2] += (short)(b_pix += k);
-                        row0[cursor0 + 2 + DJ] += (short)(b_pix += k);
+                        row1[cursor1 + 2 - DJ] = b_pix;
+                        row1[cursor1 + 2 + DJ] += (b_pix += k);
+                        row1[cursor1 + 2] += (b_pix += k);
+                        row0[cursor0 + 2 + DJ] += (b_pix += k);
 
                         k = a_pix * 2;
-                        row1[cursor1 + 3 - DJ] = (short)a_pix;
-                        row1[cursor1 + 3 + DJ] += (short)(a_pix += k);
-                        row1[cursor1 + 3] += (short)(a_pix += k);
-                        row0[cursor0 + 3 + DJ] += (short)(a_pix += k);
+                        row1[cursor1 + 3 - DJ] = a_pix;
+                        row1[cursor1 + 3 + DJ] += (a_pix += k);
+                        row1[cursor1 + 3] += (a_pix += k);
+                        row0[cursor0 + 3 + DJ] += (a_pix += k);
 
                         cursor0 += DJ;
                         cursor1 -= DJ;

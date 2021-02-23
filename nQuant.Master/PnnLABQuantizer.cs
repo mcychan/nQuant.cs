@@ -27,7 +27,7 @@ namespace PnnQuant
         private void Find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
-            float err = (float)1e100;
+            float err = (float) short.MaxValue;
 
             var bin1 = bins[idx];
             int n1 = bin1.cnt;
@@ -192,7 +192,7 @@ namespace PnnQuant
                     for (l = 1; (l2 = l + l) <= heap[0]; l = l2)
                     {
                         if ((l2 < heap[0]) && (bins[heap[l2]].err > bins[heap[l2 + 1]].err))
-                            l2++;
+                            ++l2;
                         if (err <= bins[h = heap[l2]].err)
                             break;
                         heap[l] = h;
@@ -242,7 +242,7 @@ namespace PnnQuant
 
             var c = Color.FromArgb(argb);
 
-            var mindist = 1e100;
+            double mindist = short.MaxValue;
             GetLab(argb, out var lab1);
 
             for (int i = 0; i < nMaxColors; ++i)
