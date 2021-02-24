@@ -281,7 +281,7 @@ namespace PnnQuant
 	        }
 	        else {
                 ditherPixel[0] = clamp[((rowerr[cursor] + 0x2010) >> 5) + c.R];
-                ditherPixel[1] = clamp[((rowerr[cursor + 1] + 0x4020) >> 6) + c.G];
+                ditherPixel[1] = clamp[((rowerr[cursor + 1] + 0x1008) >> 4) + c.G];
                 ditherPixel[2] = clamp[((rowerr[cursor + 2] + 0x2010) >> 5) + c.B];
                 ditherPixel[3] = c.A;
 	        }
@@ -313,7 +313,6 @@ namespace PnnQuant
                 for (short i = -DITHER_MAX; i <= DITHER_MAX; ++i)
                     limtb[i + BLOCK_SIZE] = i;
 
-                bool noBias = nMaxColors > 32 || hasSemiTransparency;
                 int dir = 1;
                 var row0 = new int[err_len];
                 var row1 = new int[err_len];
@@ -327,7 +326,7 @@ namespace PnnQuant
                     for (int j = 0; j < width; ++j)
                     {
                         var c = Color.FromArgb(pixels[pixelIndex]);
-                        var ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, noBias);
+                        var ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, hasSemiTransparency);
                         int r_pix = ditherPixel[0];
                         int g_pix = ditherPixel[1];
                         int b_pix = ditherPixel[2];
