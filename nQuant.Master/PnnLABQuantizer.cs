@@ -137,10 +137,10 @@ namespace PnnQuant
                 bins[i + 1].bk = i;
 
                 if (quan_sqrt)
-                    bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.6);
+                    bins[i].cnt = (int) Math.Sqrt(bins[i].cnt);
             }
             if (quan_sqrt)
-                bins[i].cnt = (int)Math.Pow(bins[i].cnt, 0.6);
+                bins[i].cnt = (int) Math.Sqrt(bins[i].cnt);
 
             int h, l, l2;
             ratio = 0.0;
@@ -162,7 +162,7 @@ namespace PnnQuant
             }
 
             if (quan_sqrt && nMaxColors < 64)
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.0) / maxbins);
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.5) / maxbins);
             else if (quan_sqrt)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);            
             else
