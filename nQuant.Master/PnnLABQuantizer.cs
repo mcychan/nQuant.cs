@@ -27,7 +27,7 @@ namespace PnnQuant
         private void Find_nn(Pnnbin[] bins, int idx)
         {
             int nn = 0;
-            float err = (float) short.MaxValue;
+            var err = 1e100;
 
             var bin1 = bins[idx];
             int n1 = bin1.cnt;
@@ -86,7 +86,7 @@ namespace PnnQuant
                 err = (float)nerr;
                 nn = i;
             }
-            bin1.err = err;
+            bin1.err = (float) err;
             bin1.nn = nn;
         }
         protected override void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
@@ -242,7 +242,7 @@ namespace PnnQuant
 
             var c = Color.FromArgb(argb);
 
-            double mindist = short.MaxValue;
+            double mindist = 1e100;
             GetLab(argb, out var lab1);
 
             for (int i = 0; i < nMaxColors; ++i)
