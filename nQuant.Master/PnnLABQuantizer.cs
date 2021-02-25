@@ -143,7 +143,12 @@ namespace PnnQuant
                 bins[i].cnt = (int) Math.Sqrt(bins[i].cnt);
 
             int h, l, l2;
-            ratio = 0.0;
+            if (quan_sqrt && nMaxColors < 64)
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.98) / maxbins);
+            else if (quan_sqrt)
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
+            else
+                ratio = .55;
             /* Initialize nearest neighbors and build heap of them */
             for (i = 0; i < maxbins; ++i)
             {
@@ -160,13 +165,7 @@ namespace PnnQuant
                 }
                 heap[l] = i;
             }
-
-            if (quan_sqrt && nMaxColors < 64)
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.5) / maxbins);
-            else if (quan_sqrt)
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);            
-            else
-                ratio = .75;
+            
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (i = 0; i < extbins;)
