@@ -147,7 +147,7 @@ namespace PnnQuant
             else if (quan_sqrt)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             else
-                ratio = .55;
+                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.07) / maxbins);
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[65537];
