@@ -86,9 +86,7 @@ namespace PnnQuant
 
             /* Cluster nonempty bins at one end of array */
             int maxbins = 0;
-            var heap = new int[65537];
-            int i = 0;
-            for (; i < bins.Length; ++i)
+            for (int i = 0; i < bins.Length; ++i)
             {
                 if (bins[i] == null)
                     continue;
@@ -104,21 +102,22 @@ namespace PnnQuant
 
             if (Sqr(nMaxColors) / maxbins < .022)
                 quan_sqrt = false;
-            
-            for (i = 0; i < maxbins - 1; ++i)
+
+            if (quan_sqrt)
+                bins[0].cnt = (int)Math.Sqrt(bins[0].cnt);
+            for (int i = 0; i < maxbins - 1; ++i)
             {
                 bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
 
                 if (quan_sqrt)
-                    bins[i].cnt = (int)Math.Sqrt(bins[i].cnt);
-            }
-            if (quan_sqrt)
-                bins[i].cnt = (int)Math.Sqrt(bins[i].cnt);
+                    bins[i + 1].cnt = (int)Math.Sqrt(bins[i + 1].cnt);
+            }            
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
-            for (i = 0; i < maxbins; ++i)
+            var heap = new int[65537];
+            for (int i = 0; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
                 /* Push slot on heap */
@@ -135,7 +134,7 @@ namespace PnnQuant
 
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
-            for (i = 0; i < extbins;)
+            for (int i = 0; i < extbins;)
             {
                 Pnnbin tb;
                 /* Use heap to find which bins to merge */
@@ -186,7 +185,7 @@ namespace PnnQuant
 
             /* Fill palette */
             int k = 0;
-            for (i = 0; ; ++k)
+            for (int i = 0; ; ++k)
             {
                 var alpha = Math.Clamp((int)bins[i].ac, Byte.MinValue, Byte.MaxValue);
                 palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
