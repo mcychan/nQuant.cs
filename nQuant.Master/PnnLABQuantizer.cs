@@ -143,7 +143,7 @@ namespace PnnQuant
 
             int h, l, l2;
             if (quan_sqrt && nMaxColors < 64)
-                ratio = Math.Min(1.0, proportional - Math.Pow(nMaxColors, 2.52) / pixelMap.Count);
+                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.12) / pixelMap.Count);
             else if (quan_sqrt)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             else
