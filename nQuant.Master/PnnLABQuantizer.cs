@@ -46,8 +46,7 @@ namespace PnnQuant
                 {
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
-                double alphaDiff = hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
-                double nerr = nerr2 * Sqr(alphaDiff) * alphaDiff / 3.0;
+                double nerr = nerr2 * Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.0);
                 if (nerr >= err)
                     continue;
 
@@ -254,7 +253,7 @@ namespace PnnQuant
                     continue;
 
                 GetLab(c2.ToArgb(), out var lab2);
-                if (nMaxColors > 32)
+                if (nMaxColors > 32 || hasSemiTransparency)
                 {
                     curdist += PR * Sqr(c2.R - c.R);
                     if (curdist > mindist)
