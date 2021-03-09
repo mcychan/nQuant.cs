@@ -46,7 +46,8 @@ namespace PnnQuant
                 {
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
-                double nerr = nerr2 * Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.0);
+                double alphaDiff = hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
+                double nerr = nerr2 * Sqr(alphaDiff) / Math.Exp(1.0);
                 if (nerr >= err)
                     continue;
 
