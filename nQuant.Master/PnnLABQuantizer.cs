@@ -6,7 +6,7 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private readonly double PR = .299, PG = .587, PB = .114;
+        private double PR = .299, PG = .587, PB = .114;
         private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
@@ -90,6 +90,9 @@ namespace PnnQuant
         }
         protected override void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
         {
+            if (hasSemiTransparency)
+                PR = PG = PB = 1.0;
+
             var bins = new Pnnbin[65536];
 
             /* Build histogram */
