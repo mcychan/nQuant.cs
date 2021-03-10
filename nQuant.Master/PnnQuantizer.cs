@@ -116,7 +116,7 @@ namespace PnnQuant
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
-            var heap = new int[65537];
+            var heap = new int[bins.Length + 1];
             for (int i = 0; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
@@ -630,49 +630,35 @@ namespace PnnQuant
                         
             data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
-            unsafe
-            {
-                var pRowSource = (byte*)data.Scan0;
+            var pRowSrc = (IntPtr)data.Scan0;
+            // Declare an array to hold the bytes of the bitmap.
+            int bytesLength = Math.Abs(data.Stride) * bitmapHeight;
+            var rgbValues = new byte[bytesLength];
 
-                // Compensate for possible negative stride
-                if (data.Stride > 0)
-                    strideSource = data.Stride;
-                else
+            // Copy the RGB values into the array.
+            System.Runtime.InteropServices.Marshal.Copy(pRowSrc, rgbValues, 0, bytesLength);
+
+            for (int i = 0; i < rgbValues.Length; i += 4)
+            {                    
+                byte pixelBlue = rgbValues[i];
+                byte pixelGreen = rgbValues[i + 1];
+                byte pixelRed = rgbValues[i + 2];
+                byte pixelAlpha = rgbValues[i + 3];
+
+                var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
+                if (pixelAlpha < Byte.MaxValue)
                 {
-                    pRowSource += bitmapHeight * data.Stride;
-                    strideSource = -data.Stride;
-                }
-
-                // First loop: gather color information
-                Parallel.For(0, bitmapHeight, y =>
-                {
-                    var pPixelSource = pRowSource + (y * strideSource);
-                    // For each row...
-                    for (int x = 0; x < bitmapWidth; ++x)
-                    {   // ...for each pixel...
-                        int pixelIndex = y * bitmapWidth + x;
-                        byte pixelBlue = *pPixelSource++;
-                        byte pixelGreen = *pPixelSource++;
-                        byte pixelRed = *pPixelSource++;
-                        byte pixelAlpha = *pPixelSource++;
-
-                        var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
-                        if (pixelAlpha < Byte.MaxValue)
-                        {
-                            hasSemiTransparency = true;
-                            if (pixelAlpha == 0)
-                            {
-                                m_transparentPixelIndex = pixelIndex;
-                                m_transparentColor = argb;
-                            }
-                        }
-                        pixels[pixelIndex] = argb.ToArgb();
+                    hasSemiTransparency = true;
+                    if (pixelAlpha == 0)
+                    {
+                        m_transparentPixelIndex = pixelIndex;
+                        m_transparentColor = argb;
                     }
-                });
+                }
+                pixels[pixelIndex++] = argb.ToArgb();
             }
 
             source.UnlockBits(data);
-
             return true;
         }
         public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)

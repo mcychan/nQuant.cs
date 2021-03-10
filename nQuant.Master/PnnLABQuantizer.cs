@@ -153,7 +153,7 @@ namespace PnnQuant
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.07) / maxbins);
 
             /* Initialize nearest neighbors and build heap of them */
-            var heap = new int[65537];
+            var heap = new int[bins.Length + 1];
             for (int i = 0; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
