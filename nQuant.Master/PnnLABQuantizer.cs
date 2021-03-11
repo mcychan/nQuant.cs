@@ -169,7 +169,10 @@ namespace PnnQuant
                 }
                 heap[l] = i;
             }
-            
+
+            if (quan_sqrt && nMaxColors < 64)
+                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.12) / pixelMap.Count);
+
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
             for (int i = 0; i < extbins;)
