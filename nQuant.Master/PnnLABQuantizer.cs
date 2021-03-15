@@ -89,7 +89,7 @@ namespace PnnQuant
             bin1.err = (float) err;
             bin1.nn = nn;
         }
-        protected override void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
+        protected override void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, short quan_sqrt)
         {
             if (hasSemiTransparency)
                 PR = PG = PB = 1.0;
@@ -130,24 +130,30 @@ namespace PnnQuant
             }
 
             var proportional = Sqr(nMaxColors) / maxbins;
+            if (nMaxColors < 16)
+                quan_sqrt = -1;
             if ((proportional < .022 || proportional > .5) && nMaxColors < 64)
-                quan_sqrt = false;
+                quan_sqrt = 0;
 
-            if (quan_sqrt)
+            if (quan_sqrt > 0)
                 bins[0].cnt = (int)Math.Sqrt(bins[0].cnt);
+            else if (quan_sqrt < 0)
+                bins[0].cnt = (int)Math.Cbrt(bins[0].cnt);
             for (int i = 0; i < maxbins - 1; ++i)
             {
                 bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
 
-                if (quan_sqrt)
+                if (quan_sqrt > 0)
                     bins[i + 1].cnt = (int) Math.Sqrt(bins[i + 1].cnt);
+                else if (quan_sqrt < 0)
+                    bins[i + 1].cnt = (int)Math.Cbrt(bins[i + 1].cnt);
             }            
 
             int h, l, l2;
-            if (quan_sqrt && nMaxColors < 64)
+            if (quan_sqrt != 0 && nMaxColors < 64)
                 ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.172) / pixelMap.Count);
-            else if (quan_sqrt)
+            else if (quan_sqrt > 0)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             else
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.07) / maxbins);
@@ -170,7 +176,7 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-            if (quan_sqrt && nMaxColors < 64)
+            if (quan_sqrt != 0 && nMaxColors < 64)
                 ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.12) / pixelMap.Count);
 
             /* Merge bins which increase error the least */

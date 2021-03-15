@@ -64,7 +64,7 @@ namespace PnnQuant
             bin1.err = (float) err;
             bin1.nn = nn;
         }
-        protected virtual void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, bool quan_sqrt)
+        protected virtual void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, short quan_rt)
         {
             var bins = new Pnnbin[65536];
 
@@ -100,18 +100,24 @@ namespace PnnQuant
                 bins[maxbins++] = bins[i];
             }
 
+            if (nMaxColors < 16)
+                nMaxColors = -1;
             if (Sqr(nMaxColors) / maxbins < .022)
-                quan_sqrt = false;
+                quan_rt = 0;
 
-            if (quan_sqrt)
+            if (quan_rt > 0)
                 bins[0].cnt = (int)Math.Sqrt(bins[0].cnt);
+            else if (quan_rt < 0)
+                bins[0].cnt = (int)Math.Cbrt(bins[0].cnt);
             for (int i = 0; i < maxbins - 1; ++i)
             {
                 bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
 
-                if (quan_sqrt)
+                if (quan_rt > 0)
                     bins[i + 1].cnt = (int)Math.Sqrt(bins[i + 1].cnt);
+                else if (quan_rt < 0)
+                    bins[i + 1].cnt = (int)Math.Cbrt(bins[i + 1].cnt);
             }            
 
             int h, l, l2;
@@ -681,7 +687,7 @@ namespace PnnQuant
                 dither = true;
 
             if (nMaxColors > 2)
-                Pnnquan(pixels, palettes, nMaxColors, true);
+                Pnnquan(pixels, palettes, nMaxColors, 1);
             else
             {
                 if (m_transparentPixelIndex >= 0)
