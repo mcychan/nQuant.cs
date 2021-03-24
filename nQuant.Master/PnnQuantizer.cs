@@ -292,7 +292,7 @@ namespace PnnQuant
 	        }
             return ditherPixel;
         }
-        protected int[] Quantize_image(int[] pixels, Color[] palette, int nMaxColors, int width, int height, bool dither)
+        protected virtual int[] Quantize_image(int[] pixels, Color[] palette, int nMaxColors, int width, int height, bool dither)
         {
             var qPixels = new int[width * height];
             int pixelIndex = 0;
