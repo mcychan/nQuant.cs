@@ -326,7 +326,7 @@ namespace PnnQuant
                     var c2 = palette[k];
                     GetLab(c2.ToArgb(), out var lab2);
 
-                    closest[4] = (ushort) (Sqr(lab2.alpha - lab1.alpha) + Sqr(lab2.L - lab1.L) + Sqr(lab2.A - lab1.A) + Sqr(lab2.B - lab1.B));
+                    closest[4] = (ushort) (Sqr(lab2.L - lab1.L) + Sqr(lab2.A - lab1.A) + Sqr(lab2.B - lab1.B));
                     if (closest[4] < closest[2])
                     {
                         closest[1] = closest[0];
