@@ -111,14 +111,8 @@ namespace PnnQuant
                     bins[index0].cnt++;
                     continue;
                 }
-                if (a < Byte.MaxValue)
-                {
-                    int alpha = a * 2;
-                    a = alpha > Byte.MaxValue ? Byte.MaxValue : alpha;
-                    c = Color.FromArgb(a, c.R, c.G, c.B);
-                }
 
-                int index = GetARGBIndex(c.ToArgb(), hasSemiTransparency);
+                int index = GetARGBIndex(pixel, hasSemiTransparency);
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
