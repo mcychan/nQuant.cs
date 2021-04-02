@@ -263,6 +263,8 @@ namespace PnnQuant
                 return k;
 
             var c = Color.FromArgb(argb);
+            if (c.A <= alphaThreshold)
+                return 0;
 
             double mindist = ushort.MaxValue;
             GetLab(argb, out var lab1);

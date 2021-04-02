@@ -219,6 +219,8 @@ namespace PnnQuant
                 return k;
 
             var c = Color.FromArgb(pixel);
+            if (c.A <= alphaThreshold)
+                return 0;
 
             double mindist = 1e100;
             for (int i = 0; i < nMaxColors; ++i)
