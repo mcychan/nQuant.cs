@@ -104,15 +104,9 @@ namespace PnnQuant
                 var c = Color.FromArgb(pixel);
                 int a = c.A;
                 if (a <= alphaThreshold)
-                {
-                    int index0 = GetARGBIndex(m_transparentColor.ToArgb(), hasSemiTransparency);
-                    if (bins[index0] == null)
-                        bins[index0] = new Pnnbin();
-                    bins[index0].cnt++;
-                    continue;
-                }
+                    c = m_transparentColor;
 
-                int index = GetARGBIndex(pixel, hasSemiTransparency);
+                int index = GetARGBIndex(c.ToArgb(), hasSemiTransparency);
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
@@ -165,8 +159,10 @@ namespace PnnQuant
             else
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.07) / maxbins);
 
-            if (quan_sqrt < 0)
+            if (quan_sqrt < 0 || hasSemiTransparency)
                 ratio += 0.45;
+
+            ratio = Math.Min(1.0, ratio);
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
