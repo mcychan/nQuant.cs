@@ -135,7 +135,7 @@ namespace PnnQuant
             }
 
             var proportional = Sqr(nMaxColors) / maxbins;
-            if (nMaxColors < 16)
+            if (nMaxColors < 16 || hasSemiTransparency)
                 quan_sqrt = -1;
             else if ((proportional < .022 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = 0;
@@ -159,10 +159,11 @@ namespace PnnQuant
             else
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.07) / maxbins);
 
-            if (quan_sqrt < 0 || hasSemiTransparency)
+            if (quan_sqrt < 0)
+            {
                 ratio += 0.45;
-
-            ratio = Math.Min(1.0, ratio);
+                ratio = Math.Min(1.0, ratio);
+            }
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
