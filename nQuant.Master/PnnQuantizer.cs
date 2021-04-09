@@ -75,11 +75,8 @@ namespace PnnQuant
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
                 var c = Color.FromArgb(pixel);
-                int a = c.A;
-                if (a <= alphaThreshold)
-                    c = m_transparentColor;
 
-                int index = GetARGBIndex(c.ToArgb(), hasSemiTransparency);
+                int index = GetARGBIndex(pixel, hasSemiTransparency);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += c.A;
