@@ -135,7 +135,7 @@ namespace PnnQuant
             }
 
             var proportional = Sqr(nMaxColors) / maxbins;
-            if (nMaxColors < 16 || hasSemiTransparency)
+            if (nMaxColors < 16 || (hasSemiTransparency && nMaxColors < 32))
                 quan_sqrt = -1;
             else if ((proportional < .022 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = 0;
