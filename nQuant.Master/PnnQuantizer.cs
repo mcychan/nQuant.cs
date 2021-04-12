@@ -343,7 +343,7 @@ namespace PnnQuant
                         int a_pix = ditherPixel[3];
 
                         var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        qPixels[pixelIndex] = NearestColorIndex(palette, nMaxColors, c1.ToArgb());
+                        qPixels[pixelIndex] = (c.A == 0 && a_pix > 0) ? 0 : NearestColorIndex(palette, nMaxColors, c1.ToArgb());
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
