@@ -577,68 +577,19 @@ namespace PnnQuant
             hasSemiTransparency = false;
             m_transparentPixelIndex = -1;
 
-            int pixelIndex = 0, strideSource;
-            BitmapData data;
-            if (source.PixelFormat == PixelFormat.Format8bppIndexed)
-            {
-                var palette = source.Palette;
-                var palettes = palette.Entries;
-
-                data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, source.PixelFormat);
-
-                unsafe
-                {
-                    var pRowSource = (byte*)data.Scan0;
-
-                    // Compensate for possible negative stride
-                    if (data.Stride > 0)
-                        strideSource = data.Stride;
-                    else
-                    {
-                        pRowSource += bitmapHeight * data.Stride;
-                        strideSource = -data.Stride;
-                    }
-
-                    // First loop: gather color information
-                    Parallel.For(0, bitmapHeight, y =>
-                    {
-                        var pPixelSource = pRowSource + (y * strideSource);
-                        // For each row...
-                        for (int x = 0; x < bitmapWidth; ++x)
-                        {   // ...for each pixel...
-                            byte pixelAlpha = Byte.MaxValue;
-
-                            byte index = *pPixelSource++;
-                            var argb = palettes[index];
-                            if (index == m_transparentPixelIndex)
-                                pixelAlpha = 0;
-
-                            if (pixelAlpha < Byte.MaxValue)
-                            {
-                                hasSemiTransparency = true;
-                                if (pixelAlpha == 0)
-                                {
-                                    m_transparentColor = argb;
-                                    m_transparentPixelIndex = pixelIndex;
-                                }
-                            }
-                            pixels[pixelIndex++] = argb.ToArgb();
-                        }
-                    });
-                    source.UnlockBits(data);
-                }                
-
-                var pPropertyItem = source.GetPropertyItem(PropertyTagIndexTransparent);
-                if (pPropertyItem != null)
+            var palettes = source.Palette.Entries;
+            foreach (var pPropertyItem in source.PropertyItems)
+            {                
+                if (pPropertyItem.Id == PropertyTagIndexTransparent)
                 {
                     m_transparentPixelIndex = pPropertyItem.Value[0];
                     Color c = palettes[m_transparentPixelIndex];
                     m_transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
                 }
-                return true;
             }
-                        
-            data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+
+            int pixelIndex = 0;
+            var data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
             var pRowSrc = (IntPtr)data.Scan0;
             // Declare an array to hold the bytes of the bitmap.
