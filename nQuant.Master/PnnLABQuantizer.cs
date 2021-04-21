@@ -408,7 +408,7 @@ namespace PnnQuant
                         int a_pix = ditherPixel[3];
 
                         var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        if (c.A == 0 && a_pix > 0)
+                        if (c.A == 0)
                             qPixels[pixelIndex] = 0;
                         else
                             qPixels[pixelIndex] = noBias ? NearestColorIndex(palette, nMaxColors, c1.ToArgb()) : ClosestColorIndex(palette, nMaxColors, c1.ToArgb());

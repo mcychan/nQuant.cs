@@ -343,7 +343,7 @@ namespace PnnQuant
                         int a_pix = ditherPixel[3];
 
                         var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        qPixels[pixelIndex] = (c.A == 0 && a_pix > 0) ? 0 : NearestColorIndex(palette, nMaxColors, c1.ToArgb());
+                        qPixels[pixelIndex] = (c.A == 0) ? 0 : NearestColorIndex(palette, nMaxColors, c1.ToArgb());
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
@@ -577,13 +577,14 @@ namespace PnnQuant
             hasSemiTransparency = false;
             m_transparentPixelIndex = -1;
 
+            int transparentIndex = -1; 
             var palettes = source.Palette.Entries;
             foreach (var pPropertyItem in source.PropertyItems)
             {                
                 if (pPropertyItem.Id == PropertyTagIndexTransparent)
                 {
-                    m_transparentPixelIndex = pPropertyItem.Value[0];
-                    Color c = palettes[m_transparentPixelIndex];
+                    transparentIndex = pPropertyItem.Value[0];
+                    Color c = palettes[transparentIndex];
                     m_transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
                 }
             }
@@ -607,16 +608,21 @@ namespace PnnQuant
                 byte pixelAlpha = rgbValues[i + 3];
 
                 var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
+                var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
+                if (transparentIndex > -1 && m_transparentColor.ToArgb() == argb1.ToArgb())
+                {
+                    pixelAlpha = 0;
+                    argb = argb1;
+                }
+
                 if (pixelAlpha < Byte.MaxValue)
                 {
-                    var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
+                    
                     if (pixelAlpha == 0)
                     {
                         m_transparentPixelIndex = pixelIndex;
                         m_transparentColor = argb;
                     }
-                    else if (source.PixelFormat <= PixelFormat.Format8bppIndexed && m_transparentColor.ToArgb() == argb1.ToArgb())
-                        m_transparentPixelIndex = pixelIndex;
                     else
                         hasSemiTransparency = true;
                 }
