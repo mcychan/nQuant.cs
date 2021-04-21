@@ -609,12 +609,16 @@ namespace PnnQuant
                 var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
                 if (pixelAlpha < Byte.MaxValue)
                 {
-                    hasSemiTransparency = true;
+                    var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
                     if (pixelAlpha == 0)
                     {
                         m_transparentPixelIndex = pixelIndex;
                         m_transparentColor = argb;
                     }
+                    else if (source.PixelFormat <= PixelFormat.Format8bppIndexed && m_transparentColor.ToArgb() == argb1.ToArgb())
+                        m_transparentPixelIndex = pixelIndex;
+                    else
+                        hasSemiTransparency = true;
                 }
                 pixels[pixelIndex++] = argb.ToArgb();
             }
