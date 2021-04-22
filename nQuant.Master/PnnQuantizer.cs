@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 /* Fast pairwise nearest neighbor based algorithm for multilevel thresholding
@@ -22,6 +23,7 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort> nearestMap = new Dictionary<int, ushort>();
 
         protected const int PropertyTagIndexTransparent = 0x5104;
+        protected const int PropertyTagTypeByte = 1;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -412,8 +414,19 @@ namespace PnnQuant
 
             return qPixels;
         }
-        protected Bitmap ProcessImagePixels(Bitmap dest, Color[] palettes, int[] qPixels)
+        protected Bitmap ProcessImagePixels(Bitmap dest, Color[] palettes, int[] qPixels, bool hasTransparent)
         {
+            if (hasTransparent)
+            {
+                var propertyItem = (PropertyItem) FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+                propertyItem.Id = PropertyTagIndexTransparent;
+                propertyItem.Len = 1;
+                propertyItem.Type = PropertyTagTypeByte;
+                propertyItem.Value = new byte[] { 0 };
+
+                dest.SetPropertyItem(propertyItem);
+            }
+
             var palette = dest.Palette;
             for (int i = 0; i < palettes.Length; ++i)
                 palette.Entries[i] = palettes[i];
@@ -690,7 +703,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 return ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
             
-            return ProcessImagePixels(dest, palettes, qPixels);
+            return ProcessImagePixels(dest, palettes, qPixels, m_transparentPixelIndex >= 0);
         }
     }
 
