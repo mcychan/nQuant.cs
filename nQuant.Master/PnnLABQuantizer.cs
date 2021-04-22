@@ -46,7 +46,7 @@ namespace PnnQuant
                 {
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
-                double alphaDiff = hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
+                double alphaDiff = (m_transparentPixelIndex > -1 || hasSemiTransparency) ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
                 double nerr = nerr2 * Sqr(alphaDiff) / Math.Exp(1.5);
                 if (nerr >= err)
                     continue;
@@ -103,7 +103,7 @@ namespace PnnQuant
                 // !!! nonuniformity then?
                 var c = Color.FromArgb(pixel);
 
-                int index = GetARGBIndex(pixel, hasSemiTransparency);
+                int index = GetARGBIndex(pixel, hasSemiTransparency, m_transparentPixelIndex > -1);
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
@@ -132,7 +132,7 @@ namespace PnnQuant
             }
 
             var proportional = Sqr(nMaxColors) / maxbins;
-            if (nMaxColors < 16 || (hasSemiTransparency && nMaxColors < 32))
+            if (nMaxColors < 16 || ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32))
                 quan_sqrt = -1;
             else if ((proportional < .022 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = 0;
@@ -415,7 +415,7 @@ namespace PnnQuant
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false);
+                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false, m_transparentPixelIndex > -1);
 
                         r_pix = limtb[r_pix - c2.R + BLOCK_SIZE];
                         g_pix = limtb[g_pix - c2.G + BLOCK_SIZE];

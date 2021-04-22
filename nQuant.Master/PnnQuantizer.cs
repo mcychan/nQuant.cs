@@ -29,11 +29,19 @@ namespace PnnQuant
             internal int nn, fw, bk, tm, mtm;
             internal float err;
         }
-        protected int GetARGBIndex(int argb, bool hasSemiTransparency)
+
+        protected int GetARGB1555(int argb)
+        {
+            var c = Color.FromArgb(argb);
+            return (c.A & 0x80) << 8 | (c.R & 0xF8) << 7 | (c.G & 0xF8) << 2 | (c.B >> 3);
+        }
+        protected int GetARGBIndex(int argb, bool hasSemiTransparency, bool hasTransparency)
         {
             var c = Color.FromArgb(argb);
             if (hasSemiTransparency)
                 return (c.A & 0xF0) << 8 | (c.R & 0xF0) << 4 | (c.G & 0xF0) | (c.B >> 4);
+            if (hasTransparency)
+                return GetARGB1555(argb);
             return (c.R & 0xF8) << 8 | (c.G & 0xFC) << 3 | (c.B >> 3);
         }
 
@@ -76,7 +84,7 @@ namespace PnnQuant
                 // !!! nonuniformity then?
                 var c = Color.FromArgb(pixel);
 
-                int index = GetARGBIndex(pixel, hasSemiTransparency);
+                int index = GetARGBIndex(pixel, hasSemiTransparency, m_transparentPixelIndex > -1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += c.A;
@@ -347,7 +355,7 @@ namespace PnnQuant
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false);
+                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false, m_transparentPixelIndex > -1);
 
                         r_pix = limtb[r_pix - c2.R + BLOCK_SIZE];
                         g_pix = limtb[g_pix - c2.G + BLOCK_SIZE];
