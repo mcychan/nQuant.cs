@@ -134,7 +134,7 @@ namespace PnnQuant
             var proportional = Sqr(nMaxColors) / maxbins;
             if (nMaxColors < 16 || ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32))
                 quan_sqrt = -1;
-            else if ((proportional < .022 || proportional > .5) && nMaxColors < 64)
+            else if ((proportional < .018 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = 0;
 
             if (quan_sqrt > 0)
@@ -150,7 +150,12 @@ namespace PnnQuant
 
             int h, l, l2;
             if (quan_sqrt != 0 && nMaxColors < 64)
-                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.172) / pixelMap.Count);
+            {
+                if (proportional > .018 && proportional < .022)
+                    ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(5.474) / pixelMap.Count);
+                else
+                    ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.172) / pixelMap.Count);
+            }
             else if (quan_sqrt > 0)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             else
@@ -180,7 +185,7 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-            if (quan_sqrt > 0 && nMaxColors < 64)
+            if (quan_sqrt > 0 && nMaxColors < 64 && proportional > .018)
                 ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.12) / pixelMap.Count);
 
             /* Merge bins which increase error the least */
