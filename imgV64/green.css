@@ -1,0 +1,32 @@
+body	{ SCROLLBAR-BASE-COLOR: #56997A; height:100% }
+
+a:link:not(.share-btn)		{ color: #004400; text-decoration: none }
+
+a:visited	{ color: #004400; text-decoration: none }
+
+a:active	{ color: #005500; text-decoration: none }
+
+a:hover		{ background-color:#BCD5BE; color: #005500; text-decoration: none }
+
+
+ /* THIS LINE CONTROLS THE FONT SIZE ON ALL PAGES */
+
+TABLE 			{ COLOR: #666666; FONT: 12px geneva, verdana, arial, sans-serif }
+
+.title 			{ COLOR: #56997A; FONT: 15px verdana, arial, sans-serif; font-weight: bold }
+
+
+.copyright		{ COLOR: #000033; FONT: 9px geneva, verdana, arial, sans-serif }
+
+
+.menu		{ font-family: arial, verdana, helvetica, sans;
+		  font-size: 9pt;
+		  height: 37px;
+		  width: 154px;
+		  cursor:hand;
+		  font-weight: bold;
+		  text-indent: 8px;
+		  line-height: 26pt;
+		  text-align: left;
+		  display: block;
+		  border: #FFFFFF 0px solid; }
