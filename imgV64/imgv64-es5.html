@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="keywords" content="Freeware, Graphics, Windows, Win7, Win8, Win10, Wallpaper, Images, Viewers, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, ImgV64, ImageViewer, Editors, File, Format, Conversion, Color, Adustment,Gamma, Contrast, Slide, Show, Zoom, Digital, Camera, Twain, Capture, Batch, Brightness, Add, Text, Resize, Crop,Undo, Redo, Copy, Paste, Rotate, Mirror, Sharpen, Blur, Extract, Edges, Negate, Grayscale, RGB, Palette,Greyscale, Pictures, Manipulation, Slideshow, Scan, Scanner">
+<meta name="Description" content="ImgV64 is a completely free image viewer - editor for JPG, GIF, and other common formats.">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="green.css" />
+<link rel="shortcut icon" href="images/ImgV64.ico" type="image/x-icon" />
+<link rel="icon" href="images/ImgV64.ico" type="image/x-icon" />
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en'
+  }, 'google_translate_element');
+}
+</script><script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script src="https://use.fontawesome.com/93839bed07.js"></script>
+<script type="text/javascript" src="xmlHttp.js"></script>
+<script type="text/javascript" src="hk/media.js"></script>
+<script type="text/javascript" src="imgv64.js"></script>
+<style>
+@viewport {
+  width: device-width;
+  min-width: 480px;
+  zoom: 1.0 ;
+}
+
+@-ms-viewport {
+  width: device-width;
+  min-width: 480px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Segoe UI",Arial,sans-serif;
+    font-weight: 400;
+    margin: 10px 0;
+}
+h3 {
+    font-size: calc(14px + (32 - 14) * ((100vw - 300px) / (1600 - 300)));
+}
+
+body {
+	padding: 0 1em;
+	font-family: "Arial", "Helvetica", "sans-serif";
+	font-size: calc(14px + (26 - 14) * ((100vw - 300px) / (1600 - 300)));
+	line-height: calc(1.3em + (1.5 - 1.2) * ((100vw - 300px)/(1600 - 300)));
+	background-image: url("images/bg1.jpg")
+}
+
+.container, .panel {
+    padding: 0.01em 16px;
+}
+
+.row-padding, .row-padding>.half, .row-padding>.third, .row-padding>.twothird, .row-padding>.threequarter, .row-padding>.quarter, .row-padding>.col {
+    padding: 0 8px;
+}
+
+.col, .half, .third, .twothird, .threequarter, .quarter {
+    float: left;
+    width: 100%;
+}
+
+.responsive {
+  max-width: 100%;
+  height: auto;
+  border: 0;
+}
+
+table, iframe {
+	display:none;	
+}
+/** Social Button CSS **/
+
+.share-btn {
+    display: inline-block;
+    color: #ffffff;
+    border: none;
+    padding: 0.5em;
+    width: 4em;
+    box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+    outline: none;
+    text-align: center;
+}
+
+.share-btn:hover {
+  color: #eeeeee;
+}
+
+.share-btn:active {
+  position: relative;
+  top: 2px;
+  box-shadow: none;
+  color: #e2e2e2;
+  outline: none;
+}
+
+.share-btn.twitter     { background: #55acee; }
+.share-btn.google-plus { background: #dd4b39; }
+.share-btn.facebook    { background: #3B5998; }
+.share-btn.stumbleupon { background: #EB4823; }
+.share-btn.reddit      { background: #ff5700; }
+.share-btn.linkedin    { background: #4875B4; }
+.share-btn.email       { background: #444444; }
+
+i.fa {
+    width: 1.1em;
+    display: inline-block;
+}
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+        font-size: 14px;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+</style><noscript>
+	You need to enable JavaScript to run this app.
+</noscript>
+<title>ImgV64.com</title>
+</head>
+<body onload="init()">
+<div id="google_translate_element"></div>
+<div class="container" style="text-align:center">
+<h2><a href="javascript:toggle('download')">ImgV64</a></h2>	
+<p><a href="copyright.htm">Copyright &copy; 2016-2021,</a><br />Miller Cy Chan, 
+      <br />All rights reserved<br />
+</div>
+<div class="panel" style="text-align:center">
+<!-- Social Button HTML -->
+Share to:
+<!-- Twitter -->
+<a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fimgv64.rf.gd&amp;text=Imgv64%20http%3A%2F%2Fimgv64.rf.gd&amp;via=imgv64" target="_blank" class="share-btn twitter">
+    <i class="fa fa-twitter" aria-hidden="true"></i>
+</a>
+
+<!-- Google Plus -->
+<a href="https://plus.google.com/share?url=http%3A%2F%2Fimgv64.rf.gd" target="_blank" class="share-btn google-plus">
+    <i class="fa fa-google-plus" aria-hidden="true"></i>
+</a>
+
+<!-- Facebook -->
+<a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fimgv64.rf.gd&amp;t=Imgv64" target="_blank" class="share-btn facebook">
+    <i class="fa fa-facebook" aria-hidden="true"></i>
+</a>
+
+<!-- StumbleUpon (url, title) -->
+<a href="http://www.stumbleupon.com/submit?url=http%3A%2F%2Fimgv64.rf.gd&amp;title=Imgv64" target="_blank" class="share-btn stumbleupon">
+    <i class="fa fa-stumbleupon" aria-hidden="true"></i>
+</a>
+
+<!-- Reddit (url, title) -->
+<a href="http://www.reddit.com/submit?url=http%3A%2F%2Fimgv64.rf.gd&amp;title=Imgv64" target="_blank" class="share-btn reddit">
+    <i class="fa fa-reddit" aria-hidden="true"></i>
+</a>
+
+<!-- LinkedIn -->
+<a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=http%3A%2F%2Fimgv64.rf.gd&amp;title=Imgv64&amp;summary=ImgV64%20is%20a%20Windows%20Vista%20or%20above%20graphics%20viewer%20for%20GIF,%20JPG,%20PNG%20and%20other%20formats.&amp;source=http%3A%2F%2Fimgv64.rf.gd" target="_blank" class="share-btn linkedin">
+    <i class="fa fa-linkedin" aria-hidden="true"></i>
+</a>
+
+<!-- Email -->
+<a href="mailto:?subject=Imgv64&amp;body=ImgV64%20is%20a%20Windows%20Vista%20or%20above%20graphics%20viewer%20for%20GIF,%20JPG,%20PNG%20and%20other%20formats.%0A%0ARead%20more%20here:%20http%3A%2F%2Fimgv64.rf.gd" target="_blank" class="share-btn email">
+    <i class="fa fa-envelope" aria-hidden="true"></i>
+</a>
+</div>
+
+<br />
+<div class="panel">
+    <a href="javascript:toggle('product')"><b style="padding-left: 2em; padding-right:2em">Product Information</b></a>
+    <a id="lnkDownload" href="javascript:toggle('download')"><b style="padding-left: 2em; padding-right:2em">Download</b></a>
+    <a href="javascript:toggle('support')"><b style="padding-left: 2em; padding-right:2em">Support</b></a>
+</div>
+<br />
+<div id="download" style="display:none">
+  <div class="row-padding">
+    <div class="half">     
+      <div style="float: left; width: 40%; text-align: right"><span id="d1">20 Mar, 2021:</span></div>
+      <div style="float: right; padding-left: 2em; width: 50%"><a id="url" href="ImgV64_17.msi">ImgV64 <span id="v1">1.77</span></a></div>
+	</div>
+	<div class="half">     
+      <div style="float: left; width: 40%; text-align: right"><span id="d2">8 Feb, 2020:</span></div>
+      <div style="float: right; padding-left: 2em; width: 50%"><a id="url" href="ImgV64_17.msi">ImgV64 <span id="v2">1.76</span></a></div>
+	</div>
+  </div>
+  <div class="row-padding">
+    <div class="half">
+		<div style="clear: both; text-align:center"><a href="ImgV64_17_x64.msi" id="ImgV64_17_64">x86 64 bit version Download</a></div>
+	</div>
+  </div>
+  <div id="supporters" class="panel" style="text-align:center">
+  </div><br />
+</div>
+<div id="product">
+  <div class="row-padding">
+    <div class="col">
+		<h3>Introduction</h3>
+        <p>Graphics Viewer for Windows Vista or above</p>
+	</div>
+	<div class="third">
+        <p>ImgV64 is a Windows Vista/Win7/Win8/Win10 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program.
+	</div>
+	<div class="third">
+        <p>ImgV64 has many powerful features available, but they won't get in your way if you just want to use it as a simple viewer.</p>
+		<p>Among the features: You can load an image from a folder and then "slide show" through the rest of the images in the folder using the keyboard left and right arrow keys.</p>
+		<p>This works in window or full screen modes.</p>
+		<p>You can drag your image from file explorer or browser then drop to ImgV64, or copy url to clipboard then paste onto ImgV64.</p>
+	</div>
+	<div class="third">
+      <p>Free of any malware, spyware, and viruses. It is a 100% clean and safe tool for you to use.<br/>
+You can add text to an image with the text tool. This is quite versatile, with font, size and color selection, transparent, and 90/180/270 degree rotation of image available.</p>
+      <p>As you can see above, many tools, including Undo/Redo, are available on the toolbar. If you want more screen space, you can hide the toolbar and just use menus.</p>
+	</div>
+  </div>
+  <div class="row-padding">
+    <div class="third">
+      <p>You can choose to open an image at 100% of its original size, or at a size that is adjusted to fill available space on the screen (while maintaining proportions).</p>
+	</div>
+	<div class="third">      
+      <p>You can choose to have up to 4 recently-loaded images in the file menu, for quick re-display. <br />
+	  If you really want to simply view or edit your photo albums, this is your choice.</p>
+	</div>
+	<div class="third">
+	  <p>Brightness, Contrast, and Gamma adjustments are selectable by slider bar. Other Tune Dialogs include Sharpen, Blur, and color adjustments on the Red/Green/Blue scale.</p>
+	  <img src="images/ImgV64.jpg" alt="Imgv64 screenshot" class="responsive" />
+	</div>
+  </div>
+  <div class="row-padding">
+    <div class="third">
+      <p>The Undo of editing also has a Redo option. Both are on the toolbar for easy scrolling through changes.</p>
+	</div>
+    <div class="third">
+      <p>There is a Set as Wallpaper function in the Image menu to make the current image your desktop wallpaper.</p>
+	</div>
+	<div class="third">
+	  <h3><u>System requirement</u></h3>
+	  <p>It works on Windows 10, 8 & 8.1, 7, Vista, Server 2008/2012/2016. 64-bit Windows versions are also supported.</p>
+	</div>
+  </div><br />
+</div>
+<div id="support" style="display:none">
+  <div class="row-padding">
+    <div class="col">
+    <h3>Technical support is free: You can email to <a href="mailto:miller.chan@gmail.com">miller.chan@gmail.com</a></h3>
+    <p>Please report the problem with description like how to reproduce, screen capture, frequent of occurrance, PC system info.</p>
+    <p>Currently supported Language: English, traditional 
+      Chinese, Simplified Chinese, Japanese<br />Thanks for support:&#160;
+<a title="Japanese.lng" href="mailto:ckh3111@gmail.com">Ricky Chow</a><br />Would you please help to <a 
+      href="http://imgv64.rf.gd/english.lng">translate 
+      ImgV64</a> by using notepad (Save target as .lng)!<br />Then <a 
+      href="mailto:wincln@usa.com">Email</a> your 
+      translation! In return, Imgv64 will link back to your site by the Help -> Online Help menu if user was in your language.</p>
+	</div><br />
+  </div>
+</div>
+<div id="faq" style="display:none">
+</div>
+</body>
+</html>

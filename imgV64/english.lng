@@ -1,0 +1,179 @@
+
+PLEASE, READ THIS CAREFULLY:
+
+Do not translate the captions (like [Header]) 
+
+If you have translated this file to your language please
+send it to wincln@usa.com so we can add it to the official
+distribution package. When you send the file, DO NOT compress 
+it with anything (e.g. WinRar), just send it as it is. 
+
+If you send us a fully working translation to language we don't
+already have your nick name will be on the supporter list.
+
+LEGAL NOTICE: When you send your translation to the e-mail 
+address above you will also automatically be transfering all 
+your rights (such as copyrights) to the translation file to 
+the Author of this software, Miller Chan.
+
+Please, remove this info part from your translation to
+minimize the file size.
+
+[Header]
+Language=English //Language's name in English. NOTE: The filename MUST be named like Language.lng!
+Culture=English
+Conversion=Choose Files to convert
+FileFormat=Choose Prefix, Format and Folder
+
+[FileMenu]
+0=&File
+1=&New
+2=&Open
+3=&Save
+4=Save &as...
+5=&Delete
+6=Select a &TWAIN Source...
+7=Ac&quire...
+8=&Print...
+9=&Recent File
+10=Pre&ferences...
+11=E&xit
+12=&Batch Conversion
+
+[EditMenu]
+0=&Edit
+1=&Undo
+2=&Redo
+3=Cr&op
+4=Red &eyes correction
+5=&Copy
+6=&Paste
+
+[ImageMenu]
+0=&Image
+1=&Full Screen
+2=Get &Next ->
+3=Get &Prev <-
+4=&Auto Slide Show
+5=Brightness/Contrast/&Gamma
+6=&Color Balance
+7=&Blur/Sharpen
+8=Resi&ze
+9=R&otate
+10=&Mirror
+11=Convert &To
+12=&Soften
+13=E&xtract Edges
+14=N&egate
+15=&Replace Color
+16=&Wallpaper
+
+[ResizeMenu]
+1=&Resize
+2=Resize To Screen &Proportional
+3=Resize To &Stretch
+
+[RotateMenu]
+1=90 Degrees &Left
+2=90 Degrees &Right
+3=&180 Degrees
+4=&By Degree...
+
+[MirrorMenu]
+1=&Horizontal
+2=&Vertical
+
+[ConvertToMenu]
+1=&Black and White
+2=&Grayscale
+3=&Sepia Tone
+4=&16 Colors
+5=&256 Colors
+6=&High Color
+
+[SoftenMenu]
+1=&Small
+2=&Medium
+3=&Large
+
+[ViewMenu]
+0=&View
+1=Zoom &In
+2=Zoom &Out
+3=&Hand
+4=&Paint Brush
+5=Te&xt
+6=&Toolbar
+7=&Status Bar
+8=Auto R&otate
+9=&Language
+10=P&roperties...
+
+[HelpMenu]
+0=&Help
+1=ImgV64 &Online Help
+2=&About ImgV64...
+3=http://imgv64.rf.gd/index.html
+
+[ToolTips]
+1=Create a new document
+2=Open an existing document
+3=Open this document
+4=Undo the last action
+5=Redo the previously undone action
+6=Copy the selection and put it on the Clipboard
+7=Insert Clipboard contents
+8=Save the active document
+9=Save the active document with a new name
+10=Quit the application; prompt to save documents
+11=Show or hide the toolbar
+12=Show or hide the status bar
+13=Display program information, version number and copyright
+14=Ready
+
+[FilterDialog]
+0=Filter
+1=&Contrast
+2=&Brightness
+3=&Saturation
+4=&Hue
+5=&Gamma
+
+[ColorBalanceDialog]
+0=Color Balance
+1=&Red
+2=&Green
+3=&Blue
+4=&Alpha
+
+[BlurSharpenDialog]
+0=Blur
+1=Sharpen
+2=&Luminance only
+3=Radius
+4=Depth
+
+[ResizeDialog]
+0=Image size
+1=Width
+2=Height
+3=&Keep proportions
+
+[RotateDialog]
+0=Rotate Image
+1=Angle to rotate, in degrees, -359 to 359
+
+[ColorDialog]
+0=Select Color Dialog
+1=New Color
+2=Current Color
+
+[PrefDialog]
+0=Preferences
+1=Seconds Between Slides in Auto Mode (1 - 60)
+2=JPEG Quality Value (1 - 100)
+
+[Buttons]
+1=OK
+2=Rese&t
+3=&Cancel
