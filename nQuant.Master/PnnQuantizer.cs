@@ -86,7 +86,7 @@ namespace PnnQuant
                 // !!! nonuniformity then?
                 var c = Color.FromArgb(pixel);
 
-                int index = GetARGBIndex(pixel, hasSemiTransparency, m_transparentPixelIndex > -1);
+                int index = GetARGBIndex(pixel, hasSemiTransparency, nMaxColors < 64 || m_transparentPixelIndex > -1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += c.A;
@@ -114,7 +114,7 @@ namespace PnnQuant
 
             if (nMaxColors < 16)
                 nMaxColors = -1;
-            if (Sqr(nMaxColors) / maxbins < .022)
+            if (Sqr(nMaxColors) / maxbins < .03)
                 quan_rt = 0;
 
             if (quan_rt > 0)
@@ -336,6 +336,7 @@ namespace PnnQuant
                 int dir = 1;
                 var row0 = new int[err_len];
                 var row1 = new int[err_len];
+                var lookup = new int[65536];
                 for (int i = 0; i < height; ++i)
                 {
                     if (dir < 0)
@@ -353,7 +354,15 @@ namespace PnnQuant
                         int a_pix = ditherPixel[3];
 
                         var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        qPixels[pixelIndex] = (c.A == 0) ? 0 : NearestColorIndex(palette, nMaxColors, c1.ToArgb());
+                        if (noBias)
+                        {
+                            int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
+                            if (lookup[offset] == 0)
+                                lookup[offset] = (c.A == 0) ? 0 : NearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1;
+                            qPixels[pixelIndex] = lookup[offset] - 1;
+                        }
+                        else
+                            qPixels[pixelIndex] = (c.A == 0) ? 0 : NearestColorIndex(palette, nMaxColors, c1.ToArgb());
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
@@ -368,25 +377,25 @@ namespace PnnQuant
                         row1[cursor1 - DJ] = r_pix;
                         row1[cursor1 + DJ] += (r_pix += k);
                         row1[cursor1] += (r_pix += k);
-                        row0[cursor0 + DJ] += (r_pix += k);
+                        row0[cursor0 + DJ] += (r_pix + k);
 
                         k = g_pix * 2;
                         row1[cursor1 + 1 - DJ] = g_pix;
                         row1[cursor1 + 1 + DJ] += (g_pix += k);
                         row1[cursor1 + 1] += (g_pix += k);
-                        row0[cursor0 + 1 + DJ] += (g_pix += k);
+                        row0[cursor0 + 1 + DJ] += (g_pix + k);
 
                         k = b_pix * 2;
                         row1[cursor1 + 2 - DJ] = b_pix;
                         row1[cursor1 + 2 + DJ] += (b_pix += k);
                         row1[cursor1 + 2] += (b_pix += k);
-                        row0[cursor0 + 2 + DJ] += (b_pix += k);
+                        row0[cursor0 + 2 + DJ] += (b_pix + k);
 
                         k = a_pix * 2;
                         row1[cursor1 + 3 - DJ] = a_pix;
                         row1[cursor1 + 3 + DJ] += (a_pix += k);
                         row1[cursor1 + 3] += (a_pix += k);
-                        row0[cursor0 + 3 + DJ] += (a_pix += k);
+                        row0[cursor0 + 3 + DJ] += (a_pix + k);
 
                         cursor0 += DJ;
                         cursor1 -= DJ;
