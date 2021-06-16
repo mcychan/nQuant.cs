@@ -418,16 +418,11 @@ namespace PnnQuant
                         {
                             int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
                             if (lookup[offset] == 0)
-                                lookup[offset] = (c.A == 0) ? 0 : (noBias ? NearestColorIndex(palette, nMaxColors, c1.ToArgb()) : ClosestColorIndex(palette, nMaxColors, c1.ToArgb())) + 1;
+                                lookup[offset] = (c.A == 0) ? 1 : NearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1;
                             qPixels[pixelIndex] = lookup[offset] - 1;
                         }
                         else
-                        {
-                            if (c.A == 0)
-                                qPixels[pixelIndex] = 0;
-                            else
-                                qPixels[pixelIndex] = noBias ? NearestColorIndex(palette, nMaxColors, c1.ToArgb()) : ClosestColorIndex(palette, nMaxColors, c1.ToArgb());
-                        }
+                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ClosestColorIndex(palette, nMaxColors, c1.ToArgb());
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)

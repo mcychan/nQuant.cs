@@ -358,7 +358,7 @@ namespace PnnQuant
                         {
                             int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
                             if (lookup[offset] == 0)
-                                lookup[offset] = (c.A == 0) ? 0 : NearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1;
+                                lookup[offset] = (c.A == 0) ? 1 : NearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1;
                             qPixels[pixelIndex] = lookup[offset] - 1;
                         }
                         else
