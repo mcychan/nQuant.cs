@@ -390,7 +390,7 @@ namespace PnnQuant
                     limtb[i + BLOCK_SIZE] = DITHER_MAX;
                 }
                 for (short i = -DITHER_MAX; i <= DITHER_MAX; ++i)
-                    limtb[i + BLOCK_SIZE] = i;
+                    limtb[i + BLOCK_SIZE] = i % 4 == 3 ? (short)0 : i;
 
                 bool noBias = hasSemiTransparency || nMaxColors < 64;
                 int dir = 1;
