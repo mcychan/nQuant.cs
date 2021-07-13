@@ -24,6 +24,8 @@ namespace PnnQuant
 
         protected const int PropertyTagIndexTransparent = 0x5104;
         protected const int PropertyTagTypeByte = 1;
+
+        private double PR = .299, PG = .587, PB = .114;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -231,15 +233,15 @@ namespace PnnQuant
                 if (curdist > mindist)
                     continue;
 
-                curdist += Sqr(c2.R - c.R);
+                curdist += PR * Sqr(c2.R - c.R);
                 if (curdist > mindist)
                     continue;
 
-                curdist += Sqr(c2.G - c.G);
+                curdist += PG * Sqr(c2.G - c.G);
                 if (curdist > mindist)
                     continue;
 
-                curdist += Sqr(c2.B - c.B);
+                curdist += PB * Sqr(c2.B - c.B);
                 if (curdist > mindist)
                     continue;
 
@@ -680,6 +682,9 @@ namespace PnnQuant
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
                 dither = true;
+
+            if (nMaxColors <= 32)
+                PR = PG = PB = 1;
 
             if (nMaxColors > 2)
                 Pnnquan(pixels, palettes, nMaxColors, 1);
