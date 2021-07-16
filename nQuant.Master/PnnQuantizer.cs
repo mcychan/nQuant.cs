@@ -1,4 +1,5 @@
-﻿using System;
+﻿using nQuant.Master;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -664,7 +665,7 @@ namespace PnnQuant
             source.UnlockBits(data);
             return true;
         }
-        public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
+        public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, int dither)
         {
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
@@ -681,7 +682,7 @@ namespace PnnQuant
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
-                dither = true;
+                dither = 1;
 
             if (nMaxColors <= 32)
                 PR = PG = PB = 1;
@@ -702,7 +703,8 @@ namespace PnnQuant
                 }
             }
 
-            var qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
+            var qPixels = dither < 0 ? HilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, NearestColorIndex)
+                : Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither > 0);
             if (m_transparentPixelIndex >= 0)
             {
                 var k = qPixels[m_transparentPixelIndex];
