@@ -50,6 +50,11 @@ namespace PnnQuant
             return (c.R & 0xF8) << 8 | (c.G & 0xFC) << 3 | (c.B >> 3);
         }
 
+        protected int GetColorIndex(int argb)
+        {
+            return GetARGBIndex(argb, hasSemiTransparency, m_transparentPixelIndex > -1);
+        }
+
         protected double Sqr(double value)
         {
             return value * value;
@@ -704,7 +709,7 @@ namespace PnnQuant
             }
 
             DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
-            var qPixels = dither < 0 ? HilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn)
+            var qPixels = dither < 0 ? HilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn, GetColorIndex)
                 : Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither > 0);
             if (m_transparentPixelIndex >= 0)
             {

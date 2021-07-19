@@ -11,6 +11,9 @@ using static nQuant.Master.HilbertCurve.Direction;
 namespace nQuant.Master
 {
     internal delegate ushort DitherFn(Color[] palette, int nMaxColors, int pixel);
+
+    internal delegate int GetColorIndexFn(int pixel);
+
     class HilbertCurve
     {
         internal enum Direction { LEFT, RIGHT, DOWN, UP };
@@ -52,13 +55,15 @@ namespace nQuant.Master
 	    private readonly Color[] palette;
 	    private readonly int[] qPixels;
         private readonly DitherFn ditherFn;
+        private readonly GetColorIndexFn getColorIndexFn;
         private readonly List<ErrorBox> errorq;
         private readonly float[] weights;
+        private readonly int[] lookup;
 
         private const byte DITHER_MAX = 16;
         private const float BLOCK_SIZE = 256f;
 
-        private HilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, DitherFn ditherFn)
+        private HilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
         {
             x = 0;
             y = 0;
@@ -68,8 +73,10 @@ namespace nQuant.Master
             this.palette = palette;
             this.qPixels = qPixels;
             this.ditherFn = ditherFn;
+            this.getColorIndexFn = getColorIndexFn;
             errorq = new List<ErrorBox>();
             weights = new float[DITHER_MAX];
+            lookup = new int[65536];
         }
 
         private void DitherCurrentPixel()
@@ -91,7 +98,15 @@ namespace nQuant.Master
                 int a_pix = (int)Math.Min(BLOCK_SIZE - 1, Math.Max(error[3], 0.0));
 
                 Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                qPixels[x + y * width] = ditherFn(palette, palette.Length, c2.ToArgb());
+                if (palette.Length < 64)
+                {
+                    int offset = getColorIndexFn(c2.ToArgb());
+                    if (lookup[offset] == 0)
+                        lookup[offset] = (pixel.A == 0) ? 1 : ditherFn(palette, palette.Length, c2.ToArgb()) + 1;
+                    qPixels[x + y * width] = lookup[offset] - 1;
+                }
+                else
+                    qPixels[x + y * width] = ditherFn(palette, palette.Length, c2.ToArgb());
 
                 errorq.RemoveAt(0);
                 c2 = palette[qPixels[x + y * width]];
@@ -194,10 +209,10 @@ namespace nQuant.Master
             }
         }
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
         {
             var qPixels = new int[pixels.Length];
-            new HilbertCurve(width, height, pixels, palette, qPixels, ditherFn).Run();
+            new HilbertCurve(width, height, pixels, palette, qPixels, ditherFn, getColorIndexFn).Run();
             return qPixels;
         }
     }
