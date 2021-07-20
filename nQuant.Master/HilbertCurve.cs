@@ -152,7 +152,7 @@ namespace nQuant.Master
                 i >>= 1;
             }
 
-            Iter(depth, UP);
+            Curve(level, LEFT, UP, UP, RIGHT, DOWN, RIGHT, UP);
             DitherCurrentPixel();
         }
 
