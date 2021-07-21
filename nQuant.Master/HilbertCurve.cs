@@ -117,8 +117,13 @@ namespace nQuant.Master
 
                 for (int j = 0; j < error.Length; ++j)
                 {
-                    if (Math.Abs(error[j]) > DITHER_MAX)
+                    if (Math.Abs(error[j]) < DITHER_MAX)
+			continue;
+			
+                    if (palette.Length < 64)
                         error[j] = error[j] < 0 ? -DITHER_MAX + 1 : DITHER_MAX - 1;
+                    else
+                        error[j] -= error[j] < 0 ? -DITHER_MAX : DITHER_MAX;			    
                 }
                 errorq.Add(error);
             }
