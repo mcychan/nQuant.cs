@@ -14,7 +14,7 @@ If you are using C#, you would call nQuant as follows:
     {
         try
         {                    
-            using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, true))
+            using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, -1))
             {
                 dest.Save(targetPath, ImageFormat.Png);
                 System.Console.WriteLine("Converted image: " + targetPath);
