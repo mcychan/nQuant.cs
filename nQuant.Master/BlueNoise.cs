@@ -214,16 +214,6 @@ namespace nQuant.Master
 					int b_pix = pixel.B;
 					int a_pix = pixel.A;
 
-					if (palette.Length < 64)
-					{
-						int offset = getColorIndexFn(pixel.ToArgb());
-						if (lookup[offset] == 0)
-							lookup[offset] = (pixel.A == 0) ? 1 : ditherFn(palette, palette.Length, pixel.ToArgb()) + 1;
-						qPixels[x + y * width] = lookup[offset] - 1;
-					}
-					else
-						qPixels[x + y * width] = ditherFn(palette, palette.Length, pixel.ToArgb());
-
 					Color c1 = palette[qPixels[x + y * width]];
 					float adj = (RAW_BLUE_NOISE[(x & 63) | (y & 63) << 6] + 0.5f) / 127.5f;
 					adj += ((x + y & 1) - 0.5f) * strength * (0.5f + RAW_BLUE_NOISE[(x * 19 & 63) | (y * 23 & 63) << 6])
