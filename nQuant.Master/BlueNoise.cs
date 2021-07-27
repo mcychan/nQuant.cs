@@ -15,15 +15,6 @@ namespace nQuant.Master
 {
     class BlueNoise
     {
-        private readonly int width;
-        private readonly int height;
-        private readonly int[] pixels;
-	    private readonly Color[] palette;
-	    private readonly int[] qPixels;
-        private readonly DitherFn ditherFn;
-        private readonly GetColorIndexFn getColorIndexFn;
-        private readonly int[] lookup;
-
         private static readonly sbyte[] RAW_BLUE_NOISE = {
 			-63, 119, 75, 49, -74, 21, -32, 7, -6, -66, -19, 78, -101, 89, 24, -25, 122, -50, -6, 100, -125, -45, 105, 32, -83, 
 			114, -20, -88, -3, -35, 73, -93, 103, 59, 126, 79, 19, -115, -41, 6, 118, 69, 49, 96, -69, -36, 4, 41, -79, 55, 
@@ -191,24 +182,15 @@ namespace nQuant.Master
 			14, -9, -91, -55, 99, -111, -20, 31, 88, -3, 105, 53, -29, -90, -10, -70, 9, -57, 123, -99, 5			
 		};
 
-        private BlueNoise(int width, int height, int[] image, Color[] palette, int[] qPixels, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, int[] qPixels)
         {
-            this.width = width;
-            this.height = height;
-            this.pixels = image;
-            this.palette = palette;
-            this.qPixels = qPixels;
-            this.ditherFn = ditherFn;
-            this.getColorIndexFn = getColorIndexFn;
-            lookup = new int[65536];
-        }
-
-        private void Run()
-        {
-            float strength = (float) Math.Sqrt(2.89);
-			for (int y = 0; y < height; ++y) {
-				for (int x = 0; x < width; ++x) {
-					Color pixel= Color.FromArgb(pixels[x + y * width]);
+			var lookup = new int[65536];
+			float strength = (float)Math.Sqrt(2.89);
+			for (int y = 0; y < height; ++y)
+			{
+				for (int x = 0; x < width; ++x)
+				{
+					Color pixel = Color.FromArgb(pixels[x + y * width]);
 					int r_pix = pixel.R;
 					int g_pix = pixel.G;
 					int b_pix = pixel.B;
@@ -235,13 +217,7 @@ namespace nQuant.Master
 						qPixels[x + y * width] = ditherFn(palette, palette.Length, c1.ToArgb());
 				}
 			}
-        }
-
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
-        {
-            var qPixels = new int[pixels.Length];
-            new BlueNoise(width, height, pixels, palette, qPixels, ditherFn, getColorIndexFn).Run();
-            return qPixels;
+			return qPixels;
         }
     }
 }
