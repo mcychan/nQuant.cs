@@ -185,7 +185,7 @@ namespace nQuant.Master
         public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, int[] qPixels)
         {
 			var lookup = new int[65536];
-			float strength = (float)Math.Sqrt(2.89);
+			float strength = 1 / 3.0f;
 			for (int y = 0; y < height; ++y)
 			{
 				for (int x = 0; x < width; ++x)
@@ -198,8 +198,8 @@ namespace nQuant.Master
 
 					Color c1 = palette[qPixels[x + y * width]];
 					float adj = (RAW_BLUE_NOISE[(x & 63) | (y & 63) << 6] + 0.5f) / 127.5f;
-					adj += ((x + y & 1) - 0.5f) * strength * (0.5f + RAW_BLUE_NOISE[(x * 19 & 63) | (y * 23 & 63) << 6])
-						* -0.0013427734f;
+					adj -= ((x + y & 1) - 0.5f) * strength * (0.5f + RAW_BLUE_NOISE[(x * 19 & 63) | (y * 23 & 63) << 6])
+						* 11 / 8192.0f;
 					r_pix = (int)Math.Min(0xff, Math.Max(r_pix + (adj * (r_pix - c1.R)), 0));
 					g_pix = (int)Math.Min(0xff, Math.Max(g_pix + (adj * (g_pix - c1.G)), 0));
 					b_pix = (int)Math.Min(0xff, Math.Max(b_pix + (adj * (b_pix - c1.B)), 0));
