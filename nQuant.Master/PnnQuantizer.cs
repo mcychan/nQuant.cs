@@ -712,9 +712,12 @@ namespace PnnQuant
             if (dither < 0)
             {
                 DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
-                qPixels = (nMaxColors < 64) ? Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither > 0) : 
-                    HilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn, GetColorIndex);
-                BlueNoise.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn, GetColorIndex, qPixels);
+                if (nMaxColors < 64) {
+                    qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither > 0);
+                    BlueNoise.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn, GetColorIndex, qPixels);
+                }
+                else
+                    qPixels =  HilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn, GetColorIndex);                
             }
             else
                 qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither > 0);
