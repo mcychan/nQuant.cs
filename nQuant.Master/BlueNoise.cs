@@ -198,8 +198,7 @@ namespace nQuant.Master
 
 					Color c1 = palette[qPixels[x + y * width]];
 					float adj = (RAW_BLUE_NOISE[(x & 63) | (y & 63) << 6] + 0.5f) / 127.5f;
-					adj -= ((x + y & 1) - 0.5f) * strength * (0.5f + RAW_BLUE_NOISE[(x * 19 & 63) | (y * 23 & 63) << 6])
-						* 11 / 8192.0f;
+					adj += ((x + y & 1) - 0.5f) * strength / 8.0f;
 					r_pix = (int)Math.Min(0xff, Math.Max(r_pix + (adj * (r_pix - c1.R)), 0));
 					g_pix = (int)Math.Min(0xff, Math.Max(g_pix + (adj * (g_pix - c1.G)), 0));
 					b_pix = (int)Math.Min(0xff, Math.Max(b_pix + (adj * (b_pix - c1.B)), 0));

@@ -1,5 +1,4 @@
-﻿using nQuant.Master;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -670,6 +669,12 @@ namespace PnnQuant
             source.UnlockBits(data);
             return true;
         }
+
+        protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, int dither)
+        {
+            return Quantize_image(pixels, palettes, nMaxColors, width, height, dither > 0);
+        }
+
         public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, int dither)
         {
             int bitmapWidth = source.Width;
@@ -708,19 +713,7 @@ namespace PnnQuant
                 }
             }
 
-            int[] qPixels;
-            if (dither < 0)
-            {
-                DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
-                if (nMaxColors < 64) {
-                    qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither > 0);
-                    BlueNoise.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn, GetColorIndex, qPixels);
-                }
-                else
-                    qPixels =  HilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, ditherFn, GetColorIndex);                
-            }
-            else
-                qPixels = Quantize_image(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither > 0);
+            var qPixels = Dither(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
 
             if (m_transparentPixelIndex >= 0)
             {

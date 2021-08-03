@@ -1,4 +1,5 @@
-﻿using System;
+﻿using nQuant.Master;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -364,7 +365,7 @@ namespace PnnQuant
             return k;
         }
 
-        protected override int[] Quantize_image(int[] pixels, Color[] palette, int nMaxColors, int width, int height, bool dither)
+        protected override int[] Quantize_image(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
             var qPixels = new int[width * height];
             int pixelIndex = 0;
@@ -416,13 +417,13 @@ namespace PnnQuant
                         {
                             int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
                             if (lookup[offset] == 0)
-                                lookup[offset] = (c.A == 0) ? 1 : NearestColorIndex(palette, nMaxColors, c1.ToArgb()) + 1;
+                                lookup[offset] = (c.A == 0) ? 1 : NearestColorIndex(palettes, nMaxColors, c1.ToArgb()) + 1;
                             qPixels[pixelIndex] = lookup[offset] - 1;
                         }
                         else
-                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ClosestColorIndex(palette, nMaxColors, c1.ToArgb());
+                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ClosestColorIndex(palettes, nMaxColors, c1.ToArgb());
 
-                        var c2 = palette[qPixels[pixelIndex]];
+                        var c2 = palettes[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
                             qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false, m_transparentPixelIndex > -1);
 
@@ -471,15 +472,30 @@ namespace PnnQuant
             if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
             {
                 for (int i = 0; i < qPixels.Length; ++i)
-                    qPixels[i] = NearestColorIndex(palette, nMaxColors, pixels[i]);
+                    qPixels[i] = NearestColorIndex(palettes, nMaxColors, pixels[i]);
             }
             else
             {
                 for (int i = 0; i < qPixels.Length; ++i)
-                    qPixels[i] = ClosestColorIndex(palette, nMaxColors, pixels[i]);
+                    qPixels[i] = ClosestColorIndex(palettes, nMaxColors, pixels[i]);
             }
 
             return qPixels;
+        }
+
+        protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, int dither)
+        {
+            if (dither < 0)
+            {
+                DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
+                int[] qPixels;
+                if (nMaxColors < 64)
+                    qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, false);
+                else
+                    qPixels = HilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
+                return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
+            }
+            return Quantize_image(pixels, palettes, nMaxColors, width, height, dither > 0);
         }
 
     }
