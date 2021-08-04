@@ -271,7 +271,7 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = Sqr(c2.A - c.A);
+                var curdist = Sqr(c2.A - c.A) / Math.Exp(1.5);
                 if (curdist > mindist)
                     continue;
 
@@ -337,7 +337,7 @@ namespace PnnQuant
                     var c2 = palette[k];
                     GetLab(c2.ToArgb(), out var lab2);
 
-                    closest[4] = (ushort) (hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0 + Math.Abs(lab2.L - lab1.L) + Math.Abs(lab2.A - lab1.A) + Math.Abs(lab2.B - lab1.B));
+                    closest[4] = (ushort) (Math.Abs(lab2.L - lab1.L) + Math.Abs(lab2.A - lab1.A) + Math.Abs(lab2.B - lab1.B));
                     if (closest[4] < closest[2])
                     {
                         closest[1] = closest[0];

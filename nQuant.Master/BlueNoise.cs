@@ -182,7 +182,7 @@ namespace nQuant.Master
 			14, -9, -91, -55, 99, -111, -20, 31, 88, -3, 105, 53, -29, -90, -10, -70, 9, -57, 123, -99, 5			
 		};
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, int[] qPixels)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, int[] qPixels, float weight = 1.0f)
         {
 			var lookup = new int[65536];
 			float strength = 1 / 3.0f;
@@ -199,6 +199,7 @@ namespace nQuant.Master
 					Color c1 = palette[qPixels[x + y * width]];
 					float adj = (RAW_BLUE_NOISE[(x & 63) | (y & 63) << 6] + 0.5f) / 127.5f;
 					adj += ((x + y & 1) - 0.5f) * strength / 8.0f;
+					adj *= weight;
 					r_pix = (int)Math.Min(0xff, Math.Max(r_pix + (adj * (r_pix - c1.R)), 0));
 					g_pix = (int)Math.Min(0xff, Math.Max(g_pix + (adj * (g_pix - c1.G)), 0));
 					b_pix = (int)Math.Min(0xff, Math.Max(b_pix + (adj * (b_pix - c1.B)), 0));
