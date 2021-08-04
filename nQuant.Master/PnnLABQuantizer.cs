@@ -131,7 +131,7 @@ namespace PnnQuant
             }
 
             var proportional = Sqr(nMaxColors) / maxbins;
-            if (nMaxColors < 16 || ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32))
+            if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
                 quan_sqrt = -1;
             else if ((proportional < .018 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = 0;
@@ -158,7 +158,7 @@ namespace PnnQuant
             else if (quan_sqrt > 0)
                 ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
             else
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 2.07) / maxbins);
+                ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(5.474) / pixelMap.Count);
 
             if (quan_sqrt < 0)
             {
