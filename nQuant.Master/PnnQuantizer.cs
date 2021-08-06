@@ -1,4 +1,5 @@
-﻿using System;
+﻿using nQuant.Master;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -672,7 +673,12 @@ namespace PnnQuant
 
         protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, int dither)
         {
-            return Quantize_image(pixels, palettes, nMaxColors, width, height, dither > 0);
+            DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 256) ? NearestColorIndex : ClosestColorIndex;
+            int[] qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, dither > 0);
+
+            if (dither < 1)
+                return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
+            return qPixels;
         }
 
         public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, int dither)

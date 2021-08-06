@@ -485,17 +485,16 @@ namespace PnnQuant
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, int dither)
         {
-            if (dither < 0)
-            {
-                DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
-                int[] qPixels;
-                if (nMaxColors < 64)
-                    qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, false);
-                else
-                    qPixels = HilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
+            DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
+            int[] qPixels;
+            if (nMaxColors < 64)
+                qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, dither > 0);
+            else
+                qPixels = HilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
+
+            if (dither < 1)
                 return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
-            }
-            return Quantize_image(pixels, palettes, nMaxColors, width, height, dither > 0);
+            return qPixels;
         }
 
     }
