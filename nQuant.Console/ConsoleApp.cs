@@ -10,6 +10,7 @@ namespace nQuant
     public class ConsoleApp
     {
         private static int maxColors = 256;
+        private static bool dither = true;
         private static string targetPath = string.Empty;
 
         public static void Main(string[] args)
@@ -49,7 +50,7 @@ namespace nQuant
             {
                 try
                 {
-                    using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, -1))
+                    using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, dither))
                     {
                         dest.Save(targetPath, ImageFormat.Png);
                         System.Console.WriteLine("Converted image: " + targetPath);
@@ -78,25 +79,36 @@ namespace nQuant
                   || currentArg.StartsWith("–", StringComparison.Ordinal)
                   || currentArg.StartsWith("/", StringComparison.Ordinal)))
                 {
+                    if (index >= args.Length - 1)
+                    {
+                        PrintUsage();
+                        Environment.Exit(1);
+                        return;
+                    }
+
                     currentArg = currentArg.Substring(1);
                     switch (currentArg)
                     {
                         case "M":
-                            if (index >= args.Length - 1 || !Int32.TryParse(args[index + 1], out maxColors))
+                            if (!Int32.TryParse(args[index + 1], out maxColors))
                             {
                                 PrintUsage();
                                 Environment.Exit(1);
                             }
                             break;
 
-                        case "O":
-                            if (index >= args.Length - 1)
+                        case "D":
+                            string strDither = args[index + 1].ToUpper();
+                            if (!(strDither == "Y" || strDither == "N"))
                             {
                                 PrintUsage();
                                 Environment.Exit(1);
+                                break;
                             }
-                            else
-                                targetPath = args[index + 1];
+                            dither = strDither == "Y";
+                            break;
+                        case "O":
+                            targetPath = args[index + 1];
                             break;
 
                         default:

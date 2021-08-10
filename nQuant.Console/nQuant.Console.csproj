@@ -9,7 +9,10 @@
     <PackageId>nQuant.ConsoleApp</PackageId>
     <Authors>Miller Cy Chan</Authors>
     <AssemblyName>nQuant</AssemblyName>
-    <ApplicationIcon />    
+    <ApplicationIcon />
+    <RepositoryUrl>https://github.com/mcychan/nQuant.cs.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>color-quantization;error-diffusion;image-processing;cielab;dithering</PackageTags>    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
