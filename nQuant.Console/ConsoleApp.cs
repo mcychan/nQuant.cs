@@ -127,6 +127,7 @@ namespace nQuant
             System.Console.WriteLine();
             System.Console.WriteLine("Valid options:");
             System.Console.WriteLine("  /m : Max Colors (pixel-depth) - Maximum number of colors for the output format to support. The default is 256 (8-bit).");
+            System.Console.WriteLine("  /d : Dithering or not? y or n.");
             System.Console.WriteLine("  /o : Output image file path. The default is <source image path directory>\\<source image file name without extension>-quant<Max colors>.png");
         }
 
