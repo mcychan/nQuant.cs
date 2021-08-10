@@ -494,6 +494,8 @@ namespace PnnQuant
 
             if (!dither)
                 return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
+
+            pixelMap.Clear();
             return qPixels;
         }
 
