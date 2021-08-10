@@ -9,12 +9,13 @@ If you do not use Nuget, add nQuant to your project and add a reference to it.
 If you are using C#, you would call nQuant as follows:
 
 ```cs
+    bool dither = true;
     var quantizer = new PnnQuant.PnnQuantizer();
     using(var bitmap = new Bitmap(sourcePath))
     {
         try
         {                    
-            using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, -1))
+            using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, dither))
             {
                 dest.Save(targetPath, ImageFormat.Png);
                 System.Console.WriteLine("Converted image: " + targetPath);
