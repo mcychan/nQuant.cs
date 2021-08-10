@@ -671,17 +671,17 @@ namespace PnnQuant
             return true;
         }
 
-        protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, int dither)
+        protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
             DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 256) ? NearestColorIndex : ClosestColorIndex;
-            int[] qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, dither > 0);
+            int[] qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, dither);
 
-            if (dither < 1)
+            if (!dither)
                 return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
             return qPixels;
         }
 
-        public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, int dither)
+        public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
@@ -698,7 +698,7 @@ namespace PnnQuant
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
             if (nMaxColors > 256)
-                dither = 1;
+                dither = true;
 
             if (nMaxColors <= 32)
                 PR = PG = PB = 1;
