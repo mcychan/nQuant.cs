@@ -92,10 +92,10 @@ namespace nQuant.Master
                         error[j] += eb[j] * weights[c];
                 }
 
-                int r_pix = (int)Math.Min(BLOCK_SIZE - 1, Math.Max(error[0], 0.0));
-                int g_pix = (int)Math.Min(BLOCK_SIZE - 1, Math.Max(error[1], 0.0));
-                int b_pix = (int)Math.Min(BLOCK_SIZE - 1, Math.Max(error[2], 0.0));
-                int a_pix = (int)Math.Min(BLOCK_SIZE - 1, Math.Max(error[3], 0.0));
+                int r_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[0], 0.0));
+                int g_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[1], 0.0));
+                int b_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[2], 0.0));
+                int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
                 Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
                 if (palette.Length < 64)
@@ -118,7 +118,7 @@ namespace nQuant.Master
                 for (int j = 0; j < error.Length; ++j)
                 {
                     if (Math.Abs(error[j]) < DITHER_MAX)
-			continue;
+                        continue;
 			
                     if (palette.Length < 64)
                         error[j] = error[j] < 0 ? -DITHER_MAX + 1 : DITHER_MAX - 1;
