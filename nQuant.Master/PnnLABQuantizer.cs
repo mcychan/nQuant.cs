@@ -156,7 +156,7 @@ namespace PnnQuant
                     ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.172) / pixelMap.Count);
             }
             else if (quan_sqrt > 0)
-                ratio = Math.Min(1.0, Math.Pow(nMaxColors, 1.05) / pixelMap.Count);
+                ratio = 1.0;
             else
                 ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(5.474) / pixelMap.Count);
 
@@ -337,17 +337,17 @@ namespace PnnQuant
                     var c2 = palette[k];
                     GetLab(c2.ToArgb(), out var lab2);
 
-                    closest[4] = (ushort) (Math.Abs(lab2.L - lab1.L) + Math.Abs(lab2.A - lab1.A) + Math.Abs(lab2.B - lab1.B));
+                    closest[4] = (ushort) (Sqr(lab2.L - lab1.L) + Sqr(lab2.A - lab1.A) + Sqr(lab2.B - lab1.B));
                     if (closest[4] < closest[2])
                     {
                         closest[1] = closest[0];
                         closest[3] = closest[2];
-                        closest[0] = (ushort)k;
+                        closest[0] = k;
                         closest[2] = closest[4];
                     }
                     else if (closest[4] < closest[3])
                     {
-                        closest[1] = (ushort)k;
+                        closest[1] = k;
                         closest[3] = closest[4];
                     }
                 }

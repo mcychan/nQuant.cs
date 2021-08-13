@@ -19,7 +19,7 @@ namespace PnnQuant
         protected bool hasSemiTransparency = false;
         protected int m_transparentPixelIndex = -1;
         protected Color m_transparentColor = Color.Transparent;
-        protected readonly Random rand = new Random();
+        protected readonly Random rand = new();
         protected readonly Dictionary<int, ushort[]> closestMap = new Dictionary<int, ushort[]>();
         protected readonly Dictionary<int, ushort> nearestMap = new Dictionary<int, ushort>();
 
