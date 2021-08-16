@@ -493,7 +493,11 @@ namespace PnnQuant
                 qPixels = HilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
             if (!dither)
-                return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
+            {
+                double delta = Sqr(nMaxColors) / pixelMap.Count;
+                float weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
+                return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels, weight);
+            }
 
             pixelMap.Clear();
             return qPixels;
