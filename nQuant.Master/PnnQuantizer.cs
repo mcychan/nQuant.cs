@@ -532,7 +532,7 @@ namespace PnnQuant
                 dest = new Bitmap(w, h, PixelFormat.Format32bppArgb);
             else if (transparentPixelIndex >= 0 && dest.PixelFormat < PixelFormat.Format16bppArgb1555)
                 dest = new Bitmap(w, h, PixelFormat.Format16bppArgb1555);
-            else if (dest.PixelFormat != PixelFormat.Format16bppRgb565)
+            else if (dest.PixelFormat < PixelFormat.Format16bppRgb565)
                 dest = new Bitmap(w, h, PixelFormat.Format16bppRgb565);
 
             bpp = Image.GetPixelFormatSize(dest.PixelFormat);
@@ -575,7 +575,7 @@ namespace PnnQuant
                     {   // For each row...
                         for (int x = 0; x < w * 2;)
                         {
-                            var argb = (short)qPixels[pixelIndex++];
+                            var argb = qPixels[pixelIndex++];
                             pRowDest[x++] = (byte)(argb & 0xFF);
                             pRowDest[x++] = (byte)(argb >> 8);
                         }
@@ -604,6 +604,9 @@ namespace PnnQuant
         }
         protected bool IsValidFormat(PixelFormat pixelFormat, int nMaxColors)
         {
+            if (pixelFormat == PixelFormat.Undefined)
+                return false;
+
             int bitDepth = Image.GetPixelFormatSize(pixelFormat);
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
@@ -686,10 +689,15 @@ namespace PnnQuant
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
 
-            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             if (!IsValidFormat(pixelFormat, nMaxColors))
-                return dest;
-            
+            {
+                if (nMaxColors > 256)
+                    pixelFormat = m_transparentPixelIndex > -1 ? PixelFormat.Format16bppArgb1555 : PixelFormat.Format16bppRgb565;
+                else
+                    pixelFormat = (nMaxColors > 16) ? PixelFormat.Format8bppIndexed : (nMaxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
+            }
+
+            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             var pixels = new int[bitmapWidth * bitmapHeight];
             if(!GrabPixels(source, pixels))
                 return dest;
