@@ -45,7 +45,7 @@ namespace nQuant
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             PnnQuant.PnnQuantizer quantizer = new PnnQuant.PnnLABQuantizer();
-            var pixelFormat = (maxColors > 256) ? PixelFormat.Format16bppArgb1555 : (maxColors > 16) ? PixelFormat.Format8bppIndexed : (maxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
+            var pixelFormat = PixelFormat.Undefined;
             using (var bitmap = new Bitmap(sourcePath))
             {
                 try
