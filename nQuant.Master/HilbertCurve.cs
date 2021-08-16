@@ -110,6 +110,9 @@ namespace nQuant.Master
 
                 errorq.RemoveAt(0);
                 c2 = palette[qPixels[x + y * width]];
+                if (palette.Length > 256)
+                    qPixels[x + y * width] = (short) getColorIndexFn(c2.ToArgb());
+
                 error[0] = r_pix - c2.R;
                 error[1] = g_pix - c2.G;
                 error[2] = b_pix - c2.B;
