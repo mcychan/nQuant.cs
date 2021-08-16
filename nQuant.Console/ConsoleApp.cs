@@ -45,12 +45,11 @@ namespace nQuant
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             PnnQuant.PnnQuantizer quantizer = new PnnQuant.PnnLABQuantizer();
-            var pixelFormat = PixelFormat.Undefined;
             using (var bitmap = new Bitmap(sourcePath))
             {
                 try
                 {
-                    using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, dither))
+                    using (var dest = quantizer.QuantizeImage(bitmap, PixelFormat.Undefined, maxColors, dither))
                     {
                         dest.Save(targetPath, ImageFormat.Png);
                         System.Console.WriteLine("Converted image: " + targetPath);
@@ -62,7 +61,7 @@ namespace nQuant
                     System.Console.WriteLine(q.StackTrace);
                 #else
                     System.Console.WriteLine(q.Message);
-                    System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", pixelFormat.ToString(), maxColors);
+                    System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", bitmap.PixelFormat.ToString(), maxColors);
 #endif
                 }
             }
