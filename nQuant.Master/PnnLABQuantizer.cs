@@ -332,12 +332,13 @@ namespace PnnQuant
                 closest[2] = closest[3] = ushort.MaxValue;
                 GetLab(pixel, out var lab1);
 
+                var c = Color.FromArgb(pixel);
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
                     GetLab(c2.ToArgb(), out var lab2);
+                    closest[4] = (ushort) (PR * Sqr(c2.R - c.R) + PG * Sqr(c2.G - c.G) + PB * Sqr(c2.B - c.B) + Sqr(lab2.B - lab1.B) / 2.0);                    
 
-                    closest[4] = (ushort) (Sqr(lab2.L - lab1.L) + Sqr(lab2.A - lab1.A) + Sqr(lab2.B - lab1.B));
                     if (closest[4] < closest[2])
                     {
                         closest[1] = closest[0];
