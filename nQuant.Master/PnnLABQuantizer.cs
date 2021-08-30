@@ -7,7 +7,7 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double PR = .299, PG = .587, PB = .114;
+        private double PR = .2126, PG = .7152, PB = .0722;
         private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
         private sealed class Pnnbin
