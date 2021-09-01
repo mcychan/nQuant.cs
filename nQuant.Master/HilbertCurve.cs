@@ -52,8 +52,8 @@ namespace nQuant.Master
         private readonly int width;
         private readonly int height;
         private readonly int[] pixels;
-	    private readonly Color[] palette;
-	    private readonly int[] qPixels;
+        private readonly Color[] palette;
+        private readonly int[] qPixels;
         private readonly DitherFn ditherFn;
         private readonly GetColorIndexFn getColorIndexFn;
         private readonly List<ErrorBox> errorq;
@@ -113,10 +113,10 @@ namespace nQuant.Master
                 if (palette.Length > 256)
                     qPixels[x + y * width] = (short) getColorIndexFn(c2.ToArgb());
 
-                error[0] = r_pix - c2.R;
-                error[1] = g_pix - c2.G;
-                error[2] = b_pix - c2.B;
-                error[3] = a_pix - c2.A;
+                error[0] = r_pix > Byte.MaxValue ? Byte.MaxValue : r_pix - c2.R;
+                error[1] = g_pix > Byte.MaxValue ? Byte.MaxValue : g_pix - c2.G;
+                error[2] = b_pix > Byte.MaxValue ? Byte.MaxValue : b_pix - c2.B;
+                error[3] = a_pix > Byte.MaxValue ? Byte.MaxValue : a_pix - c2.A;
 
                 for (int j = 0; j < error.Length; ++j)
                 {
