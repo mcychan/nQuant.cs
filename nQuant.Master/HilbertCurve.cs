@@ -113,21 +113,17 @@ namespace nQuant.Master
                 if (palette.Length > 256)
                     qPixels[x + y * width] = (short) getColorIndexFn(c2.ToArgb());
 
-                error[0] = r_pix > Byte.MaxValue ? Byte.MaxValue : r_pix - c2.R;
-                error[1] = g_pix > Byte.MaxValue ? Byte.MaxValue : g_pix - c2.G;
-                error[2] = b_pix > Byte.MaxValue ? Byte.MaxValue : b_pix - c2.B;
-                error[3] = a_pix > Byte.MaxValue ? Byte.MaxValue : a_pix - c2.A;
+                error[0] = r_pix - c2.R;
+                error[1] = g_pix - c2.G;
+                error[2] = b_pix - c2.B;
+                error[3] = a_pix - c2.A;
 
                 for (int j = 0; j < error.Length; ++j)
                 {
                     if (Math.Abs(error[j]) < DITHER_MAX)
                         continue;
 
-                    error[j] -= error[j] < 0 ? -DITHER_MAX : DITHER_MAX;
-                    if (Math.Abs(error[j]) < DITHER_MAX)
-                        continue;
-
-                    error[j] = error[j] < 0 ? -DITHER_MAX + 1 : DITHER_MAX - 1;			    
+                    error[j]  = 0;			    
                 }
                 errorq.Add(error);
             }
