@@ -10,10 +10,6 @@ using static nQuant.Master.HilbertCurve.Direction;
 
 namespace nQuant.Master
 {
-    internal delegate ushort DitherFn(Color[] palette, int nMaxColors, int pixel);
-
-    internal delegate int GetColorIndexFn(int pixel);
-
     class HilbertCurve
     {
         internal enum Direction { LEFT, RIGHT, DOWN, UP };

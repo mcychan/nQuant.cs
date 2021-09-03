@@ -491,7 +491,7 @@ namespace PnnQuant
             if (nMaxColors < 64 || hasSemiTransparency)
                 qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, dither);
             else
-                qPixels = HilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
             if (!dither)
             {

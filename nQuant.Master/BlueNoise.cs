@@ -13,6 +13,10 @@ using static nQuant.Master.HilbertCurve.Direction;
 
 namespace nQuant.Master
 {
+	internal delegate ushort DitherFn(Color[] palette, int nMaxColors, int pixel);
+
+    internal delegate int GetColorIndexFn(int pixel);
+	
     class BlueNoise
     {
         private static readonly sbyte[] RAW_BLUE_NOISE = {
