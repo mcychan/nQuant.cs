@@ -117,64 +117,64 @@ namespace nQuant.Master
                 if (Math.Abs(error[j]) < DITHER_MAX)
                     continue;
 
-                error[j]  = 0;			    
+                error[j] /= 3.0f;			    
             }
             errorq.Add(error);
         }
 		
-		private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
-			int w = Math.Abs(ax + ay);
-			int h = Math.Abs(bx + by);
-			int dax = Sign(ax);
-			int day = Sign(ay);
-			int dbx = Sign(bx);
-			int dby = Sign(by);
+	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
+		int w = Math.Abs(ax + ay);
+		int h = Math.Abs(bx + by);
+		int dax = Sign(ax);
+		int day = Sign(ay);
+		int dbx = Sign(bx);
+		int dby = Sign(by);
 
-			if (h == 1) {
-				for (int i = 0; i < w; i++){
-					DitherPixel(x, y);
-					x += dax;
-					y += day;
-				}
-				return;
+		if (h == 1) {
+			for (int i = 0; i < w; ++i){
+				DitherPixel(x, y);
+				x += dax;
+				y += day;
 			}
-
-			if (w == 1) {
-				for (int i = 0; i < h; i++){
-					DitherPixel(x, y);
-					x += dbx;
-					y += dby;
-				}
-				return;
-			}
-
-			int ax2 = ax / 2;
-			int ay2 = ay / 2;
-			int bx2 = bx / 2;
-			int by2 = by / 2;
-
-			int w2 = Math.Abs(ax2 + ay2);
-			int h2 = Math.Abs(bx2 + by2);
-
-			if (2 * w > 3 * h) {
-				if ((w2 % 2) != 0 && w > 2) {
-					ax2 += dax;
-					ay2 += day;
-				}    		
-				Generate2d(x, y, ax2, ay2, bx, by);
-				Generate2d(x + ax2, y + ay2, ax - ax2, ay - ay2, bx, by);
-				return;
-			}
-			
-			if ((h2 % 2) != 0 && h > 2) {
-				bx2 += dbx;
-				by2 += dby;
-			}
-			
-			Generate2d(x, y, bx2, by2, ax2, ay2);
-			Generate2d(x + bx2, y + by2, ax, ay, bx - bx2, by - by2);
-			Generate2d(x + (ax-dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));    		
+			return;
 		}
+
+		if (w == 1) {
+			for (int i = 0; i < h; ++i){
+				DitherPixel(x, y);
+				x += dbx;
+				y += dby;
+			}
+			return;
+		}
+
+		int ax2 = ax / 2;
+		int ay2 = ay / 2;
+		int bx2 = bx / 2;
+		int by2 = by / 2;
+
+		int w2 = Math.Abs(ax2 + ay2);
+		int h2 = Math.Abs(bx2 + by2);
+
+		if (2 * w > 3 * h) {
+			if ((w2 % 2) != 0 && w > 2) {
+				ax2 += dax;
+				ay2 += day;
+			}    		
+			Generate2d(x, y, ax2, ay2, bx, by);
+			Generate2d(x + ax2, y + ay2, ax - ax2, ay - ay2, bx, by);
+			return;
+		}
+
+		if ((h2 % 2) != 0 && h > 2) {
+			bx2 += dbx;
+			by2 += dby;
+		}
+
+		Generate2d(x, y, bx2, by2, ax2, ay2);
+		Generate2d(x + bx2, y + by2, ax, ay, bx - bx2, by - by2);
+		Generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));    		
+	}
 
         private void Run()
         {
@@ -197,9 +197,9 @@ namespace nQuant.Master
             weights[0] += 1f - weight;
 			
             if (width >= height)
-				Generate2d(0, 0, width, 0, 0, height);
-			else
-				Generate2d(0, 0, 0, height, width, 0);
+                Generate2d(0, 0, width, 0, 0, height);
+            else
+                Generate2d(0, 0, 0, height, width, 0);
         }
 
         public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
