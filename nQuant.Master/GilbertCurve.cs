@@ -52,7 +52,7 @@ namespace nQuant.Master
         private readonly int[] lookup;
 
         private const byte DITHER_MAX = 9;
-        private const float BLOCK_SIZE = 243f;
+        private const float BLOCK_SIZE = 343f;
 
         private GilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
         {
