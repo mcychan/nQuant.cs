@@ -15,7 +15,7 @@ namespace nQuant
 
         public static void Main(string[] args)
         {
-            string algorithm;
+            string algorithm = null;
 #if DEBUG
             var sourcePath = @"samples\SE5x9.jpg";
             maxColors = 128;
