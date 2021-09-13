@@ -15,7 +15,7 @@ namespace nQuant
 
         public static void Main(string[] args)
         {
-
+            string algorithm;
 #if DEBUG
             var sourcePath = @"samples\SE5x9.jpg";
             maxColors = 128;
@@ -26,7 +26,7 @@ namespace nQuant
                Environment.Exit(1);
             }
             var sourcePath = args[0];
-            var algorithm = ProcessArgs(args);
+            algorithm = ProcessArgs(args);
 #endif
             if (!File.Exists(sourcePath))
             {
