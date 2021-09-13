@@ -48,35 +48,35 @@ namespace PnnQuant
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
                 double alphaDiff = (m_transparentPixelIndex > -1 || hasSemiTransparency) ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
-                double nerr = nerr2 * Sqr(alphaDiff) / Math.Exp(1.5);
+                double nerr = nerr2 * BitmapUtilities.Sqr(alphaDiff) / Math.Exp(1.5);
                 if (nerr >= err)
                     continue;
 
-                nerr += (1 - ratio) * nerr2 * Sqr(lab2.L - lab1.L);
+                nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.L - lab1.L);
                 if (nerr >= err)
                     continue;
 
-                nerr += (1 - ratio) * nerr2 * Sqr(lab2.A - lab1.A);
+                nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.A - lab1.A);
                 if (nerr >= err)
                     continue;
 
-                nerr += (1 - ratio) * nerr2 * Sqr(lab2.B - lab1.B);
+                nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.B - lab1.B);
 
                 if (nerr >= err)
                     continue;
 
                 var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
-                nerr += ratio * nerr2 * Sqr(deltaL_prime_div_k_L_S_L);
+                nerr += ratio * nerr2 * BitmapUtilities.Sqr(deltaL_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
                 var deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out var a1Prime, out var a2Prime, out var CPrime1, out var CPrime2);
-                nerr += ratio * nerr2 * Sqr(deltaC_prime_div_k_L_S_L);
+                nerr += ratio * nerr2 * BitmapUtilities.Sqr(deltaC_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
                 var deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out var barCPrime, out var barhPrime);
-                nerr += ratio * nerr2 * Sqr(deltaH_prime_div_k_L_S_L);
+                nerr += ratio * nerr2 * BitmapUtilities.Sqr(deltaH_prime_div_k_L_S_L);
                 if (nerr >= err)
                     continue;
 
@@ -102,7 +102,7 @@ namespace PnnQuant
             {
                 // !!! Can throw gamma correction in here, but what to do about perceptual
                 // !!! nonuniformity then?
-                int index = GetARGBIndex(pixel, hasSemiTransparency, m_transparentPixelIndex > -1);
+                int index = BitmapUtilities.GetARGBIndex(pixel, hasSemiTransparency, m_transparentPixelIndex > -1);
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
@@ -130,7 +130,7 @@ namespace PnnQuant
                 bins[maxbins++] = bins[i];
             }
 
-            var proportional = Sqr(nMaxColors) / maxbins;
+            var proportional = BitmapUtilities.Sqr(nMaxColors) / maxbins;
             if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
                 quan_sqrt = -1;
             else if ((proportional < .018 || proportional > .5) && nMaxColors < 64)
@@ -248,7 +248,7 @@ namespace PnnQuant
                 };
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
                 if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
-                    Swap(ref palettes[0], ref palettes[k]);
+                    BitmapUtilities.Swap(ref palettes[0], ref palettes[k]);
 
                 if ((i = bins[i].fw) == 0)
                     break;
@@ -271,44 +271,44 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = Sqr(c2.A - c.A) / Math.Exp(1.5);
+                var curdist = BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5);
                 if (curdist > mindist)
                     continue;
 
                 GetLab(c2.ToArgb(), out var lab2);
                 if (nMaxColors > 32 || hasSemiTransparency)
                 {
-                    curdist += PR * Sqr(c2.R - c.R);
+                    curdist += PR * BitmapUtilities.Sqr(c2.R - c.R);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PG * Sqr(c2.G - c.G);
+                    curdist += PG * BitmapUtilities.Sqr(c2.G - c.G);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PB * Sqr(c2.B - c.B);
+                    curdist += PB * BitmapUtilities.Sqr(c2.B - c.B);
                     if (PB < 1)
                     {
                         if (curdist > mindist)
                             continue;
 
-                        curdist += Sqr(lab2.B - lab1.B) / 2.0;
+                        curdist += BitmapUtilities.Sqr(lab2.B - lab1.B) / 2.0;
                     }
                 }
                 else
                 {  
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
-                    curdist += Sqr(deltaL_prime_div_k_L_S_L);
+                    curdist += BitmapUtilities.Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
                     var deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out var a1Prime, out var a2Prime, out var CPrime1, out var CPrime2);
-                    curdist += Sqr(deltaC_prime_div_k_L_S_L);
+                    curdist += BitmapUtilities.Sqr(deltaC_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
                     var deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out var barCPrime, out var barhPrime);
-                    curdist += Sqr(deltaH_prime_div_k_L_S_L);
+                    curdist += BitmapUtilities.Sqr(deltaH_prime_div_k_L_S_L);
                     if (curdist > mindist)
                         continue;
 
@@ -337,7 +337,7 @@ namespace PnnQuant
                 {
                     var c2 = palette[k];
                     GetLab(c2.ToArgb(), out var lab2);
-                    closest[4] = (ushort) (PR * Sqr(c2.R - c.R) + PG * Sqr(c2.G - c.G) + PB * Sqr(c2.B - c.B) + Sqr(lab2.B - lab1.B) / 2.0);                    
+                    closest[4] = (ushort) (PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B) + BitmapUtilities.Sqr(lab2.B - lab1.B) / 2.0);                    
 
                     if (closest[4] < closest[2])
                     {
@@ -416,7 +416,7 @@ namespace PnnQuant
                         var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
                         if (noBias)
                         {
-                            int offset = GetARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
+                            int offset = BitmapUtilities.GetARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
                             if (lookup[offset] == 0)
                                 lookup[offset] = (c.A == 0) ? 1 : NearestColorIndex(palettes, nMaxColors, c1.ToArgb()) + 1;
                             qPixels[pixelIndex] = lookup[offset] - 1;
@@ -426,7 +426,7 @@ namespace PnnQuant
 
                         var c2 = palettes[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : GetARGBIndex(c2.ToArgb(), false, m_transparentPixelIndex > -1);
+                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : BitmapUtilities.GetARGBIndex(c2.ToArgb(), false, m_transparentPixelIndex > -1);
 
                         r_pix = limtb[r_pix - c2.R + BLOCK_SIZE];
                         g_pix = limtb[g_pix - c2.G + BLOCK_SIZE];
@@ -465,7 +465,7 @@ namespace PnnQuant
                         pixelIndex += width + 1;
 
                     dir *= -1;
-                    Swap(ref row0, ref row1);
+                    BitmapUtilities.Swap(ref row0, ref row1);
                 }
                 return qPixels;
             }
@@ -495,7 +495,7 @@ namespace PnnQuant
 
             if (!dither)
             {
-                double delta = Sqr(nMaxColors) / pixelMap.Count;
+                double delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
                 float weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
                 return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels, weight);
             }
