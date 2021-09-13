@@ -48,7 +48,7 @@ namespace nQuant.Master
             var palettes = source.Palette.Entries;
             foreach (var pPropertyItem in source.PropertyItems)
             {
-                if (pPropertyItem.Id == BitmapUtilities.PropertyTagIndexTransparent)
+                if (pPropertyItem.Id == PropertyTagIndexTransparent)
                 {
                     transparentIndex = pPropertyItem.Value[0];
                     Color c = palettes[transparentIndex];
