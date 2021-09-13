@@ -15,8 +15,6 @@ namespace nQuant
 
         public static void Main(string[] args)
         {
-            System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
-            System.Console.WriteLine("Copyright (C) 2018 - 2021 Miller Cy Chan.");
 
 #if DEBUG
             var sourcePath = @"samples\SE5x9.jpg";
@@ -28,7 +26,7 @@ namespace nQuant
                Environment.Exit(1);
             }
             var sourcePath = args[0];
-            ProcessArgs(args);
+            var algorithm = ProcessArgs(args);
 #endif
             if (!File.Exists(sourcePath))
             {
@@ -44,6 +42,38 @@ namespace nQuant
             }
 
             Stopwatch stopwatch = Stopwatch.StartNew();
+            if(algorithm != null)
+            {
+                System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", Assembly.GetExecutingAssembly().GetName().Version);
+                System.Console.WriteLine("Copyright (C) 2018 - 2021 Miller Cy Chan.");
+
+                using (var bitmap = new Bitmap(sourcePath))
+                {
+                    try
+                    {
+                        using (var dest = new OtsuThreshold.Otsu().ConvertGrayScaleToBinary(bitmap))
+                        {
+                            dest.Save(targetPath, ImageFormat.Png);
+                            System.Console.WriteLine("Converted black and white image: " + targetPath);
+                        }
+                    }
+                    catch (Exception q)
+                    {
+#if (DEBUG)
+                    System.Console.WriteLine(q.StackTrace);
+#else
+                        System.Console.WriteLine(q.Message);
+                        System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", bitmap.PixelFormat.ToString(), maxColors);
+#endif
+                    }
+                }                
+                System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
+                return;
+            }
+
+            System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
+            System.Console.WriteLine("Copyright (C) 2018 - 2021 Miller Cy Chan.");
+
             PnnQuant.PnnQuantizer quantizer = new PnnQuant.PnnLABQuantizer();
             using (var bitmap = new Bitmap(sourcePath))
             {
@@ -68,7 +98,7 @@ namespace nQuant
             System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
         }
 
-        private static void ProcessArgs(string[] args)
+        private static string ProcessArgs(string[] args)
         {
             for (var index = 1; index < args.Length; ++index)
             {
@@ -82,7 +112,7 @@ namespace nQuant
                     {
                         PrintUsage();
                         Environment.Exit(1);
-                        return;
+                        return null;
                     }
 
                     currentArg = currentArg.Substring(1);
@@ -110,6 +140,17 @@ namespace nQuant
                             targetPath = args[index + 1];
                             break;
 
+                        case "A":
+                            string strAlgor = args[index + 1].ToUpper();
+                            if (!(strAlgor == "OTSU"))
+                            {
+                                PrintUsage();
+                                Environment.Exit(1);
+                                break;
+                            }
+                            maxColors = 2;
+                            return strAlgor;
+
                         default:
                             PrintUsage();
                             Environment.Exit(1);
@@ -117,6 +158,7 @@ namespace nQuant
                     }
                 }
             }
+            return null;
         }
 
         private static void PrintUsage()
@@ -127,6 +169,7 @@ namespace nQuant
             System.Console.WriteLine("Valid options:");
             System.Console.WriteLine("  /m : Max Colors (pixel-depth) - Maximum number of colors for the output format to support. The default is 256 (8-bit).");
             System.Console.WriteLine("  /d : Dithering or not? y or n.");
+            System.Console.WriteLine("  /a : otsu");
             System.Console.WriteLine("  /o : Output image file path. The default is <source image path directory>\\<source image file name without extension>-quant<Max colors>.png");
         }
 
