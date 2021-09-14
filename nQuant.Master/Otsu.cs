@@ -1,6 +1,6 @@
 ﻿/* Otsu's Image Segmentation Method
   Copyright (C) 2009 Tolga Birdal
-  Copyright (c) 2018 Miller Cy Chan
+  Copyright (c) 2018-2021 Miller Cy Chan
 */
 
 using nQuant.Master;
@@ -25,7 +25,7 @@ namespace OtsuThreshold
 		{
 			int sum = 0;
 			int i;
-			for (i = init; i <= end; i++)
+			for (i = init; i <= end; ++i)
 				sum += hist[i];
 
 			return (float)sum;
@@ -36,7 +36,7 @@ namespace OtsuThreshold
 		{
 			int sum = 0;
 			int i;
-			for (i = init; i <= end; i++)
+			for (i = init; i <= end; ++i)
 				sum += i * hist[i];
 
 			return (float)sum;
@@ -49,7 +49,7 @@ namespace OtsuThreshold
 			short idx = 0;
 			short i;
 
-			for (i = 1; i < n - 1; i++)
+			for (i = 1; i < n - 1; ++i)
 			{
 				if (vec[i] > maxVec)
 				{
@@ -63,7 +63,7 @@ namespace OtsuThreshold
 		// simply computes the image histogram
 		private static unsafe void getHistogram(byte* p, int w, int h, int ws, byte DJ, int[] hist)
 		{
-			for (uint i = 0; i < h; i++)
+			for (uint i = 0; i < h; ++i)
 			{
 				for (uint j = 0; j < w * DJ; j += DJ)
 				{
