@@ -107,16 +107,22 @@ namespace OtsuThreshold
 			return findMax(vet, 256);
 		}
 
-		private static bool threshold(Bitmap bitmap, short thresh)
+		private static bool threshold(Bitmap bitmap, short thresh, float weight = 1f)
 		{
+			if (thresh >= 200)
+			{
+				thresh = 200;
+				weight = .7f;
+			}
+
 			var bitmapWidth = bitmap.Width;
 			var bitmapHeight = bitmap.Height;
 
-			var pixelFormat = thresh < 200 ? PixelFormat.Format24bppRgb : PixelFormat.Format32bppArgb;
-			var data = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, pixelFormat);
+			var data = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadWrite, bitmap.PixelFormat);
 
-			var bitDepth = Image.GetPixelFormatSize(pixelFormat);
+			var bitDepth = Image.GetPixelFormatSize(bitmap.PixelFormat);
 			var DJ = (byte)(bitDepth >> 3);
+			var minThresh = (byte)(thresh * weight);
 
 			unsafe
 			{
@@ -127,9 +133,10 @@ namespace OtsuThreshold
 					var ptr = &pRowDest[i * data.Stride];
 					for (int j = 0; j < bitmapWidth * DJ; j += DJ)
 					{
-						ptr[j] = (byte)((ptr[j] > (byte)thresh) ? Byte.MaxValue : 0);
-						ptr[j + 1] = (byte)((ptr[j + 1] > (byte)thresh) ? Byte.MaxValue : 0);
-						ptr[j + 2] = (byte)((ptr[j + 2] > (byte)thresh) ? Byte.MaxValue : 0);
+						if (ptr[j] > (byte)thresh && ptr[j + 1] > (byte)thresh && ptr[j + 2] > (byte)thresh)
+							ptr[j] = ptr[j + 1] = ptr[j + 2] = Byte.MaxValue;
+						else if (ptr[j] < minThresh && ptr[j + 1] < minThresh && ptr[j + 2] < minThresh)
+							ptr[j] = ptr[j + 1] = ptr[j + 2] = 0;
 					}
 				}
 			}
