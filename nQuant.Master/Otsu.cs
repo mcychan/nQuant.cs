@@ -107,7 +107,7 @@ namespace OtsuThreshold
 			return findMax(vet, 256);
 		}
 
-		private static bool threshold(Bitmap bitmap, short thresh, float weight = 1f)
+		private static bool threshold(int[] pixels, short thresh, float weight = 1f)
 		{
 			if (thresh >= 200)
 			{
@@ -115,33 +115,16 @@ namespace OtsuThreshold
 				weight = .7f;
 			}
 
-			var bitmapWidth = bitmap.Width;
-			var bitmapHeight = bitmap.Height;
-
-			var data = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadWrite, bitmap.PixelFormat);
-
-			var bitDepth = Image.GetPixelFormatSize(bitmap.PixelFormat);
-			var DJ = (byte)(bitDepth >> 3);
 			var minThresh = (byte)(thresh * weight);
-
-			unsafe
+			for (int i = 0; i < pixels.Length; ++i)
 			{
-				var pRowDest = (byte*)data.Scan0;
-
-				for (int i = 0; i < bitmapHeight; ++i)
-				{
-					var ptr = &pRowDest[i * data.Stride];
-					for (int j = 0; j < bitmapWidth * DJ; j += DJ)
-					{
-						if (ptr[j] > (byte)thresh && ptr[j + 1] > (byte)thresh && ptr[j + 2] > (byte)thresh)
-							ptr[j] = ptr[j + 1] = ptr[j + 2] = Byte.MaxValue;
-						else if (ptr[j] < minThresh && ptr[j + 1] < minThresh && ptr[j + 2] < minThresh)
-							ptr[j] = ptr[j + 1] = ptr[j + 2] = 0;
-					}
-				}
+				var c = Color.FromArgb(pixels[i]);
+				if (c.R > (byte)thresh && c.G > (byte)thresh && c.B > (byte)thresh)
+					pixels[i] = Color.FromArgb(c.A, Byte.MaxValue, Byte.MaxValue, Byte.MaxValue).ToArgb();
+				else if (c.R < minThresh && c.G < minThresh && c.B < minThresh)
+					pixels[i] = Color.FromArgb(c.A, 0, 0, 0).ToArgb();
 			}
 
-			bitmap.UnlockBits(data);
 			return true;
 		}
 
@@ -251,16 +234,16 @@ namespace OtsuThreshold
 		public Bitmap ConvertGrayScaleToBinary(Bitmap srcimg)
 		{
 			var sourceImg = ConvertToGrayScale(srcimg);
-			var otsuThreshold = getOtsuThreshold(sourceImg);
-
-			if (!threshold(sourceImg, otsuThreshold))
-				return srcimg;
+			var otsuThreshold = getOtsuThreshold(sourceImg);			
 
 			int bitmapWidth = sourceImg.Width;
 			int bitmapHeight = sourceImg.Height;
 
 			var pixels = new int[bitmapWidth * bitmapHeight];
 			if (!GrabPixels(sourceImg, pixels))
+				return sourceImg;
+
+			if (!threshold(pixels, otsuThreshold))
 				return sourceImg;
 
 			var dest = new Bitmap(bitmapWidth, bitmapHeight, PixelFormat.Format1bppIndexed);
@@ -277,7 +260,6 @@ namespace OtsuThreshold
 			}
 
 			var qPixels = GilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, NearestColorIndex, GetColorIndex);
-
 			if (m_transparentPixelIndex >= 0)
 			{
 				var k = qPixels[m_transparentPixelIndex];
