@@ -115,16 +115,16 @@ namespace OtsuThreshold
 			var pixelFormat = thresh < 200 ? PixelFormat.Format24bppRgb : PixelFormat.Format32bppArgb;
 			var data = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, pixelFormat);
 
-			var bitDepth = Image.GetPixelFormatSize(bitmap.PixelFormat);
+			var bitDepth = Image.GetPixelFormatSize(pixelFormat);
 			var DJ = (byte)(bitDepth >> 3);
 
 			unsafe
 			{
-				var pRowSource = (byte*)data.Scan0;
+				var pRowDest = (byte*)data.Scan0;
 
 				for (int i = 0; i < bitmapHeight; ++i)
 				{
-					byte* ptr = &pRowSource[i * data.Stride];
+					var ptr = &pRowDest[i * data.Stride];
 					for (int j = 0; j < bitmapWidth * DJ; j += DJ)
 					{
 						ptr[j] = (byte)((ptr[j] > (byte)thresh) ? Byte.MaxValue : 0);
@@ -206,8 +206,10 @@ namespace OtsuThreshold
 				{
 					for (int j = 0; j < iWidth; ++j)
 					{
-						if (min1 > ptr[1])
-							min1 = ptr[1];
+						byte grey = Math.Min(ptr[0], ptr[1]);
+						grey = Math.Min(ptr[1], ptr[2]);
+						if (min1 > grey)
+							min1 = grey;
 
 						if (max1 < ptr[1])
 							max1 = ptr[1];
@@ -267,9 +269,7 @@ namespace OtsuThreshold
 				palettes[1] = Color.White;
 			}
 
-			var qPixels = otsuThreshold < 200 ?
-				BitmapUtilities.Quantize_image(bitmapWidth, bitmapHeight, pixels, palettes, NearestColorIndex, GetColorIndex, hasSemiTransparency, true) :
-				GilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, NearestColorIndex, GetColorIndex);
+			var qPixels = GilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, NearestColorIndex, GetColorIndex);
 
 			if (m_transparentPixelIndex >= 0)
 			{
