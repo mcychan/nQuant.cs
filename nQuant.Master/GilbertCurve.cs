@@ -117,7 +117,7 @@ namespace nQuant.Master
                 if (Math.Abs(error[j]) < DITHER_MAX)
                     continue;
 
-                error[j] /= 3.0f;			    
+                error[j] /= (palette.Length > 16) ? 3.0f : 2.0f;			    
             }
             errorq.Add(error);
         }
