@@ -364,132 +364,14 @@ namespace PnnQuant
 
             closestMap[pixel] = closest;
             return k;
-        }
-
-        protected override int[] Quantize_image(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
-        {
-            var qPixels = new int[width * height];
-            int pixelIndex = 0;
-            if (dither)
-            {
-                const short DJ = 4;
-                const short BLOCK_SIZE = 256;
-                const short DITHER_MAX = 16;
-                int err_len = (width + 2) * DJ;
-                var clamp = new short[DJ * BLOCK_SIZE];
-                var limtb = new short[2 * BLOCK_SIZE];
-
-                for (short i = 0; i < BLOCK_SIZE; ++i)
-                {
-                    clamp[i] = 0;
-                    clamp[i + BLOCK_SIZE] = i;
-                    clamp[i + BLOCK_SIZE * 2] = Byte.MaxValue;
-                    clamp[i + BLOCK_SIZE * 3] = Byte.MaxValue;
-
-                    limtb[i] = -DITHER_MAX;
-                    limtb[i + BLOCK_SIZE] = DITHER_MAX;
-                }
-                for (short i = -DITHER_MAX; i <= DITHER_MAX; ++i)
-                    limtb[i + BLOCK_SIZE] = i % 4 == 3 ? (short)0 : i;
-
-                bool noBias = hasSemiTransparency || nMaxColors < 64;
-                int dir = 1;
-                var row0 = new int[err_len];
-                var row1 = new int[err_len];
-                var lookup = new int[65536];
-                for (int i = 0; i < height; ++i)
-                {
-                    if (dir < 0)
-                        pixelIndex += width - 1;
-
-                    int cursor0 = DJ, cursor1 = width * DJ;
-                    row1[cursor1] = row1[cursor1 + 1] = row1[cursor1 + 2] = row1[cursor1 + 3] = 0;
-                    for (int j = 0; j < width; ++j)
-                    {
-                        var c = Color.FromArgb(pixels[pixelIndex]);
-                        var ditherPixel = CalcDitherPixel(c, clamp, row0, cursor0, noBias);
-                        int r_pix = ditherPixel[0];
-                        int g_pix = ditherPixel[1];
-                        int b_pix = ditherPixel[2];
-                        int a_pix = ditherPixel[3];
-
-                        var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        if (noBias)
-                        {
-                            int offset = BitmapUtilities.GetARGBIndex(c1.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
-                            if (lookup[offset] == 0)
-                                lookup[offset] = (c.A == 0) ? 1 : NearestColorIndex(palettes, nMaxColors, c1.ToArgb()) + 1;
-                            qPixels[pixelIndex] = lookup[offset] - 1;
-                        }
-                        else
-                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ClosestColorIndex(palettes, nMaxColors, c1.ToArgb());
-
-                        var c2 = palettes[qPixels[pixelIndex]];
-                        if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : BitmapUtilities.GetARGBIndex(c2.ToArgb(), false, m_transparentPixelIndex > -1);
-
-                        r_pix = limtb[r_pix - c2.R + BLOCK_SIZE];
-                        g_pix = limtb[g_pix - c2.G + BLOCK_SIZE];
-                        b_pix = limtb[b_pix - c2.B + BLOCK_SIZE];
-                        a_pix = limtb[a_pix - c2.A + BLOCK_SIZE];
-
-                        int k = r_pix * 2;
-                        row1[cursor1 - DJ] = r_pix;
-                        row1[cursor1 + DJ] += (r_pix += k);
-                        row1[cursor1] += (r_pix += k);
-                        row0[cursor0 + DJ] += (r_pix + k);
-
-                        k = g_pix * 2;
-                        row1[cursor1 + 1 - DJ] = g_pix;
-                        row1[cursor1 + 1 + DJ] += (g_pix += k);
-                        row1[cursor1 + 1] += (g_pix += k);
-                        row0[cursor0 + 1 + DJ] += (g_pix + k);
-
-                        k = b_pix * 2;
-                        row1[cursor1 + 2 - DJ] = b_pix;
-                        row1[cursor1 + 2 + DJ] += (b_pix += k);
-                        row1[cursor1 + 2] += (b_pix += k);
-                        row0[cursor0 + 2 + DJ] += (b_pix + k);
-
-                        k = a_pix * 2;
-                        row1[cursor1 + 3 - DJ] = a_pix;
-                        row1[cursor1 + 3 + DJ] += (a_pix += k);
-                        row1[cursor1 + 3] += (a_pix += k);
-                        row0[cursor0 + 3 + DJ] += (a_pix + k);
-
-                        cursor0 += DJ;
-                        cursor1 -= DJ;
-                        pixelIndex += dir;
-                    }
-                    if ((i % 2) == 1)
-                        pixelIndex += width + 1;
-
-                    dir *= -1;
-                    BitmapUtilities.Swap(ref row0, ref row1);
-                }
-                return qPixels;
-            }
-
-            if (m_transparentPixelIndex >= 0 || nMaxColors < 64)
-            {
-                for (int i = 0; i < qPixels.Length; ++i)
-                    qPixels[i] = NearestColorIndex(palettes, nMaxColors, pixels[i]);
-            }
-            else
-            {
-                for (int i = 0; i < qPixels.Length; ++i)
-                    qPixels[i] = ClosestColorIndex(palettes, nMaxColors, pixels[i]);
-            }
-
-            return qPixels;
-        }
+        }        
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
             DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
             if (nMaxColors < 64 || hasSemiTransparency)
-                qPixels = Quantize_image(pixels, palettes, nMaxColors, width, height, dither);
+                qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
