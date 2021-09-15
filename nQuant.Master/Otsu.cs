@@ -18,7 +18,7 @@ namespace OtsuThreshold
 
 		protected int m_transparentPixelIndex = -1;
 		protected Color m_transparentColor = Color.Transparent;
-		protected readonly Dictionary<int, ushort> nearestMap = new Dictionary<int, ushort>();
+		protected readonly Dictionary<int, ushort> nearestMap = new();
 
 		// function is used to compute the q values in the equation
 		private static float Px(int init, int end, int[] hist)
@@ -28,18 +28,17 @@ namespace OtsuThreshold
 			for (i = init; i <= end; ++i)
 				sum += hist[i];
 
-			return (float)sum;
+			return sum;
 		}
 
 		// function is used to compute the mean values in the equation (mu)
 		private static float Mx(int init, int end, int[] hist)
 		{
 			int sum = 0;
-			int i;
-			for (i = init; i <= end; ++i)
+			for (int i = init; i <= end; ++i)
 				sum += i * hist[i];
 
-			return (float)sum;
+			return sum;
 		}
 
 		// finds the maximum element in a vector
@@ -47,9 +46,8 @@ namespace OtsuThreshold
 		{
 			float maxVec = 0;
 			short idx = 0;
-			short i;
 
-			for (i = 1; i < n - 1; ++i)
+			for (short i = 1; i < n - 1; ++i)
 			{
 				if (vec[i] > maxVec)
 				{
@@ -63,7 +61,7 @@ namespace OtsuThreshold
 		// simply computes the image histogram
 		private void getHistogram(int[] pixels, int[] hist)
 		{
-			foreach(int pixel in pixels)
+			foreach(var pixel in pixels)
 			{
 				var c = Color.FromArgb(pixel);
 				hist[c.R]++;
@@ -82,7 +80,7 @@ namespace OtsuThreshold
 			getHistogram(pixels, hist);
 
 			// loop through all possible t values and maximize between class variance
-			for (int k = 1; k != Byte.MaxValue; k++)
+			for (int k = 1; k != Byte.MaxValue; ++k)
 			{
 				float p1 = Px(0, k, hist);
 				float p2 = Px(k + 1, Byte.MaxValue, hist);
@@ -154,11 +152,6 @@ namespace OtsuThreshold
 			return k;
 		}
 
-		protected bool GrabPixels(Bitmap source, int[] pixels)
-		{
-			return BitmapUtilities.GrabPixels(source, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex);
-		}
-
 		public static Bitmap ConvertToGrayScale(Bitmap srcimg)
 		{
 			var iWidth = srcimg.Width;
@@ -186,10 +179,8 @@ namespace OtsuThreshold
 				{
 					for (int j = 0; j < iWidth; ++j)
 					{
-						byte grey = Math.Min(ptr[0], ptr[1]);
-						grey = Math.Min(ptr[1], ptr[2]);
-						if (min1 > grey)
-							min1 = grey;
+						if (min1 > ptr[1])
+							min1 = ptr[1];
 
 						if (max1 < ptr[1])
 							max1 = ptr[1];
@@ -204,9 +195,7 @@ namespace OtsuThreshold
 				{
 					for (int j = 0; j < iWidth; ++j)
 					{
-						byte grey = Math.Min(ptr[0], ptr[1]);
-						grey = Math.Min(ptr[1], ptr[2]);
-						ptr[0] = ptr[1] = ptr[2] = (byte)((grey - min1) * (Byte.MaxValue / (max1 - min1)));
+						ptr[0] = ptr[1] = ptr[2] = (byte)((ptr[1] - min1) * (Byte.MaxValue / (max1 - min1)));
 						ptr += DJ;
 					}
 					ptr += remain;
@@ -226,10 +215,10 @@ namespace OtsuThreshold
 			var sourceImg = ConvertToGrayScale(srcimg);						
 
 			int bitmapWidth = sourceImg.Width;
-			int bitmapHeight = sourceImg.Height;
+            int bitmapHeight = sourceImg.Height;
 
 			var pixels = new int[bitmapWidth * bitmapHeight];
-			if (!GrabPixels(sourceImg, pixels))
+			if (!BitmapUtilities.GrabPixels(sourceImg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
 				return sourceImg;
 
 			var otsuThreshold = getOtsuThreshold(pixels);
