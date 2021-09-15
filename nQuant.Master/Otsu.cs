@@ -61,49 +61,38 @@ namespace OtsuThreshold
 		}
 
 		// simply computes the image histogram
-		private static unsafe void getHistogram(byte* p, int w, int h, int ws, byte DJ, int[] hist)
+		private void getHistogram(int[] pixels, int[] hist)
 		{
-			for (uint i = 0; i < h; ++i)
+			foreach(int pixel in pixels)
 			{
-				for (uint j = 0; j < w * DJ; j += DJ)
-				{
-					var index = i * ws + j;
-					hist[p[index]]++;
-				}
+				var c = Color.FromArgb(pixel);
+				hist[c.R]++;
+				hist[c.G]++;
+				hist[c.B]++;
+				if(hasSemiTransparency)
+					hist[c.A]++;
 			}
 		}
 
-		private static short getOtsuThreshold(Bitmap bitmap)
+		private short getOtsuThreshold(int[] pixels)
 		{
-			var bitmapWidth = bitmap.Width;
-			var bitmapHeight = bitmap.Height;
-			var bitDepth = Image.GetPixelFormatSize(bitmap.PixelFormat);
-			var DJ = (byte)(bitDepth >> 3);
-
 			var vet = new float[256];
 			var hist = new int[256];
 
-			var data = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, bitmap.PixelFormat);
+			getHistogram(pixels, hist);
 
-			unsafe
+			// loop through all possible t values and maximize between class variance
+			for (int k = 1; k != Byte.MaxValue; k++)
 			{
-				var pRowSource = (byte*)data.Scan0;
-				getHistogram(pRowSource, bitmapWidth, bitmapHeight, data.Stride, DJ, hist);
-
-				// loop through all possible t values and maximize between class variance
-				for (int k = 1; k != Byte.MaxValue; k++)
-				{
-					float p1 = Px(0, k, hist);
-					float p2 = Px(k + 1, Byte.MaxValue, hist);
-					float p12 = p1 * p2;
-					if (p12 == 0)
-						p12 = 1;
-					float diff = (Mx(0, k, hist) * p2) - (Mx(k + 1, Byte.MaxValue, hist) * p1);
-					vet[k] = diff * diff / p12;
-				}
-
-				bitmap.UnlockBits(data);
+				float p1 = Px(0, k, hist);
+				float p2 = Px(k + 1, Byte.MaxValue, hist);
+				float p12 = p1 * p2;
+				if (p12 == 0)
+					p12 = 1;
+				float diff = (Mx(0, k, hist) * p2) - (Mx(k + 1, Byte.MaxValue, hist) * p1);
+				vet[k] = diff * diff / p12;
 			}
+
 			return findMax(vet, 256);
 		}
 
@@ -111,17 +100,18 @@ namespace OtsuThreshold
 		{
 			if (thresh >= 200)
 			{
-				thresh = 200;
-				weight = .7f;
+				weight = .75f;
+				thresh = 200;				
 			}
 
 			var minThresh = (byte)(thresh * weight);
+			var maxThresh = (byte) thresh;
 			for (int i = 0; i < pixels.Length; ++i)
 			{
 				var c = Color.FromArgb(pixels[i]);
-				if (c.R > (byte)thresh && c.G > (byte)thresh && c.B > (byte)thresh)
+				if (c.R + c.G + c.B > maxThresh * 3)
 					pixels[i] = Color.FromArgb(c.A, Byte.MaxValue, Byte.MaxValue, Byte.MaxValue).ToArgb();
-				else if (c.R < minThresh && c.G < minThresh && c.B < minThresh)
+				else if (c.R + c.G + c.B < minThresh * 3)
 					pixels[i] = Color.FromArgb(c.A, 0, 0, 0).ToArgb();
 			}
 
@@ -233,8 +223,7 @@ namespace OtsuThreshold
 
 		public Bitmap ConvertGrayScaleToBinary(Bitmap srcimg)
 		{
-			var sourceImg = ConvertToGrayScale(srcimg);
-			var otsuThreshold = getOtsuThreshold(sourceImg);			
+			var sourceImg = ConvertToGrayScale(srcimg);						
 
 			int bitmapWidth = sourceImg.Width;
 			int bitmapHeight = sourceImg.Height;
@@ -243,6 +232,7 @@ namespace OtsuThreshold
 			if (!GrabPixels(sourceImg, pixels))
 				return sourceImg;
 
+			var otsuThreshold = getOtsuThreshold(pixels);
 			if (!threshold(pixels, otsuThreshold))
 				return sourceImg;
 

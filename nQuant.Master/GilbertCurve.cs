@@ -77,7 +77,7 @@ namespace nQuant.Master
         private void DitherPixel(int x, int y)
         {
             int bidx = x + y * width;
-            Color pixel= Color.FromArgb(pixels[bidx]);
+            Color pixel = Color.FromArgb(pixels[bidx]);
             ErrorBox error = new ErrorBox(pixel);
             for (int c = 0; c < DITHER_MAX; ++c)
             {
@@ -105,19 +105,21 @@ namespace nQuant.Master
             errorq.RemoveAt(0);
             c2 = palette[qPixels[bidx]];
             if (palette.Length > 256)
-                qPixels[bidx] = (short) getColorIndexFn(c2.ToArgb());
+                qPixels[bidx] = (short)getColorIndexFn(c2.ToArgb());
 
             error[0] = r_pix - c2.R;
             error[1] = g_pix - c2.G;
             error[2] = b_pix - c2.B;
             error[3] = a_pix - c2.A;
 
-            for (int j = 0; j < error.Length; ++j)
-            {
-                if (Math.Abs(error[j]) < DITHER_MAX)
-                    continue;
+            if (palette.Length > 16) {
+                for (int j = 0; j < error.Length; ++j)
+                {
+                    if (Math.Abs(error[j]) < DITHER_MAX)
+                        continue;
 
-                error[j] /= (palette.Length > 16) ? 3.0f : 1.0f;			    
+                    error[j] /= 3.0f;
+                }
             }
             errorq.Add(error);
         }
