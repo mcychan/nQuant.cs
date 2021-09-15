@@ -24,8 +24,7 @@ namespace OtsuThreshold
 		private static float Px(int init, int end, int[] hist)
 		{
 			int sum = 0;
-			int i;
-			for (i = init; i <= end; ++i)
+			for (int i = init; i <= end; ++i)
 				sum += hist[i];
 
 			return sum;
@@ -210,9 +209,9 @@ namespace OtsuThreshold
 			return BitmapUtilities.GetARGBIndex(argb, hasSemiTransparency, m_transparentPixelIndex > -1);
 		}
 
-		public Bitmap ConvertGrayScaleToBinary(Bitmap srcimg)
+		public Bitmap ConvertGrayScaleToBinary(Bitmap srcimg, bool isGrayscale = false)
 		{
-			var sourceImg = ConvertToGrayScale(srcimg);						
+			var sourceImg = isGrayscale ? srcimg : ConvertToGrayScale(srcimg);						
 
 			int bitmapWidth = sourceImg.Width;
             int bitmapHeight = sourceImg.Height;
