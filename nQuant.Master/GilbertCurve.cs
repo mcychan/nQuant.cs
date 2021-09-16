@@ -40,6 +40,7 @@ namespace nQuant.Master
             }
         }
 
+        private readonly float divisor;
         private readonly int width;
         private readonly int height;
         private readonly int[] pixels;
@@ -54,8 +55,9 @@ namespace nQuant.Master
         private const byte DITHER_MAX = 9;
         private const float BLOCK_SIZE = 343f;
 
-        private GilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
+        private GilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, float divisor)
         {
+            this.divisor = divisor;
             this.width = width;
             this.height = height;
             this.pixels = image;
@@ -112,13 +114,13 @@ namespace nQuant.Master
             error[2] = b_pix - c2.B;
             error[3] = a_pix - c2.A;
 
-            if (palette.Length > 16) {
+            if (divisor < 3 || palette.Length > 16) {
                 for (int j = 0; j < error.Length; ++j)
                 {
                     if (Math.Abs(error[j]) < DITHER_MAX)
                         continue;
 
-                    error[j] /= 3.0f;
+                    error[j] /= divisor;
                 }
             }
             errorq.Add(error);
@@ -204,10 +206,10 @@ namespace nQuant.Master
                 Generate2d(0, 0, 0, height, width, 0);
         }
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, float divisor = 3.0f)
         {
             var qPixels = new int[pixels.Length];
-            new GilbertCurve(width, height, pixels, palette, qPixels, ditherFn, getColorIndexFn).Run();
+            new GilbertCurve(width, height, pixels, palette, qPixels, ditherFn, getColorIndexFn, divisor).Run();
             return qPixels;
         }
     }
