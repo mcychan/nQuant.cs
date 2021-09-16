@@ -93,7 +93,7 @@ namespace OtsuThreshold
 			return findMax(vet, 256);
 		}
 
-		private static bool threshold(int[] pixels, short thresh, float weight = 1f)
+		private bool threshold(int[] pixels, short thresh, float weight = 1f)
 		{
 			if (thresh >= 200)
 			{
@@ -214,7 +214,7 @@ namespace OtsuThreshold
 			var sourceImg = isGrayscale ? srcimg : ConvertToGrayScale(srcimg);						
 
 			int bitmapWidth = sourceImg.Width;
-            int bitmapHeight = sourceImg.Height;
+			int bitmapHeight = sourceImg.Height;
 
 			var pixels = new int[bitmapWidth * bitmapHeight];
 			if (!BitmapUtilities.GrabPixels(sourceImg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
