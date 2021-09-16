@@ -108,7 +108,7 @@ namespace OtsuThreshold
 				var c = Color.FromArgb(pixels[i]);
 				if (c.R + c.G + c.B > maxThresh * 3)
 					pixels[i] = Color.FromArgb(c.A, Byte.MaxValue, Byte.MaxValue, Byte.MaxValue).ToArgb();
-				else if (c.R + c.G + c.B < minThresh * 3)
+				else if (m_transparentPixelIndex >= 0 || c.R + c.G + c.B < minThresh * 3)
 					pixels[i] = Color.FromArgb(c.A, 0, 0, 0).ToArgb();
 			}
 
