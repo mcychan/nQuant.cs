@@ -20,8 +20,8 @@ namespace PnnQuant
         protected int m_transparentPixelIndex = -1;
         protected Color m_transparentColor = Color.Transparent;
         protected readonly Random rand = new();
-        protected readonly Dictionary<int, ushort[]> closestMap = new Dictionary<int, ushort[]>();
-        protected readonly Dictionary<int, ushort> nearestMap = new Dictionary<int, ushort>();        
+        protected readonly Dictionary<int, ushort[]> closestMap = new();
+        protected readonly Dictionary<int, ushort> nearestMap = new();        
 
         private double PR = .299, PG = .587, PB = .114;
         private sealed class Pnnbin
@@ -284,15 +284,11 @@ namespace PnnQuant
             int bitDepth = Image.GetPixelFormatSize(pixelFormat);
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
-        protected bool GrabPixels(Bitmap source, int[] pixels)
-        {
-            return BitmapUtilities.GrabPixels(source, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex);
-        }
 
         protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
             DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 256) ? NearestColorIndex : ClosestColorIndex;
-            int[] qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
+            var qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
 
             if (!dither)
                 return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
@@ -314,7 +310,7 @@ namespace PnnQuant
 
             var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             var pixels = new int[bitmapWidth * bitmapHeight];
-            if(!GrabPixels(source, pixels))
+            if(!BitmapUtilities.GrabPixels(source, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
                 return dest;
 
             var palettes = dest.Palette.Entries;

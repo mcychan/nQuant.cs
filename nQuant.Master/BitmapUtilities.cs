@@ -36,69 +36,6 @@ namespace nQuant.Master
             return (c.R & 0xF8) << 8 | (c.G & 0xFC) << 3 | (c.B >> 3);
         }
 
-        public static bool GrabPixels(Bitmap source, int[] pixels, ref bool hasSemiTransparency, ref Color transparentColor, ref int transparentPixelIndex)
-        {
-            int bitmapWidth = source.Width;
-            int bitmapHeight = source.Height;
-
-            hasSemiTransparency = false;
-            transparentPixelIndex = -1;
-
-            int transparentIndex = -1;
-            var palettes = source.Palette.Entries;
-            foreach (var pPropertyItem in source.PropertyItems)
-            {
-                if (pPropertyItem.Id == PropertyTagIndexTransparent)
-                {
-                    transparentIndex = pPropertyItem.Value[0];
-                    Color c = palettes[transparentIndex];
-                    transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
-                }
-            }
-
-            int pixelIndex = 0;
-            var data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-
-            // Declare an array to hold the bytes of the bitmap.
-            int bytesLength = Math.Abs(data.Stride) * bitmapHeight;
-            var rgbValues = new byte[bytesLength];
-
-            // Copy the RGB values into the array.
-            System.Runtime.InteropServices.Marshal.Copy(data.Scan0, rgbValues, 0, bytesLength);
-
-            for (int i = 0; i < rgbValues.Length; i += 4)
-            {
-                byte pixelBlue = rgbValues[i];
-                byte pixelGreen = rgbValues[i + 1];
-                byte pixelRed = rgbValues[i + 2];
-                byte pixelAlpha = rgbValues[i + 3];
-
-                var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
-                var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
-                if (transparentIndex > -1 && transparentColor.ToArgb() == argb1.ToArgb())
-                {
-                    pixelAlpha = 0;
-                    argb = argb1;
-                }
-
-                if (pixelAlpha < Byte.MaxValue)
-                {
-
-                    if (pixelAlpha == 0)
-                    {
-                        transparentPixelIndex = pixelIndex;
-                        transparentColor = argb;
-                    }
-                    else
-                        hasSemiTransparency = true;
-                }
-                pixels[pixelIndex++] = argb.ToArgb();
-            }
-
-            source.UnlockBits(data);
-            return true;
-        }
-
         protected static int[] CalcDitherPixel(Color c, short[] clamp, int[] rowerr, int cursor, bool noBias)
         {
             var ditherPixel = new int[4];
@@ -222,7 +159,7 @@ namespace nQuant.Master
                         pixelIndex += width + 1;
 
                     dir *= -1;
-                    BitmapUtilities.Swap(ref row0, ref row1);
+                    Swap(ref row0, ref row1);
                 }
                 return qPixels;
             }
@@ -232,6 +169,85 @@ namespace nQuant.Master
 
             return qPixels;
         }
+		
+		public static Bitmap ProcessImagePixels(Bitmap dest, int[] qPixels, bool hasSemiTransparency, int transparentPixelIndex)
+        {
+            int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
+            if (bpp < 16)
+                return dest;
+
+            int w = dest.Width;
+            int h = dest.Height;
+
+            if (hasSemiTransparency && dest.PixelFormat < PixelFormat.Format32bppArgb)
+                dest = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            else if (transparentPixelIndex >= 0 && dest.PixelFormat < PixelFormat.Format16bppArgb1555)
+                dest = new Bitmap(w, h, PixelFormat.Format16bppArgb1555);
+            else if (dest.PixelFormat < PixelFormat.Format16bppRgb565)
+                dest = new Bitmap(w, h, PixelFormat.Format16bppRgb565);
+
+            bpp = Image.GetPixelFormatSize(dest.PixelFormat);
+            var targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);
+
+            int pixelIndex = 0;
+            int strideDest;
+
+            unsafe
+            {
+                var pRowDest = (byte*)targetData.Scan0;
+
+                // Compensate for possible negative stride
+                if (targetData.Stride > 0)
+                    strideDest = targetData.Stride;
+                else
+                {
+                    pRowDest += h * targetData.Stride;
+                    strideDest = -targetData.Stride;
+                }
+
+                if (bpp == 32)
+                {
+                    for (int y = 0; y < h; ++y)
+                    {   // For each row...
+                        for (int x = 0; x < w * 4;)
+                        {
+                            var c = Color.FromArgb(qPixels[pixelIndex++]);
+                            pRowDest[x++] = c.B;
+                            pRowDest[x++] = c.G;
+                            pRowDest[x++] = c.R;
+                            pRowDest[x++] = c.A;
+                        }
+                        pRowDest += strideDest;
+                    }
+                }
+                else if (bpp == 16)
+                {
+                    for (int y = 0; y < h; ++y)
+                    {   // For each row...
+                        for (int x = 0; x < w * 2;)
+                        {
+                            var argb = qPixels[pixelIndex++];
+                            pRowDest[x++] = (byte)(argb & 0xFF);
+                            pRowDest[x++] = (byte)(argb >> 8);
+                        }
+                        pRowDest += strideDest;
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < h; ++y)
+                    {   // For each row...
+                        for (int x = 0; x < w; ++x)
+                            pRowDest[x] = (byte)qPixels[pixelIndex++];
+                        pRowDest += strideDest;
+                    }
+                }
+            }
+
+            dest.UnlockBits(targetData);
+            return dest;
+        }
+		
         public static Bitmap ProcessImagePixels(Bitmap dest, Color[] palettes, int[] qPixels, bool hasTransparent)
         {
             if (hasTransparent)
@@ -319,83 +335,70 @@ namespace nQuant.Master
 
             dest.UnlockBits(targetData);
             return dest;
-        }
-        public static Bitmap ProcessImagePixels(Bitmap dest, int[] qPixels, bool hasSemiTransparency, int transparentPixelIndex)
+        }        
+		
+		public static bool GrabPixels(Bitmap source, int[] pixels, ref bool hasSemiTransparency, ref Color transparentColor, ref int transparentPixelIndex)
         {
-            int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
-            if (bpp < 16)
-                return dest;
+            int bitmapWidth = source.Width;
+            int bitmapHeight = source.Height;
 
-            int w = dest.Width;
-            int h = dest.Height;
+            hasSemiTransparency = false;
+            transparentPixelIndex = -1;
 
-            if (hasSemiTransparency && dest.PixelFormat < PixelFormat.Format32bppArgb)
-                dest = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-            else if (transparentPixelIndex >= 0 && dest.PixelFormat < PixelFormat.Format16bppArgb1555)
-                dest = new Bitmap(w, h, PixelFormat.Format16bppArgb1555);
-            else if (dest.PixelFormat < PixelFormat.Format16bppRgb565)
-                dest = new Bitmap(w, h, PixelFormat.Format16bppRgb565);
-
-            bpp = Image.GetPixelFormatSize(dest.PixelFormat);
-            var targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);
-
-            int pixelIndex = 0;
-            int strideDest;
-
-            unsafe
+            int transparentIndex = -1;
+            var palettes = source.Palette.Entries;
+            foreach (var pPropertyItem in source.PropertyItems)
             {
-                var pRowDest = (byte*)targetData.Scan0;
-
-                // Compensate for possible negative stride
-                if (targetData.Stride > 0)
-                    strideDest = targetData.Stride;
-                else
+                if (pPropertyItem.Id == PropertyTagIndexTransparent)
                 {
-                    pRowDest += h * targetData.Stride;
-                    strideDest = -targetData.Stride;
-                }
-
-                if (bpp == 32)
-                {
-                    for (int y = 0; y < h; ++y)
-                    {   // For each row...
-                        for (int x = 0; x < w * 4;)
-                        {
-                            var c = Color.FromArgb(qPixels[pixelIndex++]);
-                            pRowDest[x++] = c.B;
-                            pRowDest[x++] = c.G;
-                            pRowDest[x++] = c.R;
-                            pRowDest[x++] = c.A;
-                        }
-                        pRowDest += strideDest;
-                    }
-                }
-                else if (bpp == 16)
-                {
-                    for (int y = 0; y < h; ++y)
-                    {   // For each row...
-                        for (int x = 0; x < w * 2;)
-                        {
-                            var argb = qPixels[pixelIndex++];
-                            pRowDest[x++] = (byte)(argb & 0xFF);
-                            pRowDest[x++] = (byte)(argb >> 8);
-                        }
-                        pRowDest += strideDest;
-                    }
-                }
-                else
-                {
-                    for (int y = 0; y < h; ++y)
-                    {   // For each row...
-                        for (int x = 0; x < w; ++x)
-                            pRowDest[x] = (byte)qPixels[pixelIndex++];
-                        pRowDest += strideDest;
-                    }
+                    transparentIndex = pPropertyItem.Value[0];
+                    var c = palettes[transparentIndex];
+                    transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
                 }
             }
 
-            dest.UnlockBits(targetData);
-            return dest;
+            int pixelIndex = 0;
+            var data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+
+            // Declare an array to hold the bytes of the bitmap.
+            int bytesLength = Math.Abs(data.Stride) * bitmapHeight;
+            var rgbValues = new byte[bytesLength];
+
+            // Copy the RGB values into the array.
+            System.Runtime.InteropServices.Marshal.Copy(data.Scan0, rgbValues, 0, bytesLength);
+
+            for (int i = 0; i < rgbValues.Length; i += 4)
+            {
+                byte pixelBlue = rgbValues[i];
+                byte pixelGreen = rgbValues[i + 1];
+                byte pixelRed = rgbValues[i + 2];
+                byte pixelAlpha = rgbValues[i + 3];
+
+                var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
+                var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
+                if (transparentIndex > -1 && transparentColor.ToArgb() == argb1.ToArgb())
+                {
+                    pixelAlpha = 0;
+                    argb = argb1;
+                }
+
+                if (pixelAlpha < Byte.MaxValue)
+                {
+                    if (pixelAlpha == 0)
+                    {                        
+                        transparentColor = argb;
+						transparentPixelIndex = pixelIndex;
+						if (transparentColor.ToArgb() == 0 && transparentIndex < 0)
+							argb = transparentColor = Color.FromArgb(0, 51, 102, 102);
+                    }
+                    else
+                        hasSemiTransparency = true;
+                }
+                pixels[pixelIndex++] = argb.ToArgb();
+            }
+
+            source.UnlockBits(data);
+            return true;
         }
     }
 }

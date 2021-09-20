@@ -9,7 +9,7 @@ namespace PnnQuant
     {
         private double PR = .2126, PG = .7152, PB = .0722;
         private double ratio = 1.0;
-        private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new Dictionary<int, CIELABConvertor.Lab>();
+        private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
         private sealed class Pnnbin
         {
             internal float ac, Lc, Ac, Bc;
@@ -92,7 +92,8 @@ namespace PnnQuant
         }
         protected override void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, short quan_sqrt)
         {
-            if (hasSemiTransparency)
+            bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
+			if (noBias)
                 PR = PG = PB = 1.0;
 
             var bins = new Pnnbin[65536];
@@ -371,15 +372,17 @@ namespace PnnQuant
         {
             DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
-            if (nMaxColors < 64 || hasSemiTransparency)
+            if ((nMaxColors < 64 && nMaxColors > 2) || hasSemiTransparency)
                 qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
+            else if (nMaxColors == 2)
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
             if (!dither)
             {
-                double delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
-                float weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
+                var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
+                var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
                 return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels, weight);
             }
 
