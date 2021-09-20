@@ -143,7 +143,11 @@ namespace nQuant.Master
                     limtb[i + BLOCK_SIZE] = DITHER_MAX;
                 }
                 for (short i = -DITHER_MAX; i <= DITHER_MAX; ++i)
-                    limtb[i + BLOCK_SIZE] = i % 4 == 3 ? (short)0 : i;
+                {
+                    limtb[i + BLOCK_SIZE] = i;
+                    if (nMaxColors > 16 && i % 4 == 3)
+                        limtb[i + BLOCK_SIZE] = 0;
+                }
 
                 bool noBias = hasSemiTransparency || nMaxColors < 64;
                 int dir = 1;

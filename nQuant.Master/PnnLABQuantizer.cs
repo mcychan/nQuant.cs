@@ -271,12 +271,11 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5);
+                var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5) : 0;
                 if (curdist > mindist)
                     continue;
-
-                GetLab(c2.ToArgb(), out var lab2);
-                if (nMaxColors > 32 || hasSemiTransparency)
+                
+                if (nMaxColors > 32 || nMaxColors <= 4 || hasSemiTransparency)
                 {
                     curdist += PR * BitmapUtilities.Sqr(c2.R - c.R);
                     if (curdist > mindist)
@@ -292,11 +291,13 @@ namespace PnnQuant
                         if (curdist > mindist)
                             continue;
 
+                        GetLab(c2.ToArgb(), out var lab2);
                         curdist += BitmapUtilities.Sqr(lab2.B - lab1.B) / 2.0;
                     }
                 }
                 else
-                {  
+                {
+                    GetLab(c2.ToArgb(), out var lab2);
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += BitmapUtilities.Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
@@ -370,10 +371,8 @@ namespace PnnQuant
         {
             DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
-            if ((nMaxColors < 64 || hasSemiTransparency) && nMaxColors > 2)
+            if (nMaxColors < 64 || hasSemiTransparency)
                 qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
-            else if (nMaxColors == 2)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
