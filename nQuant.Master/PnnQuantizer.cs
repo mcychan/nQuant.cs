@@ -50,7 +50,9 @@ namespace PnnQuant
             var wb = bin1.bc;
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
-                var nerr = BitmapUtilities.Sqr(bins[i].ac - wa) + BitmapUtilities.Sqr(bins[i].rc - wr) + BitmapUtilities.Sqr(bins[i].gc - wg) + BitmapUtilities.Sqr(bins[i].bc - wb);
+                var nerr = PR * BitmapUtilities.Sqr(bins[i].rc - wr) + PG * BitmapUtilities.Sqr(bins[i].gc - wg) + PB * BitmapUtilities.Sqr(bins[i].bc - wb);
+                if (hasSemiTransparency)
+                    nerr += BitmapUtilities.Sqr(bins[i].ac - wa);
                 var n2 = bins[i].cnt;
                 nerr *= (n1 * n2) / (n1 + n2);
                 if (nerr >= err)
