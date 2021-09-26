@@ -321,7 +321,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 dither = true;
 
-            if (nMaxColors <= 32)
+            if (hasSemiTransparency || nMaxColors <= 32)
                 PR = PG = PB = 1;
 
             if (nMaxColors > 2)
