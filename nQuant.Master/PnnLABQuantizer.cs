@@ -47,7 +47,7 @@ namespace PnnQuant
                 {
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
-                double alphaDiff = (m_transparentPixelIndex > -1 || hasSemiTransparency) ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
+                double alphaDiff = hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
                 double nerr = nerr2 * BitmapUtilities.Sqr(alphaDiff) / Math.Exp(1.5);
                 if (nerr >= err)
                     continue;
@@ -156,8 +156,6 @@ namespace PnnQuant
                 else
                     ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.172) / pixelMap.Count);
             }
-            else if (quan_sqrt > 0)
-                ratio = 1.0;
             else
                 ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(5.474) / pixelMap.Count);
 
