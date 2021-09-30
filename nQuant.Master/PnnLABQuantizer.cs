@@ -96,7 +96,7 @@ namespace PnnQuant
 			if (noBias)
                 PR = PG = PB = 1.0;
 
-            var bins = new Pnnbin[65536];
+            var bins = new Pnnbin[ushort.MaxValue + 1];
 
             /* Build histogram */
             foreach (var pixel in pixels)
@@ -199,7 +199,7 @@ namespace PnnQuant
                     /* Is stored error up to date? */
                     if ((tb.tm >= tb.mtm) && (bins[tb.nn].mtm <= tb.tm))
                         break;
-                    if (tb.mtm == 0xFFFF) /* Deleted node */
+                    if (tb.mtm == ushort.MaxValue) /* Deleted node */
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
                     {
@@ -234,7 +234,7 @@ namespace PnnQuant
                 /* Unchain deleted bin */
                 bins[nb.bk].fw = nb.fw;
                 bins[nb.fw].bk = nb.bk;
-                nb.mtm = 0xFFFF;
+                nb.mtm = ushort.MaxValue;
             }
 
             /* Fill palette */
