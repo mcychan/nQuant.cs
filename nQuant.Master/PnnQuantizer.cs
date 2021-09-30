@@ -63,7 +63,7 @@ namespace PnnQuant
             bin1.err = (float) err;
             bin1.nn = nn;
         }
-        protected virtual void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, short quan_rt)
+        protected virtual void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
@@ -201,6 +201,12 @@ namespace PnnQuant
                 if ((i = bins[i].fw) == 0)
                     break;
             }
+
+            if (k < nMaxColors)
+            {
+                nMaxColors = k;
+                Console.WriteLine("Maximum number of colors: " + nMaxColors);
+            }
         }
         protected virtual ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
@@ -299,8 +305,8 @@ namespace PnnQuant
 
         public virtual Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
-            int bitmapWidth = source.Width;
-            int bitmapHeight = source.Height;
+            var bitmapWidth = source.Width;
+            var bitmapHeight = source.Height;
 
             if (!IsValidFormat(pixelFormat, nMaxColors))
             {
@@ -325,7 +331,7 @@ namespace PnnQuant
                 PR = PG = PB = 1;
 
             if (nMaxColors > 2)
-                Pnnquan(pixels, palettes, nMaxColors, 1);
+                Pnnquan(pixels, palettes, ref nMaxColors, 1);
             else
             {
                 if (m_transparentPixelIndex >= 0)

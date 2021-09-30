@@ -90,7 +90,7 @@ namespace PnnQuant
             bin1.err = (float) err;
             bin1.nn = nn;
         }
-        protected override void Pnnquan(int[] pixels, Color[] palettes, int nMaxColors, short quan_sqrt)
+        protected override void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_sqrt)
         {
             bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
 			if (noBias)
@@ -251,6 +251,13 @@ namespace PnnQuant
 
                 if ((i = bins[i].fw) == 0)
                     break;
+            }
+
+            if (k < nMaxColors)
+            {
+                palettes[k++] = Color.FromArgb(Byte.MaxValue, 0, 0, 0);
+                nMaxColors = k;
+                Console.WriteLine("Maximum number of colors: " + nMaxColors);
             }
         }
 
