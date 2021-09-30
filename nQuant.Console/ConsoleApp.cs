@@ -15,7 +15,7 @@ namespace nQuant
 
         public static void Main(string[] args)
         {
-            string algorithm = null;
+            string algorithm = "";
 #if DEBUG
             var sourcePath = @"samples\SE5x9.jpg";
             maxColors = 128;
@@ -33,16 +33,17 @@ namespace nQuant
                 System.Console.WriteLine("The source file you specified does not exist.");
                 Environment.Exit(1);
             }
+
             if (string.IsNullOrEmpty(targetPath))
             {
                 var lastDot = sourcePath.LastIndexOf('.');
                 if (lastDot == -1)
                     lastDot = sourcePath.Length;
-                targetPath = sourcePath.Substring(0, lastDot) + "-quant" + maxColors + ".png";
+                targetPath = sourcePath.Substring(0, lastDot) + "-" + algorithm + "quant" + maxColors + ".png";
             }
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            if(algorithm != null)
+            if(algorithm == "OTSU")
             {
                 System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", Assembly.GetExecutingAssembly().GetName().Version);
                 System.Console.WriteLine("Copyright (C) 2018 - 2021 Miller Cy Chan.");
@@ -74,13 +75,13 @@ namespace nQuant
             System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
             System.Console.WriteLine("Copyright (C) 2018 - 2021 Miller Cy Chan.");
 
-            PnnQuant.PnnQuantizer quantizer = new PnnQuant.PnnLABQuantizer();
+            var quantizer = (algorithm == "PNN") ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
             using (var bitmap = new Bitmap(sourcePath))
             {
                 try
                 {
                     using (var dest = quantizer.QuantizeImage(bitmap, PixelFormat.Undefined, maxColors, dither))
-                    {
+                    {      
                         dest.Save(targetPath, ImageFormat.Png);
                         System.Console.WriteLine("Converted image: " + targetPath);
                     }
@@ -142,13 +143,15 @@ namespace nQuant
 
                         case "A":
                             string strAlgor = args[index + 1].ToUpper();
-                            if (!(strAlgor == "OTSU"))
+                            if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN"))
                             {
                                 PrintUsage();
                                 Environment.Exit(1);
                                 break;
                             }
-                            maxColors = 2;
+
+                            if (strAlgor == "OTSU")
+                                maxColors = 2;
                             return strAlgor;
 
                         default:
