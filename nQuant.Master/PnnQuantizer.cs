@@ -205,7 +205,8 @@ namespace PnnQuant
             if (k < nMaxColors)
             {
                 nMaxColors = k;
-                Console.WriteLine("Maximum number of colors: " + nMaxColors);
+                Array.Resize(ref palettes, nMaxColors);
+                Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
         }
         protected virtual ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
