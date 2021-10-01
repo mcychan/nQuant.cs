@@ -253,10 +253,10 @@ namespace PnnQuant
                     break;
             }
 
-            if (k < nMaxColors)
+            if (k < nMaxColors - 1)
             {
                 palettes[k++] = Color.FromArgb(Byte.MaxValue, 0, 0, 0);
-                nMaxColors = k;
+                nMaxColors = k + 1;
                 Array.Resize(ref palettes, nMaxColors);
                 Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
