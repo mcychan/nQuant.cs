@@ -13,7 +13,7 @@ namespace PnnQuant
         private sealed class Pnnbin
         {
             internal float ac, Lc, Ac, Bc;
-            internal int cnt;
+            internal float cnt;
             internal int nn, fw, bk, tm, mtm;
             internal float err;
         }
@@ -31,7 +31,7 @@ namespace PnnQuant
             var err = 1e100;
 
             var bin1 = bins[idx];
-            int n1 = bin1.cnt;
+            var n1 = bin1.cnt;
             var lab1 = new CIELABConvertor.Lab
             {
                 alpha = bin1.ac, L = bin1.Lc, A = bin1.Ac, B = bin1.Bc
@@ -111,13 +111,13 @@ namespace PnnQuant
                 bins[index].Lc += (float)lab1.L;
                 bins[index].Ac += (float)lab1.A;
                 bins[index].Bc += (float)lab1.B;
-                bins[index].cnt++;
+                bins[index].cnt += 1.0f;
             }
 
             /* Cluster nonempty bins at one end of array */
-            int maxbins = 0;            
-            
-            for (int i = 0; i < bins.Length; ++i)
+            int maxbins = 0;
+            int i = 0;
+            for (; i < bins.Length; ++i)
             {
                 if (bins[i] == null)
                     continue;
@@ -137,16 +137,25 @@ namespace PnnQuant
             else if ((proportional < .018 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = 0;
 
-            if (quan_sqrt > 0)
-                bins[0].cnt = (int)Math.Sqrt(bins[0].cnt);
-            for (int i = 0; i < maxbins - 1; ++i)
+            i = 0;
+            for (; i < maxbins - 1; ++i)
             {
                 bins[i].fw = i + 1;
                 bins[i + 1].bk = i;
 
                 if (quan_sqrt > 0)
-                    bins[i + 1].cnt = (int) Math.Sqrt(bins[i + 1].cnt);
-            }            
+                {
+                    bins[i].cnt = (float) Math.Sqrt(bins[i].cnt);
+                    if (nMaxColors < 64)
+                        bins[i].cnt = (int) bins[i].cnt;
+                }
+            }
+            if (quan_sqrt > 0)
+            {
+                bins[i].cnt = (float) Math.Sqrt(bins[i].cnt);
+                if (nMaxColors < 64)
+                    bins[i].cnt = (int) bins[i].cnt;
+            }
 
             int h, l, l2;
             if (quan_sqrt != 0 && nMaxColors < 64)
@@ -167,7 +176,8 @@ namespace PnnQuant
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
-            for (int i = 0; i < maxbins; ++i)
+            i = 0;
+            for (; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
                 /* Push slot on heap */
@@ -188,7 +198,8 @@ namespace PnnQuant
 
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
-            for (int i = 0; i < extbins;)
+            i = 0;
+            for (; i < extbins;)
             {
                 Pnnbin tb;
                 /* Use heap to find which bins to merge */
@@ -239,7 +250,8 @@ namespace PnnQuant
 
             /* Fill palette */
             int k = 0;
-            for (int i = 0; ; ++k)
+            i = 0;
+            for (; ; ++k)
             {
                 var lab1 = new CIELABConvertor.Lab
                 {
