@@ -9,8 +9,6 @@ using System.Drawing;
  * when there's error matching a color from the image to a color in the palette. 
  * Copyright (c) 2021 Miller Cy Chan */
 
-using static nQuant.Master.HilbertCurve.Direction;
-
 namespace nQuant.Master
 {
 	internal delegate ushort DitherFn(Color[] palette, int nMaxColors, int pixel);
