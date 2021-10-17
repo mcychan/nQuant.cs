@@ -116,8 +116,7 @@ namespace PnnQuant
 
             /* Cluster nonempty bins at one end of array */
             int maxbins = 0;
-            int i = 0;
-            for (; i < bins.Length; ++i)
+            for (int i = 0; i < bins.Length; ++i)
             {
                 if (bins[i] == null)
                     continue;
@@ -137,24 +136,24 @@ namespace PnnQuant
             else if ((proportional < .018 || proportional > .5) && nMaxColors < 64)
                 quan_sqrt = 0;
 
-            i = 0;
-            for (; i < maxbins - 1; ++i)
+            int j = 0;
+            for (; j < maxbins - 1; ++j)
             {
-                bins[i].fw = i + 1;
-                bins[i + 1].bk = i;
+                bins[j].fw = j + 1;
+                bins[j + 1].bk = j;
 
                 if (quan_sqrt > 0)
                 {
-                    bins[i].cnt = (float) Math.Sqrt(bins[i].cnt);
+                    bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
                     if (nMaxColors < 64)
-                        bins[i].cnt = (int) bins[i].cnt;
+                        bins[j].cnt = (int) bins[j].cnt;
                 }
             }
             if (quan_sqrt > 0)
             {
-                bins[i].cnt = (float) Math.Sqrt(bins[i].cnt);
+                bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
                 if (nMaxColors < 64)
-                    bins[i].cnt = (int) bins[i].cnt;
+                    bins[j].cnt = (int) bins[j].cnt;
             }
 
             int h, l, l2;
@@ -176,8 +175,7 @@ namespace PnnQuant
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
-            i = 0;
-            for (; i < maxbins; ++i)
+            for (int i = 0; i < maxbins; ++i)
             {
                 Find_nn(bins, i);
                 /* Push slot on heap */
@@ -198,8 +196,7 @@ namespace PnnQuant
 
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
-            i = 0;
-            for (; i < extbins;)
+            for (int i = 0; i < extbins;)
             {
                 Pnnbin tb;
                 /* Use heap to find which bins to merge */
@@ -250,8 +247,7 @@ namespace PnnQuant
 
             /* Fill palette */
             int k = 0;
-            i = 0;
-            for (; ; ++k)
+            for (int i = 0; ; ++k)
             {
                 var lab1 = new CIELABConvertor.Lab
                 {
@@ -357,7 +353,8 @@ namespace PnnQuant
                 {
                     var c2 = palette[k];
                     GetLab(c2.ToArgb(), out var lab2);
-                    closest[4] = (ushort) (PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B) + BitmapUtilities.Sqr(lab2.B - lab1.B) / 2.0);                    
+                    var err = PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B) + BitmapUtilities.Sqr(lab2.B - lab1.B) / 2.0;
+                    closest[4] = err > ushort.MaxValue ? ushort.MaxValue : (ushort) err;                    
 
                     if (closest[4] < closest[2])
                     {
