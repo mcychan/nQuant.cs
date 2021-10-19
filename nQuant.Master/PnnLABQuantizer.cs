@@ -95,6 +95,10 @@ namespace PnnQuant
             bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
 			if (noBias)
                 PR = PG = PB = 1.0;
+            else if (pixels.Length < BitmapUtilities.Sqr(512))
+            {
+                PR = 0.299; PG = 0.587; PB = 0.114;
+            }
 
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
@@ -346,14 +350,12 @@ namespace PnnQuant
             {
                 closest = new ushort[5];
                 closest[2] = closest[3] = ushort.MaxValue;
-                GetLab(pixel, out var lab1);
 
                 var c = Color.FromArgb(pixel);
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
-                    GetLab(c2.ToArgb(), out var lab2);
-                    var err = PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B) + BitmapUtilities.Sqr(lab2.B - lab1.B) / 2.0;
+                    var err = PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B);
                     closest[4] = err > ushort.MaxValue ? ushort.MaxValue : (ushort) err;                    
 
                     if (closest[4] < closest[2])
