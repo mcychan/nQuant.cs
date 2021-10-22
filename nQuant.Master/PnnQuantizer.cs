@@ -23,7 +23,7 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort[]> closestMap = new();
         protected readonly Dictionary<int, ushort> nearestMap = new();        
 
-        private double PR = .299, PG = .587, PB = .114;
+        private double PR = .2126, PG = .7152, PB = .0722;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -257,7 +257,8 @@ namespace PnnQuant
                 for (; k < nMaxColors; ++k)
                 {
                     Color c2 = palette[k];
-                    closest[4] = (ushort)(Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B));
+                    var err = Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B);
+                    closest[4] = err > ushort.MaxValue ? ushort.MaxValue : (ushort) err;
                     if (closest[4] < closest[2])
                     {
                         closest[1] = closest[0];
@@ -296,8 +297,14 @@ namespace PnnQuant
 
         protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
-            DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 256) ? NearestColorIndex : ClosestColorIndex;
-            var qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
+            DitherFn ditherFn = dither ? NearestColorIndex : ClosestColorIndex;
+            int[] qPixels;
+            if ((nMaxColors < 64 && nMaxColors > 32) || hasSemiTransparency)
+                qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
+            else if (nMaxColors <= 32)
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, nMaxColors > 2 ? 1.8f : 1.5f);
+            else
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
             if (!dither)
                 return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
@@ -330,6 +337,10 @@ namespace PnnQuant
 
             if (hasSemiTransparency || nMaxColors <= 32)
                 PR = PG = PB = 1;
+            else if (bitmapWidth < 512 || bitmapHeight < 512)
+            {
+                PR = 0.299; PG = 0.587; PB = 0.114;
+            }
 
             if (nMaxColors > 2)
                 Pnnquan(pixels, palettes, ref nMaxColors, 1);
