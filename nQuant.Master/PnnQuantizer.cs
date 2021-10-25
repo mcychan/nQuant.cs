@@ -27,7 +27,7 @@ namespace PnnQuant
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
-            internal int cnt;
+            internal float cnt;
             internal int nn, fw, bk, tm, mtm;
             internal float err;
         }        
@@ -105,20 +105,21 @@ namespace PnnQuant
             if (BitmapUtilities.Sqr(nMaxColors) / maxbins < .03)
                 quan_rt = 0;
 
-            if (quan_rt > 0)
-                bins[0].cnt = (int)Math.Sqrt(bins[0].cnt);
-            else if (quan_rt < 0)
-                bins[0].cnt = (int)Math.Cbrt(bins[0].cnt);
-            for (int i = 0; i < maxbins - 1; ++i)
+            int j = 0;
+            for (; j < maxbins - 1; ++j)
             {
-                bins[i].fw = i + 1;
-                bins[i + 1].bk = i;
+                bins[j].fw = j + 1;
+                bins[j + 1].bk = j;
 
                 if (quan_rt > 0)
-                    bins[i + 1].cnt = (int)Math.Sqrt(bins[i + 1].cnt);
+                    bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
                 else if (quan_rt < 0)
-                    bins[i + 1].cnt = (int)Math.Cbrt(bins[i + 1].cnt);
-            }            
+                    bins[j].cnt = (int) Math.Cbrt(bins[j].cnt);
+            }
+            if (quan_rt > 0)
+                bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
+            else if (quan_rt < 0)
+                bins[j].cnt = (int) Math.Cbrt(bins[j].cnt);
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
