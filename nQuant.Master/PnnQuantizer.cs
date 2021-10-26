@@ -81,7 +81,7 @@ namespace PnnQuant
                 bins[index].rc += c.R;
                 bins[index].gc += c.G;
                 bins[index].bc += c.B;
-                bins[index].cnt++;
+                bins[index].cnt += 1.0f;
             }
 
             /* Cluster nonempty bins at one end of array */
@@ -91,7 +91,7 @@ namespace PnnQuant
                 if (bins[i] == null)
                     continue;
 
-                var d = 1.0f / (float)bins[i].cnt;
+                var d = 1.0f / bins[i].cnt;
                 bins[i].ac *= d;
                 bins[i].rc *= d;
                 bins[i].gc *= d;
@@ -112,14 +112,22 @@ namespace PnnQuant
                 bins[j + 1].bk = j;
 
                 if (quan_rt > 0)
-                    bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
+                {
+                    bins[j].cnt = (float)Math.Sqrt(bins[j].cnt);
+                    if (nMaxColors < 64)
+                        bins[j].cnt = (int)bins[j].cnt;
+                }
                 else if (quan_rt < 0)
-                    bins[j].cnt = (int) Math.Cbrt(bins[j].cnt);
+                    bins[j].cnt = (int)Math.Cbrt(bins[j].cnt);
             }
             if (quan_rt > 0)
-                bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
+            {
+                bins[j].cnt = (float)Math.Sqrt(bins[j].cnt);
+                if (nMaxColors < 64)
+                    bins[j].cnt = (int)bins[j].cnt;
+            }
             else if (quan_rt < 0)
-                bins[j].cnt = (int) Math.Cbrt(bins[j].cnt);
+                bins[j].cnt = (int)Math.Cbrt(bins[j].cnt);
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
@@ -177,10 +185,10 @@ namespace PnnQuant
                 var n1 = tb.cnt;
                 var n2 = nb.cnt;
                 var d = 1.0f / (n1 + n2);
-                tb.ac = d * (n1 * tb.ac + n2 * nb.ac);
-                tb.rc = d * (n1 * tb.rc + n2 * nb.rc);
-                tb.gc = d * (n1 * tb.gc + n2 * nb.gc);
-                tb.bc = d * (n1 * tb.bc + n2 * nb.bc);
+                tb.ac = d * (float) Math.Round(n1 * tb.ac + n2 * nb.ac);
+                tb.rc = d * (float) Math.Round(n1 * tb.rc + n2 * nb.rc);
+                tb.gc = d * (float) Math.Round(n1 * tb.gc + n2 * nb.gc);
+                tb.bc = d * (float) Math.Round(n1 * tb.bc + n2 * nb.bc);
                 tb.cnt += nb.cnt;
                 tb.mtm = ++i;
 
@@ -194,7 +202,7 @@ namespace PnnQuant
             int k = 0;
             for (int i = 0; ; ++k)
             {
-                var alpha = Math.Clamp((int)bins[i].ac, Byte.MinValue, Byte.MaxValue);
+                var alpha = Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue);
                 palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
                 if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
                     BitmapUtilities.Swap(ref palettes[0], ref palettes[k]);
