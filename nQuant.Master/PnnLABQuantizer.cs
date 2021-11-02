@@ -258,8 +258,11 @@ namespace PnnQuant
                     alpha = Math.Round(bins[i].ac), L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
-                if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
+                if (m_transparentPixelIndex >= 0 && lab1.alpha == 0)
+                {
                     BitmapUtilities.Swap(ref palettes[0], ref palettes[k]);
+                    palettes[0] = m_transparentColor;
+                }
 
                 if ((i = bins[i].fw) == 0)
                     break;
@@ -389,10 +392,12 @@ namespace PnnQuant
         {
             DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
-            if ((nMaxColors < 64 && nMaxColors > 32) || hasSemiTransparency)
+            if (nMaxColors < 64 && nMaxColors > 32)
                 qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
             else if (nMaxColors <= 32)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, nMaxColors > 2 ? 1.8f : 1.5f);
+            else if (hasSemiTransparency)
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.75f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 

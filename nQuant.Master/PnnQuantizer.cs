@@ -204,8 +204,11 @@ namespace PnnQuant
             {
                 var alpha = Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue);
                 palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
-                if (m_transparentPixelIndex >= 0 && palettes[k] == m_transparentColor)
+                if (m_transparentPixelIndex >= 0 && alpha == 0)
+                {
                     BitmapUtilities.Swap(ref palettes[0], ref palettes[k]);
+                    palettes[0] = m_transparentColor;
+                }
 
                 if ((i = bins[i].fw) == 0)
                     break;
@@ -308,10 +311,12 @@ namespace PnnQuant
         {
             DitherFn ditherFn = dither ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
-            if ((nMaxColors < 64 && nMaxColors > 32) || hasSemiTransparency)
+            if (nMaxColors < 64 && nMaxColors > 32)
                 qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
             else if (nMaxColors <= 32)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, nMaxColors > 2 ? 1.8f : 1.5f);
+            else if (hasSemiTransparency)
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.75f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
