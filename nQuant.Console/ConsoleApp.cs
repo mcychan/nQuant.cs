@@ -101,6 +101,7 @@ namespace nQuant
 
         private static string ProcessArgs(string[] args)
         {
+            string strAlgor = null;
             for (var index = 1; index < args.Length; ++index)
             {
                 var currentArg = args[index].ToUpper();
@@ -116,7 +117,7 @@ namespace nQuant
                         return null;
                     }
 
-                    currentArg = currentArg.Substring(1);
+                    currentArg = currentArg.Substring(1);                    
                     switch (currentArg)
                     {
                         case "M":
@@ -142,7 +143,7 @@ namespace nQuant
                             break;
 
                         case "A":
-                            string strAlgor = args[index + 1].ToUpper();
+                            strAlgor = args[index + 1].ToUpper();
                             if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN"))
                             {
                                 PrintUsage();
@@ -151,8 +152,11 @@ namespace nQuant
                             }
 
                             if (strAlgor == "OTSU")
+                            {
                                 maxColors = 2;
-                            return strAlgor;
+                                return strAlgor;
+                            }
+                            break;
 
                         default:
                             PrintUsage();
@@ -161,7 +165,7 @@ namespace nQuant
                     }
                 }
             }
-            return null;
+            return strAlgor;
         }
 
         private static void PrintUsage()
