@@ -186,7 +186,6 @@ namespace nQuant.Master
 
         public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, int[] qPixels, float weight = 1.0f)
         {
-			var lookup = new int[65536];
 			float strength = 1 / 3.0f;
 			for (int y = 0; y < height; ++y)
 			{
@@ -208,15 +207,7 @@ namespace nQuant.Master
 					a_pix = (int)Math.Min(0xff, Math.Max(a_pix + (adj * (a_pix - c1.A)), 0));
 
 					c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-					if (palette.Length < 64)
-					{
-						int offset = getColorIndexFn(c1.ToArgb());
-						if (lookup[offset] == 0)
-							lookup[offset] = (pixel.A == 0) ? 1 : ditherFn(palette, palette.Length, c1.ToArgb()) + 1;
-						qPixels[x + y * width] = lookup[offset] - 1;
-					}
-					else
-						qPixels[x + y * width] = ditherFn(palette, palette.Length, c1.ToArgb());
+					qPixels[x + y * width] = ditherFn(palette, palette.Length, c1.ToArgb());
 				}
 			}
 			return qPixels;

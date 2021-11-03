@@ -48,9 +48,8 @@ namespace nQuant.Master
         private readonly int[] qPixels;
         private readonly DitherFn ditherFn;
         private readonly GetColorIndexFn getColorIndexFn;
-        private readonly List<ErrorBox> errorq;
+        private readonly Queue<ErrorBox> errorq;
         private readonly float[] weights;
-        private readonly int[] lookup;
 
         private const byte DITHER_MAX = 9;
         private const float BLOCK_SIZE = 343f;
@@ -65,9 +64,8 @@ namespace nQuant.Master
             this.qPixels = qPixels;
             this.ditherFn = ditherFn;
             this.getColorIndexFn = getColorIndexFn;
-            errorq = new List<ErrorBox>();
+            errorq = new Queue<ErrorBox>();
             weights = new float[DITHER_MAX];
-            lookup = new int[65536];
         }
 		
 		private static int Sign(int x) {
@@ -81,11 +79,12 @@ namespace nQuant.Master
             int bidx = x + y * width;
             Color pixel = Color.FromArgb(pixels[bidx]);
             ErrorBox error = new ErrorBox(pixel);
-            for (int c = 0; c < DITHER_MAX; ++c)
+            int i = 0;
+            foreach (ErrorBox eb in errorq)
             {
-                ErrorBox eb = errorq[c];
                 for (int j = 0; j < eb.Length; ++j)
-                    error[j] += eb[j] * weights[c];
+                    error[j] += eb[j] * weights[i];
+                ++i;
             }
 
             int r_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[0], 0.0));
@@ -94,17 +93,10 @@ namespace nQuant.Master
             int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
             Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-            if (palette.Length < 64)
-            {
-                int offset = getColorIndexFn(c2.ToArgb());
-                if (lookup[offset] == 0)
-                    lookup[offset] = (pixel.A == 0) ? 1 : ditherFn(palette, palette.Length, c2.ToArgb()) + 1;
-                qPixels[bidx] = lookup[offset] - 1;
-            }
-            else
-                qPixels[bidx] = ditherFn(palette, palette.Length, c2.ToArgb());
+            qPixels[bidx] = ditherFn(palette, palette.Length, c2.ToArgb());
 
-            errorq.RemoveAt(0);
+            if(errorq.Count > 0)
+                errorq.Dequeue();
             c2 = palette[qPixels[bidx]];
             if (palette.Length > 256)
                 qPixels[bidx] = (short)getColorIndexFn(c2.ToArgb());
@@ -123,7 +115,7 @@ namespace nQuant.Master
                     error[j] /= divisor;
                 }
             }
-            errorq.Add(error);
+            errorq.Enqueue(error);
         }
 		
 	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
@@ -190,7 +182,7 @@ namespace nQuant.Master
             float weight = 1f, sumweight = 0f;
             for (int c = 0; c < DITHER_MAX; ++c)
             {
-                errorq.Add(new ErrorBox());
+                errorq.Enqueue(new ErrorBox());
                 sumweight += (weights[DITHER_MAX - c - 1] = 1.0f / weight);
                 weight *= weightRatio;
             }
