@@ -311,12 +311,12 @@ namespace PnnQuant
         {
             DitherFn ditherFn = dither ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
-            if (nMaxColors < 64 && nMaxColors > 32)
+            if (hasSemiTransparency)
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.75f);
+            else if (nMaxColors < 64 && nMaxColors > 32)
                 qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
             else if (nMaxColors <= 32)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, nMaxColors > 2 ? 1.8f : 1.5f);
-            else if (hasSemiTransparency)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.75f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
 
