@@ -279,7 +279,7 @@ namespace PnnQuant
 
         protected override ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
-            if (nearestMap.TryGetValue(argb, out var k))
+            if (nearestMap.TryGetValue(pixel, out var k))
                 return k;
 
             var c = Color.FromArgb(pixel);
@@ -287,7 +287,7 @@ namespace PnnQuant
                 return 0;
 
             double mindist = ushort.MaxValue;
-            GetLab(argb, out var lab1);
+            GetLab(pixel, out var lab1);
 
             for (int i = 0; i < nMaxColors; ++i)
             {
@@ -367,14 +367,14 @@ namespace PnnQuant
                         closest[1] = closest[0];
                         closest[3] = closest[2];
                         closest[0] = k;
-			if(err > palette.Length)
+                        if (err > palette.Length)
                         	closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
-                        closest[2] = err;
+                        closest[2] = (ushort) err;
                     }
                     else if (err < closest[3])
                     {
                         closest[1] = k;
-                        closest[3] = err;
+                        closest[3] = (ushort) err;
                     }
                 }
 
