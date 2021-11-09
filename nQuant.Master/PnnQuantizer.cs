@@ -263,39 +263,41 @@ namespace PnnQuant
 
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
-                closest = new ushort[5];
+                closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
 
                 for (; k < nMaxColors; ++k)
                 {
                     Color c2 = palette[k];
                     var err = Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B);
-                    closest[4] = err > ushort.MaxValue ? ushort.MaxValue : (ushort) err;
-                    if (closest[4] < closest[2])
+                    if(err > ushort.MaxValue)
+                        err = ushort.MaxValue;
+                    
+                    if (err < closest[2])
                     {
                         closest[1] = closest[0];
                         closest[3] = closest[2];
-                        closest[0] = (ushort)k;
-                        closest[2] = closest[4];
+                        closest[0] = (ushort) k;
+                        if(err > palette.Length)
+                            closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
+                        closest[2] = err;
                     }
-                    else if (closest[4] < closest[3])
+                    else if (err < closest[3])
                     {
-                        closest[1] = (ushort)k;
-                        closest[3] = closest[4];
+                        closest[1] = (ushort) k;
+                        closest[3] = err;
                     }
                 }
 
                 if (closest[3] == ushort.MaxValue)
                     closest[2] = 0;
+                
+                closestMap[pixel] = closest;
             }
 
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
-                k = closest[0];
-            else
-                k = closest[1];
-
-            closestMap[pixel] = closest;
-            return k;
+                return closest[0];
+            return closest[1];
         }                
         
         protected bool IsValidFormat(PixelFormat pixelFormat, int nMaxColors)
