@@ -277,12 +277,12 @@ namespace PnnQuant
             }
         }
 
-        protected override ushort NearestColorIndex(Color[] palette, int nMaxColors, int argb)
+        protected override ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             if (nearestMap.TryGetValue(argb, out var k))
                 return k;
 
-            var c = Color.FromArgb(argb);
+            var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
                 return 0;
 
@@ -293,7 +293,7 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5) : 0;
+                var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) : 0;
                 if (curdist > mindist)
                     continue;
                 
@@ -343,7 +343,7 @@ namespace PnnQuant
                 mindist = curdist;
                 k = (ushort)i;
             }
-            nearestMap[argb] = k;
+            nearestMap[pixel] = k;
             return k;
         }
         protected override ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
@@ -368,7 +368,7 @@ namespace PnnQuant
                         closest[3] = closest[2];
                         closest[0] = k;
 			if(err > palette.Length)
-                        	closest[0] = NearestColorIndex(palette, nMaxColors, argb);
+                        	closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
                         closest[2] = err;
                     }
                     else if (err < closest[3])
