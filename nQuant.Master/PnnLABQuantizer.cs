@@ -351,7 +351,7 @@ namespace PnnQuant
             ushort k = 0;
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
-                closest = new ushort[5];
+                closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
 
                 var c = Color.FromArgb(pixel);
@@ -359,33 +359,34 @@ namespace PnnQuant
                 {
                     var c2 = palette[k];
                     var err = PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B);
-                    closest[4] = err > ushort.MaxValue ? ushort.MaxValue : (ushort) err;                    
+                    if(err > ushort.MaxValue)
+                        err = ushort.MaxValue;                    
 
-                    if (closest[4] < closest[2])
+                    if (err < closest[2])
                     {
                         closest[1] = closest[0];
                         closest[3] = closest[2];
                         closest[0] = k;
-                        closest[2] = closest[4];
+			if(err > palette.Length)
+                        	closest[0] = NearestColorIndex(palette, nMaxColors, argb);
+                        closest[2] = err;
                     }
-                    else if (closest[4] < closest[3])
+                    else if (err < closest[3])
                     {
                         closest[1] = k;
-                        closest[3] = closest[4];
+                        closest[3] = err;
                     }
                 }
 
                 if (closest[3] == ushort.MaxValue)
                     closest[2] = 0;
+		    
+                closestMap[pixel] = closest;
             }
 
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
-                k = closest[0];
-            else
-                k = closest[1];
-
-            closestMap[pixel] = closest;
-            return k;
+                return closest[0];
+            return closest[1];
         }        
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
