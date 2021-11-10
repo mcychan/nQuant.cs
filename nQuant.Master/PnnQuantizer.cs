@@ -278,8 +278,6 @@ namespace PnnQuant
                         closest[1] = closest[0];
                         closest[3] = closest[2];
                         closest[0] = k;
-                        if(err > palette.Length)
-                            closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
                         closest[2] = (ushort) err;
                     }
                     else if (err < closest[3])
@@ -290,13 +288,18 @@ namespace PnnQuant
                 }
 
                 if (closest[3] == ushort.MaxValue)
-                    closest[2] = 0;
+                    closest[1] = closest[0];
                 
                 closestMap[pixel] = closest;
             }
 
-            if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
+            if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
+                if (closest[2] > palette.Length)
+                    closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
                 return closest[0];
+            }
+            if (closest[3] > palette.Length)
+                closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
             return closest[1];
         }                
         
