@@ -295,11 +295,11 @@ namespace PnnQuant
 
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
                 if (closest[2] > palette.Length)
-                    closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
+                    return NearestColorIndex(palette, nMaxColors, pixel);
                 return closest[0];
             }
             if (closest[3] > palette.Length)
-                closest[0] = NearestColorIndex(palette, nMaxColors, pixel);
+                return NearestColorIndex(palette, nMaxColors, pixel);
             return closest[1];
         }                
         
