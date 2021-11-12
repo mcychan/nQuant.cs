@@ -382,19 +382,22 @@ namespace PnnQuant
                 closestMap[pixel] = closest;
             }
 
+            var MAX_ERR = palette.Length;
+            if (MAX_ERR < 32)
+                MAX_ERR = Byte.MaxValue * 4;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
-                if (closest[2] > palette.Length)
+                if (closest[2] > MAX_ERR)
                     return NearestColorIndex(palette, nMaxColors, pixel);
                 return closest[0];
             }
-            if (closest[3] > palette.Length)
+            if (closest[3] > MAX_ERR)
                 return NearestColorIndex(palette, nMaxColors, pixel);
             return closest[1];
         }        
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
-            DitherFn ditherFn = (m_transparentPixelIndex >= 0 || nMaxColors < 64) ? NearestColorIndex : ClosestColorIndex;
+            DitherFn ditherFn = hasSemiTransparency ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
 	    if (hasSemiTransparency)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.75f);
