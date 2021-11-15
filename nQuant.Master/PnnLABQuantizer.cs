@@ -164,12 +164,12 @@ namespace PnnQuant
             if (quan_sqrt != 0 && nMaxColors < 64)
             {
                 if (proportional > .018 && proportional < .022)
-                    ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(5.474) / pixelMap.Count);
+                    ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(2.317) / maxbins);
                 else
-                    ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.172) / pixelMap.Count);
+                    ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(1.907) / maxbins);
             }
             else
-                ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(5.474) / pixelMap.Count);
+                ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(2.317) / maxbins);
 
             if (quan_sqrt < 0)
             {
@@ -195,8 +195,8 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-            if (quan_sqrt > 0 && nMaxColors < 64 && proportional > .018)
-                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(4.12) / pixelMap.Count);
+            if (quan_sqrt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05))
+                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(2.317) / maxbins);
 
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
@@ -383,8 +383,6 @@ namespace PnnQuant
             }
 
             var MAX_ERR = palette.Length;
-            if (MAX_ERR < 32)
-                MAX_ERR = Byte.MaxValue * 4;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
                 if (closest[2] > MAX_ERR)
                     return NearestColorIndex(palette, nMaxColors, pixel);

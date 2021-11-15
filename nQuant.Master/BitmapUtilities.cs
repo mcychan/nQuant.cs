@@ -388,7 +388,7 @@ namespace nQuant.Master
                     {                        
                         transparentColor = argb;
 						transparentPixelIndex = pixelIndex;
-						if (transparentColor.ToArgb() == 0 && transparentIndex < 0)
+						if (transparentColor.ToArgb() < Byte.MaxValue && transparentIndex < 0)
 							argb = transparentColor = Color.FromArgb(0, 51, 102, 102);
                     }
                     else
