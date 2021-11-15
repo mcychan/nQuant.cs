@@ -164,12 +164,12 @@ namespace PnnQuant
             if (quan_sqrt != 0 && nMaxColors < 64)
             {
                 if (proportional > .018 && proportional < .022)
-                    ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(2.317) / maxbins);
+                    ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(3.872) / maxbins);
                 else
-                    ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(1.907) / maxbins);
+                    ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(1.997) / maxbins);
             }
             else
-                ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(2.317) / maxbins);
+                ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(3.872) / maxbins);
 
             if (quan_sqrt < 0)
             {
@@ -196,7 +196,7 @@ namespace PnnQuant
             }
 
             if (quan_sqrt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05))
-                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(2.317) / maxbins);
+                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(2.347) / maxbins);
 
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
