@@ -269,10 +269,7 @@ namespace PnnQuant
                 for (; k < nMaxColors; ++k)
                 {
                     Color c2 = palette[k];
-                    var err = Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B);
-                    if(err > ushort.MaxValue)
-                        err = ushort.MaxValue;
-                    
+                    var err = Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B);                   
                     if (err < closest[2])
                     {
                         closest[1] = closest[0];
