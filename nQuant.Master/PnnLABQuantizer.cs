@@ -358,10 +358,7 @@ namespace PnnQuant
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
-                    var err = PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B);
-                    if(err > ushort.MaxValue)
-                        err = ushort.MaxValue;                    
-
+                    var err = PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B);  
                     if (err < closest[2])
                     {
                         closest[1] = closest[0];
