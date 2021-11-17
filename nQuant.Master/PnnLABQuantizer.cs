@@ -169,7 +169,10 @@ namespace PnnQuant
                     ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(1.997) / maxbins);
             }
             else
+	    {
+                ratio = (proportional / nMaxColors) < .04 ? .8 : 1.0;
                 ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(3.872) / maxbins);
+	    }
 
             if (quan_sqrt < 0)
             {
