@@ -28,18 +28,17 @@ If you are using C#, you would call nQuant as follows:
     }
 ```
 
-Otsu's Image Segmentation Method is an edge aware color quantization.
+OTSU method (OTSU) is a global adaptive binarization threshold image segmentation algorithm. This algorithm takes the maximum inter class variance between the background and the target image as the threshold selection rule.
 ```cs
-    bool dither = true;
-    var quantizer = new PnnQuant.PnnQuantizer();
+    var quantizer = new OtsuThreshold.Otsu();
     using(var bitmap = new Bitmap(sourcePath))
     {
         try
         {                    
-            using (var dest = new OtsuThreshold.Otsu().ConvertGrayScaleToBinary(bitmap))
+            using (var dest = quantizer.ConvertGrayScaleToBinary(bitmap))
             {
                 dest.Save(targetPath, ImageFormat.Png);
-                System.Console.WriteLine("Converted image: " + targetPath);
+                System.Console.WriteLine("Converted black and white image: " + targetPath);
             }
         }
         catch (Exception q)
