@@ -28,8 +28,33 @@ If you are using C#, you would call nQuant as follows:
     }
 ```
 
+Otsu's Image Segmentation Method is an edge aware color quantization.
+```cs
+    bool dither = true;
+    var quantizer = new PnnQuant.PnnQuantizer();
+    using(var bitmap = new Bitmap(sourcePath))
+    {
+        try
+        {                    
+            using (var dest = new OtsuThreshold.Otsu().ConvertGrayScaleToBinary(bitmap))
+            {
+                dest.Save(targetPath, ImageFormat.Png);
+                System.Console.WriteLine("Converted image: " + targetPath);
+            }
+        }
+        catch (Exception q)
+        {
+            System.Console.WriteLine(q.StackTrace);
+        }
+    }
+```
+<p>Example image:<br /><img src="https://user-images.githubusercontent.com/26831069/142559831-f8f6f2ce-487e-4353-8aa1-7845706e7833.png" /></p>
+<p>Resulted image:<br /><img src="https://user-images.githubusercontent.com/26831069/142559920-88143e07-2787-46a2-a07c-cccf5a39065a.png" /></p>
+
 If you are using the command line. Assuming you are in the same directory as nQuant.exe and nQuant.Master.dll, you would enter:
-nQuant yourImage.jpg /o yourNewImage.png
+`nQuant yourImage.jpg /o yourNewImage.png`
+
+To switch algorithms, `/a otsu` can perform the above black and white conversion.
 
 nQuant will quantize yourImage.jpg and create yourNewImage.png in the same directory.
 
