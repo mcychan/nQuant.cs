@@ -63,11 +63,12 @@ namespace OtsuThreshold
 			foreach(var pixel in pixels)
 			{
 				var c = Color.FromArgb(pixel);
+				if (c.A <= alphaThreshold)
+					continue;
+
 				hist[c.R]++;
 				hist[c.G]++;
 				hist[c.B]++;
-				if(hasSemiTransparency)
-					hist[c.A]++;
 			}
 		}
 
@@ -93,23 +94,18 @@ namespace OtsuThreshold
 			return findMax(vet, 256);
 		}
 
-		private bool threshold(int[] pixels, short thresh, float weight = 1f)
+		private bool threshold(int[] pixels, short thresh)
 		{
 			if (thresh >= 200)
-			{
-				weight = .75f;
 				thresh = 200;				
-			}
 
-			var minThresh = (byte)(thresh * weight);
-			var maxThresh = (byte) thresh;
 			for (int i = 0; i < pixels.Length; ++i)
 			{
 				var c = Color.FromArgb(pixels[i]);
-				if (c.R + c.G + c.B > maxThresh * 3)
-					pixels[i] = Color.FromArgb(c.A, Byte.MaxValue, Byte.MaxValue, Byte.MaxValue).ToArgb();
-				else if (m_transparentPixelIndex >= 0 || c.R + c.G + c.B < minThresh * 3)
+				if (c.R < thresh || c.G < thresh || c.B < thresh)
 					pixels[i] = Color.FromArgb(c.A, 0, 0, 0).ToArgb();
+				else
+					pixels[i] = Color.FromArgb(c.A, Byte.MaxValue, Byte.MaxValue, Byte.MaxValue).ToArgb();				
 			}
 
 			return true;
