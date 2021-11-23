@@ -147,7 +147,7 @@ namespace OtsuThreshold
 			return k;
 		}
 
-		public static Bitmap ConvertToGrayScale(Bitmap srcimg)
+		public Bitmap ConvertToGrayScale(Bitmap srcimg)
 		{
 			var iWidth = srcimg.Width;
 			var iHeight = srcimg.Height;
