@@ -41,7 +41,7 @@ namespace OtsuThreshold
 		}
 
 		// finds the maximum element in a vector
-		private static short findMax(float[] vec, int n)
+		private static short FindMax(float[] vec, int n)
 		{
 			float maxVec = 0;
 			short idx = 0;
@@ -58,7 +58,7 @@ namespace OtsuThreshold
 		}
 
 		// simply computes the image histogram
-		private void getHistogram(int[] pixels, int[] hist)
+		private void GetHistogram(int[] pixels, int[] hist)
 		{
 			foreach(var pixel in pixels)
 			{
@@ -72,12 +72,12 @@ namespace OtsuThreshold
 			}
 		}
 
-		private short getOtsuThreshold(int[] pixels)
+		private short GetOtsuThreshold(int[] pixels)
 		{
 			var vet = new float[256];
 			var hist = new int[256];
 
-			getHistogram(pixels, hist);
+			GetHistogram(pixels, hist);
 
 			// loop through all possible t values and maximize between class variance
 			for (int k = 1; k != Byte.MaxValue; ++k)
@@ -91,25 +91,32 @@ namespace OtsuThreshold
 				vet[k] = diff * diff / p12;
 			}
 
-			return findMax(vet, 256);
+			return FindMax(vet, 256);
 		}
 
-		private bool threshold(int[] pixels, short thresh)
+		private bool Threshold(int[] pixels, short thresh, float weight = 1f)
 		{
+			var maxThresh = (byte)thresh;
 			if (thresh >= 200)
-				thresh = 200;				
+			{
+				weight = .78f;
+				maxThresh = (byte)(thresh * weight);
+				thresh = 200;
+			}
 
+			var minThresh = (byte)(thresh * weight);			
 			for (int i = 0; i < pixels.Length; ++i)
 			{
 				var c = Color.FromArgb(pixels[i]);
-				if (c.R < thresh || c.G < thresh || c.B < thresh)
+				if (c.R + c.G + c.B > maxThresh * 3)
+					pixels[i] = Color.FromArgb(c.A, Byte.MaxValue, Byte.MaxValue, Byte.MaxValue).ToArgb();
+				else if (m_transparentPixelIndex >= 0 || c.R + c.G + c.B < minThresh * 3)
 					pixels[i] = Color.FromArgb(c.A, 0, 0, 0).ToArgb();
-				else
-					pixels[i] = Color.FromArgb(c.A, Byte.MaxValue, Byte.MaxValue, Byte.MaxValue).ToArgb();				
 			}
 
 			return true;
 		}
+
 
 		protected ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
 		{
@@ -221,8 +228,8 @@ namespace OtsuThreshold
 			if (!BitmapUtilities.GrabPixels(sourceImg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
 				return sourceImg;
 
-			var otsuThreshold = getOtsuThreshold(pixels);
-			if (!threshold(pixels, otsuThreshold))
+			var otsuThreshold = GetOtsuThreshold(pixels);
+			if (!Threshold(pixels, otsuThreshold))
 				return sourceImg;
 
 			var dest = new Bitmap(bitmapWidth, bitmapHeight, PixelFormat.Format1bppIndexed);
