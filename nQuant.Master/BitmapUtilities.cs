@@ -337,7 +337,7 @@ namespace nQuant.Master
             return dest;
         }        
 		
-		public static bool GrabPixels(Bitmap source, int[] pixels, ref bool hasSemiTransparency, ref Color transparentColor, ref int transparentPixelIndex)
+        public static bool GrabPixels(Bitmap source, int[] pixels, ref bool hasSemiTransparency, ref Color transparentColor, ref int transparentPixelIndex)
         {
             int bitmapWidth = source.Width;
             int bitmapHeight = source.Height;
@@ -382,7 +382,7 @@ namespace nQuant.Master
                     argb = argb1;
                 }
 
-                if (pixelAlpha < Byte.MaxValue)
+                if (pixelAlpha < 200)
                 {
                     if (pixelAlpha == 0)
                     {                        
