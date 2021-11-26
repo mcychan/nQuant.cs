@@ -351,12 +351,15 @@ namespace PnnQuant
         protected override ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
+	    var c = Color.FromArgb(pixel);
+	    if (c.A <= alphaThreshold)
+                return 0;
+		
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
-
-                var c = Color.FromArgb(pixel);
+                
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
