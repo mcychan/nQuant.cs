@@ -260,6 +260,8 @@ namespace PnnQuant
         {
             ushort k = 0;
             var c = Color.FromArgb(pixel);
+            if (c.A <= alphaThreshold)
+                return 0;
 
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
