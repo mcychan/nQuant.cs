@@ -170,6 +170,8 @@ namespace PnnQuant
                 else
                     ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(1.997) / maxbins);
             }
+	    else if(nMaxColors > 256)
+                ratio = Math.Min(1.0, 1 - 1.0 / proportional);
             else
                 ratio = Math.Min(1.0, 0.14 * Math.Exp(4.681 * proportional));
 
