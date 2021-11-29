@@ -378,7 +378,7 @@ namespace PnnQuant
 
             var qPixels = Dither(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
 
-            if (m_transparentPixelIndex >= 0)
+            if (m_transparentPixelIndex >= 0 && nMaxColors <= 256)
             {
                 var k = qPixels[m_transparentPixelIndex];
                 if (nMaxColors > 2)
