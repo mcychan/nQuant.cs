@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace nQuant.Master
 {
@@ -357,47 +358,59 @@ namespace nQuant.Master
                 }
             }
 
-            int pixelIndex = 0;
+            int pixelIndex = 0, strideSource;
             var data = source.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
-            // Declare an array to hold the bytes of the bitmap.
-            int bytesLength = Math.Abs(data.Stride) * bitmapHeight;
-            var rgbValues = new byte[bytesLength];
-
-            // Copy the RGB values into the array.
-            System.Runtime.InteropServices.Marshal.Copy(data.Scan0, rgbValues, 0, bytesLength);
-
-            for (int i = 0; i < rgbValues.Length; i += 4)
+            unsafe
             {
-                byte pixelBlue = rgbValues[i];
-                byte pixelGreen = rgbValues[i + 1];
-                byte pixelRed = rgbValues[i + 2];
-                byte pixelAlpha = rgbValues[i + 3];
+                var pRowSource = (byte*)data.Scan0;
 
-                var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
-                var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
-                if (transparentIndex > -1 && transparentColor.ToArgb() == argb1.ToArgb())
+                // Compensate for possible negative stride
+                if (data.Stride > 0)
+                    strideSource = data.Stride;
+                else
                 {
-                    pixelAlpha = 0;
-                    argb = argb1;
+                    pRowSource += bitmapHeight * data.Stride;
+                    strideSource = -data.Stride;
                 }
 
-                if (pixelAlpha < 200)
+                // First loop: gather color information
+                for (int y = 0; y < bitmapHeight; ++y)
                 {
-                    if (pixelAlpha == 0)
-                    {                        
-                        transparentColor = argb;
-						transparentPixelIndex = pixelIndex;
-						if (transparentColor.ToArgb() < Byte.MaxValue && transparentIndex < 0)
-							argb = transparentColor = Color.FromArgb(0, 51, 102, 102);
+                    var pPixelSource = pRowSource + (y * strideSource);
+                    // For each row...
+                    for (int x = 0; x < bitmapWidth; ++x)
+                    {
+                        byte pixelBlue = *pPixelSource++;
+                        byte pixelGreen = *pPixelSource++;
+                        byte pixelRed = *pPixelSource++;
+                        byte pixelAlpha = *pPixelSource++;
+
+                        var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
+                        var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
+                        if (transparentIndex > -1 && transparentColor.ToArgb() == argb1.ToArgb())
+                        {
+                            pixelAlpha = 0;
+                            argb = argb1;
+                        }
+
+                        if (pixelAlpha < 200)
+                        {
+                            if (pixelAlpha == 0)
+                            {
+                                transparentColor = argb;
+                                transparentPixelIndex = pixelIndex;
+                                if (transparentColor.ToArgb() < Byte.MaxValue && transparentIndex < 0)
+                                    argb = transparentColor = Color.FromArgb(0, 51, 102, 102);
+                            }
+                            else
+                                hasSemiTransparency = true;
+                        }
+                        pixels[pixelIndex++] = argb.ToArgb();
                     }
-                    else
-                        hasSemiTransparency = true;
                 }
-                pixels[pixelIndex++] = argb.ToArgb();
+                source.UnlockBits(data);
             }
-
-            source.UnlockBits(data);
             return true;
         }
     }
