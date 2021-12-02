@@ -319,6 +319,7 @@ namespace PnnQuant
 
         protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
+            this.dither = dither;
             int[] qPixels;
             if (hasSemiTransparency)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.75f);
