@@ -11,9 +11,6 @@ using System.Drawing;
 
 namespace nQuant.Master
 {
-	internal delegate ushort DitherFn(Color[] palette, int nMaxColors, int pixel);
-
-    internal delegate int GetColorIndexFn(int pixel);
 	
     class BlueNoise
     {
@@ -184,7 +181,7 @@ namespace nQuant.Master
 			14, -9, -91, -55, 99, -111, -20, 31, 88, -3, 105, 53, -29, -90, -10, -70, 9, -57, 123, -99, 5			
 		};
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, int[] qPixels, float weight = 1.0f)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, float weight = 1.0f)
         {
 			float strength = 1 / 3.0f;
 			for (int y = 0; y < height; ++y)
@@ -207,7 +204,7 @@ namespace nQuant.Master
 					a_pix = (int)Math.Min(0xff, Math.Max(a_pix + (adj * (a_pix - c1.A)), 0));
 
 					c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-					qPixels[x + y * width] = ditherFn(palette, palette.Length, c1.ToArgb());
+					qPixels[x + y * width] = ditherable.DitherColorIndex(palette, palette.Length, c1.ToArgb());
 				}
 			}
 			return qPixels;

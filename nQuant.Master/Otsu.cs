@@ -11,7 +11,7 @@ using System.Drawing.Imaging;
 
 namespace OtsuThreshold
 {
-	public class Otsu
+	public class Otsu : Ditherable
 	{
 		protected byte alphaThreshold = 0;
 		protected bool hasSemiTransparency = false;
@@ -118,7 +118,7 @@ namespace OtsuThreshold
 		}
 
 
-		protected ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
+		public ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
 		{
 			if (nearestMap.TryGetValue(pixel, out var k))
 				return k;
@@ -154,7 +154,7 @@ namespace OtsuThreshold
 			return k;
 		}
 
-		protected int GetColorIndex(int argb)
+		public int GetColorIndex(int argb)
 		{
 			return BitmapUtilities.GetARGBIndex(argb, hasSemiTransparency, m_transparentPixelIndex > -1);
 		}
@@ -276,7 +276,7 @@ namespace OtsuThreshold
 				palettes[1] = Color.White;
 			}
 
-			var qPixels = GilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, NearestColorIndex, GetColorIndex);
+			var qPixels = GilbertCurve.Dither(bitmapWidth, bitmapHeight, pixels, palettes, this);
 			if (m_transparentPixelIndex >= 0)
 			{
 				var k = qPixels[m_transparentPixelIndex];
@@ -287,5 +287,6 @@ namespace OtsuThreshold
 			nearestMap.Clear();
 			return BitmapUtilities.ProcessImagePixels(dest, palettes, qPixels, m_transparentPixelIndex >= 0);
 		}
-	}
+
+    }
 }

@@ -11,10 +11,10 @@ Copyright (c) 2018-2021 Miller Cy Chan
 
 namespace PnnQuant
 {
-    public class PnnQuantizer
+    public class PnnQuantizer : Ditherable
     {
         protected byte alphaThreshold = 0;
-        protected bool hasSemiTransparency = false;
+        protected bool dither = true, hasSemiTransparency = false;
         protected int m_transparentPixelIndex = -1;
         protected Color m_transparentColor = Color.Transparent;
         protected readonly Random rand = new();
@@ -30,7 +30,7 @@ namespace PnnQuant
             internal float err;
         }        
 
-        protected int GetColorIndex(int argb)
+        public int GetColorIndex(int argb)
         {
             return BitmapUtilities.GetARGBIndex(argb, hasSemiTransparency, m_transparentPixelIndex > -1);
         }
@@ -254,6 +254,7 @@ namespace PnnQuant
             nearestMap[pixel] = k;
             return k;
         }
+        
         protected virtual ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
@@ -298,8 +299,15 @@ namespace PnnQuant
             if (closest[3] > palette.Length)
                 return NearestColorIndex(palette, nMaxColors, pixel);
             return closest[1];
-        }                
-        
+        }
+
+        public virtual ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
+        {
+            if (dither)
+                return NearestColorIndex(palette, nMaxColors, pixel);
+            return ClosestColorIndex(palette, nMaxColors, pixel);
+        }
+
         protected bool IsValidFormat(PixelFormat pixelFormat, int nMaxColors)
         {
             if (pixelFormat == PixelFormat.Undefined)
@@ -311,19 +319,18 @@ namespace PnnQuant
 
         protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
-            DitherFn ditherFn = dither ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
             if (hasSemiTransparency)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.75f);
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.75f);
             else if (nMaxColors < 64 && nMaxColors > 32)
-                qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
+                qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, this, hasSemiTransparency, dither);
             else if (nMaxColors <= 32)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, nMaxColors > 2 ? 1.8f : 1.5f);
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, nMaxColors > 2 ? 1.8f : 1.5f);
             else
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
             if (!dither)
-                return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels);
+                return BlueNoise.Dither(width, height, pixels, palettes, this, qPixels);
             return qPixels;
         }
 

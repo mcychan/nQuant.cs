@@ -56,7 +56,7 @@ namespace nQuant.Master
             }
             return ditherPixel;
         }
-        public static int[] Quantize_image(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, bool hasSemiTransparency, bool dither)
+        public static int[] Quantize_image(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, bool hasSemiTransparency, bool dither)
         {
             var qPixels = new int[width * height];
             int nMaxColors = palette.Length;
@@ -111,17 +111,17 @@ namespace nQuant.Master
                         var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
                         if (noBias)
                         {
-                            int offset = getColorIndexFn(c1.ToArgb());
+                            int offset = ditherable.GetColorIndex(c1.ToArgb());
                             if (lookup[offset] == 0)
-                                lookup[offset] = (c.A == 0) ? 1 : ditherFn(palette, nMaxColors, c1.ToArgb()) + 1;
+                                lookup[offset] = (c.A == 0) ? 1 : ditherable.DitherColorIndex(palette, nMaxColors, c1.ToArgb()) + 1;
                             qPixels[pixelIndex] = lookup[offset] - 1;
                         }
                         else
-                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ditherFn(palette, nMaxColors, c1.ToArgb());
+                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ditherable.DitherColorIndex(palette, nMaxColors, c1.ToArgb());
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
-                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : getColorIndexFn(c2.ToArgb());
+                            qPixels[pixelIndex] = hasSemiTransparency ? c2.ToArgb() : ditherable.GetColorIndex(c2.ToArgb());
 
                         r_pix = limtb[r_pix - c2.R + BLOCK_SIZE];
                         g_pix = limtb[g_pix - c2.G + BLOCK_SIZE];
@@ -166,7 +166,7 @@ namespace nQuant.Master
             }
 
             for (int i = 0; i < qPixels.Length; ++i)
-                qPixels[i] = ditherFn(palette, nMaxColors, pixels[i]);            
+                qPixels[i] = ditherable.DitherColorIndex(palette, nMaxColors, pixels[i]);            
 
             return qPixels;
         }

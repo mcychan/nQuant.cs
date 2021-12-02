@@ -46,8 +46,7 @@ namespace nQuant.Master
         private readonly int[] pixels;
         private readonly Color[] palette;
         private readonly int[] qPixels;
-        private readonly DitherFn ditherFn;
-        private readonly GetColorIndexFn getColorIndexFn;
+        private readonly Ditherable ditherable;
         private readonly Queue<ErrorBox> errorq;
         private readonly float[] weights;
         private readonly int[] lookup;
@@ -55,7 +54,7 @@ namespace nQuant.Master
         private const byte DITHER_MAX = 9;
         private const float BLOCK_SIZE = 343f;
 
-        private GilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, float divisor)
+        private GilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, Ditherable ditherable, float divisor)
         {
             this.divisor = divisor;
             this.width = width;
@@ -63,8 +62,7 @@ namespace nQuant.Master
             this.pixels = image;
             this.palette = palette;
             this.qPixels = qPixels;
-            this.ditherFn = ditherFn;
-            this.getColorIndexFn = getColorIndexFn;
+            this.ditherable = ditherable;
             errorq = new Queue<ErrorBox>();
             weights = new float[DITHER_MAX];
             lookup = new int[65536];
@@ -97,19 +95,19 @@ namespace nQuant.Master
             Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
             if (palette.Length < 64)
             {
-                int offset = getColorIndexFn(c2.ToArgb());
+                int offset = ditherable.GetColorIndex(c2.ToArgb());
                 if (lookup[offset] == 0)
-                    lookup[offset] = (pixel.A == 0) ? 1 : ditherFn(palette, palette.Length, c2.ToArgb()) + 1;
+                    lookup[offset] = (pixel.A == 0) ? 1 : ditherable.DitherColorIndex(palette, palette.Length, c2.ToArgb()) + 1;
                 qPixels[bidx] = lookup[offset] - 1;
             }
             else
-                qPixels[bidx] = ditherFn(palette, palette.Length, c2.ToArgb());
+                qPixels[bidx] = ditherable.DitherColorIndex(palette, palette.Length, c2.ToArgb());
 
             if (errorq.Count > 0)
                 errorq.Dequeue();
             c2 = palette[qPixels[bidx]];
             if (palette.Length > 256)
-                qPixels[bidx] = (short)getColorIndexFn(c2.ToArgb());
+                qPixels[bidx] = (short)ditherable.GetColorIndex(c2.ToArgb());
 
             error[0] = r_pix - c2.R;
             error[1] = g_pix - c2.G;
@@ -208,10 +206,10 @@ namespace nQuant.Master
                 Generate2d(0, 0, 0, height, width, 0);
         }
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, DitherFn ditherFn, GetColorIndexFn getColorIndexFn, float divisor = 3.0f)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, float divisor = 3.0f)
         {
             var qPixels = new int[pixels.Length];
-            new GilbertCurve(width, height, pixels, palette, qPixels, ditherFn, getColorIndexFn, divisor).Run();
+            new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, divisor).Run();
             return qPixels;
         }
     }

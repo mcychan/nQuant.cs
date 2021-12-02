@@ -353,8 +353,8 @@ namespace PnnQuant
         protected override ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             ushort k = 0;
-	    var c = Color.FromArgb(pixel);
-	    if (c.A <= alphaThreshold)
+	        var c = Color.FromArgb(pixel);
+	        if (c.A <= alphaThreshold)
                 return 0;
 		
             if (!closestMap.TryGetValue(pixel, out var closest))
@@ -395,26 +395,32 @@ namespace PnnQuant
             if (closest[3] > MAX_ERR)
                 return NearestColorIndex(palette, nMaxColors, pixel);
             return closest[1];
-        }        
+        }
+
+        public override ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
+        {
+            if(hasSemiTransparency)
+                return NearestColorIndex(palette, nMaxColors, pixel);
+            return ClosestColorIndex(palette, nMaxColors, pixel);
+        }
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
-            DitherFn ditherFn = hasSemiTransparency ? NearestColorIndex : ClosestColorIndex;
             int[] qPixels;
-	    if (hasSemiTransparency)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.75f);
+	        if (hasSemiTransparency)
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.75f);
             else if (nMaxColors < 64 && nMaxColors > 32)
-                qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, ditherFn, GetColorIndex, hasSemiTransparency, dither);
+                qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, this, hasSemiTransparency, dither);
             else if (nMaxColors <= 32)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, 1.5f);
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
             else
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex);
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
             if (!dither)
             {
                 var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
                 var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
-                return BlueNoise.Dither(width, height, pixels, palettes, ditherFn, GetColorIndex, qPixels, weight);
+                return BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
             }
 
             pixelMap.Clear();
