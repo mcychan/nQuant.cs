@@ -50,6 +50,7 @@ namespace nQuant.Master
         private readonly GetColorIndexFn getColorIndexFn;
         private readonly Queue<ErrorBox> errorq;
         private readonly float[] weights;
+        private readonly int[] lookup;
 
         private const byte DITHER_MAX = 9;
         private const float BLOCK_SIZE = 343f;
@@ -66,6 +67,7 @@ namespace nQuant.Master
             this.getColorIndexFn = getColorIndexFn;
             errorq = new Queue<ErrorBox>();
             weights = new float[DITHER_MAX];
+            lookup = new int[65536];
         }
 		
 		private static int Sign(int x) {
@@ -93,9 +95,17 @@ namespace nQuant.Master
             int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
             Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-            qPixels[bidx] = ditherFn(palette, palette.Length, c2.ToArgb());
+            if (palette.Length < 64)
+            {
+                int offset = getColorIndexFn(c2.ToArgb());
+                if (lookup[offset] == 0)
+                    lookup[offset] = (pixel.A == 0) ? 1 : ditherFn(palette, palette.Length, c2.ToArgb()) + 1;
+                qPixels[bidx] = lookup[offset] - 1;
+            }
+            else
+                qPixels[bidx] = ditherFn(palette, palette.Length, c2.ToArgb());
 
-            if(errorq.Count > 0)
+            if (errorq.Count > 0)
                 errorq.Dequeue();
             c2 = palette[qPixels[bidx]];
             if (palette.Length > 256)

@@ -154,6 +154,11 @@ namespace OtsuThreshold
 			return k;
 		}
 
+		protected int GetColorIndex(int argb)
+		{
+			return BitmapUtilities.GetARGBIndex(argb, hasSemiTransparency, m_transparentPixelIndex > -1);
+		}
+
 		public Bitmap ConvertToGrayScale(Bitmap srcimg)
 		{
 			var iWidth = srcimg.Width;
@@ -212,25 +217,51 @@ namespace OtsuThreshold
 			sourceImg.UnlockBits(data);
 			return sourceImg;
 		}
-		protected int GetColorIndex(int argb)
+
+		private void ConvertToGrayScale(int[] pixels)
 		{
-			return BitmapUtilities.GetARGBIndex(argb, hasSemiTransparency, m_transparentPixelIndex > -1);
+			float min1 = Byte.MaxValue;
+			float max1 = .0f;
+
+			for (int i = 0; i < pixels.Length; ++i)
+			{
+				int alfa = (pixels[i] >> 24) & 0xff;
+				int green = (pixels[i] >> 8) & 0xff;
+				if (alfa <= alphaThreshold)
+					continue;
+
+				if (min1 > green)
+					min1 = green;
+
+				if (max1 < green)
+					max1 = green;
+			}
+
+			for (int i = 0; i < pixels.Length; ++i)
+			{
+				int alfa = (pixels[i] >> 24) & 0xff;
+				int green = (pixels[i] >> 8) & 0xff;
+				var grey = (int)((green - min1) * (Byte.MaxValue / (max1 - min1)));
+				pixels[i] = Color.FromArgb(alfa, grey, grey, grey).ToArgb();
+			}
 		}
+		
 
 		public Bitmap ConvertGrayScaleToBinary(Bitmap srcimg, bool isGrayscale = false)
 		{
-			var sourceImg = isGrayscale ? srcimg : ConvertToGrayScale(srcimg);						
-
-			int bitmapWidth = sourceImg.Width;
-			int bitmapHeight = sourceImg.Height;
+			int bitmapWidth = srcimg.Width;
+			int bitmapHeight = srcimg.Height;
 
 			var pixels = new int[bitmapWidth * bitmapHeight];
-			if (!BitmapUtilities.GrabPixels(sourceImg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
-				return sourceImg;
+			if (!BitmapUtilities.GrabPixels(srcimg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
+				return srcimg;
+
+			if(!isGrayscale)
+				ConvertToGrayScale(pixels);
 
 			var otsuThreshold = GetOtsuThreshold(pixels);
 			if (!Threshold(pixels, otsuThreshold))
-				return sourceImg;
+				return srcimg;
 
 			var dest = new Bitmap(bitmapWidth, bitmapHeight, PixelFormat.Format1bppIndexed);
 			var palettes = dest.Palette.Entries;
