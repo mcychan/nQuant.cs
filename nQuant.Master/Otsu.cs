@@ -94,7 +94,7 @@ namespace OtsuThreshold
 			return FindMax(vet, 256);
 		}
 
-		private bool Threshold(int[] pixels, short thresh, float weight = 1f)
+		private void Threshold(int[] pixels, short thresh, float weight = 1f)
 		{
 			var maxThresh = (byte)thresh;
 			if (thresh >= 200)
@@ -113,8 +113,6 @@ namespace OtsuThreshold
 				else if (m_transparentPixelIndex >= 0 || c.R + c.G + c.B < minThresh * 3)
 					pixels[i] = Color.FromArgb(c.A, 0, 0, 0).ToArgb();
 			}
-
-			return true;
 		}
 
 
@@ -223,13 +221,13 @@ namespace OtsuThreshold
 			float min1 = Byte.MaxValue;
 			float max1 = .0f;
 
-			for (int i = 0; i < pixels.Length; ++i)
+			foreach (var pixel in pixels)
 			{
-				int alfa = (pixels[i] >> 24) & 0xff;
-				int green = (pixels[i] >> 8) & 0xff;
+				int alfa = (pixel >> 24) & 0xff;
 				if (alfa <= alphaThreshold)
 					continue;
 
+				int green = (pixel >> 8) & 0xff;
 				if (min1 > green)
 					min1 = green;
 
@@ -240,6 +238,9 @@ namespace OtsuThreshold
 			for (int i = 0; i < pixels.Length; ++i)
 			{
 				int alfa = (pixels[i] >> 24) & 0xff;
+				if (alfa <= alphaThreshold)
+					continue;
+
 				int green = (pixels[i] >> 8) & 0xff;
 				var grey = (int)((green - min1) * (Byte.MaxValue / (max1 - min1)));
 				pixels[i] = Color.FromArgb(alfa, grey, grey, grey).ToArgb();
@@ -260,8 +261,7 @@ namespace OtsuThreshold
 				ConvertToGrayScale(pixels);
 
 			var otsuThreshold = GetOtsuThreshold(pixels);
-			if (!Threshold(pixels, otsuThreshold))
-				return srcimg;
+			Threshold(pixels, otsuThreshold);
 
 			var dest = new Bitmap(bitmapWidth, bitmapHeight, PixelFormat.Format1bppIndexed);
 			var palettes = dest.Palette.Entries;
