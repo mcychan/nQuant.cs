@@ -100,7 +100,9 @@ namespace PnnQuant
 
             if (nMaxColors < 16)
                 nMaxColors = -1;
-            if (BitmapUtilities.Sqr(nMaxColors) / maxbins < .03)
+                
+            var weight = nMaxColors * 1.0 / maxbins;
+            if (weight > .003 && weight < .005)
                 quan_rt = 0;
 
             int j = 0;
