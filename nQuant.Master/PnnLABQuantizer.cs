@@ -139,8 +139,8 @@ namespace PnnQuant
                 quan_sqrt = -1;
             
 	    var weight = nMaxColors * 1.0 / maxbins;
-		if (weight > .0015 && weight < .002)
-			quan_rt = 2;
+            if (weight > .0015 && weight < .002)
+                quan_sqrt = 2;
 
             int j = 0;
             for (; j < maxbins - 1; ++j)
