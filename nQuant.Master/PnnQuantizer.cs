@@ -61,6 +61,19 @@ namespace PnnQuant
             bin1.err = (float) err;
             bin1.nn = nn;
         }
+
+        protected delegate float QuanFn(float cnt);
+        protected virtual QuanFn GetQuanFn(int nMaxColors, short quan_rt)
+        {
+		    if (quan_rt > 0) {
+			    if (nMaxColors< 64)
+				    return (float cnt) => (int) Math.Sqrt(cnt);
+			    return (float cnt) => (float) Math.Sqrt(cnt);
+		    }
+		    if (quan_rt < 0)
+                return (float cnt) => (int) Math.Cbrt(cnt);
+            return (float cnt) => cnt;
+	    }
         protected virtual void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             var bins = new Pnnbin[ushort.MaxValue + 1];
@@ -105,29 +118,17 @@ namespace PnnQuant
             if (weight > .003 && weight < .005)
                 quan_rt = 0;
 
+            var quanFn = GetQuanFn(nMaxColors, quan_rt);
+
             int j = 0;
             for (; j < maxbins - 1; ++j)
             {
                 bins[j].fw = j + 1;
                 bins[j + 1].bk = j;
 
-                if (quan_rt > 0)
-                {
-                    bins[j].cnt = (float)Math.Sqrt(bins[j].cnt);
-                    if (nMaxColors < 64)
-                        bins[j].cnt = (int)bins[j].cnt;
-                }
-                else if (quan_rt < 0)
-                    bins[j].cnt = (int)Math.Cbrt(bins[j].cnt);
+                bins[j].cnt = quanFn(bins[j].cnt);
             }
-            if (quan_rt > 0)
-            {
-                bins[j].cnt = (float)Math.Sqrt(bins[j].cnt);
-                if (nMaxColors < 64)
-                    bins[j].cnt = (int)bins[j].cnt;
-            }
-            else if (quan_rt < 0)
-                bins[j].cnt = (int)Math.Cbrt(bins[j].cnt);
+            bins[j].cnt = quanFn(bins[j].cnt);
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */

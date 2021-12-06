@@ -90,7 +90,18 @@ namespace PnnQuant
             bin1.err = (float) err;
             bin1.nn = nn;
         }
-        protected override void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_sqrt)
+        
+        protected override QuanFn GetQuanFn(int nMaxColors, short quan_rt) {
+		    if (quan_rt > 0) {
+			    if (quan_rt > 1)
+				    return (float cnt) => (int) Math.Pow(cnt, 0.75);
+			    if (nMaxColors< 64)
+				    return (float cnt) => (int) Math.Sqrt(cnt);
+                return (float cnt) => (float) Math.Sqrt(cnt);
+		    }
+		    return (float cnt) => cnt;
+	    }
+        protected override void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
 			if (noBias)
@@ -136,11 +147,13 @@ namespace PnnQuant
 
             var proportional = BitmapUtilities.Sqr(nMaxColors) / maxbins;
             if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
-                quan_sqrt = -1;
+                quan_rt = -1;
             
-	    var weight = nMaxColors * 1.0 / maxbins;
+	        var weight = nMaxColors * 1.0 / maxbins;
             if (weight > .0015 && weight < .002)
-                quan_sqrt = 2;
+                quan_rt = 2;
+
+            var quanFn = GetQuanFn(nMaxColors, quan_rt);
 
             int j = 0;
             for (; j < maxbins - 1; ++j)
@@ -148,28 +161,12 @@ namespace PnnQuant
                 bins[j].fw = j + 1;
                 bins[j + 1].bk = j;
 
-                if (quan_sqrt > 0)
-                {
-                    if (quan_sqrt > 1)
-                        bins[j].cnt = (int) Math.Pow(bins[j].cnt, 0.75);
-                    if (nMaxColors < 64)
-                        bins[j].cnt = (int) Math.Sqrt(bins[j].cnt);
-                    else
-                        bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
-                }
+                bins[j].cnt = quanFn(bins[j].cnt);                
             }
-            if (quan_sqrt > 0)
-            {
-                if (quan_sqrt > 1)
-                    bins[j].cnt = (int) Math.Pow(bins[j].cnt, 0.75);
-                if (nMaxColors < 64)
-                    bins[j].cnt = (int) Math.Sqrt(bins[j].cnt);
-                else
-                    bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
-            }
+            bins[j].cnt = quanFn(bins[j].cnt);
 
             int h, l, l2;
-            if (quan_sqrt != 0 && nMaxColors < 64)
+            if (quan_rt != 0 && nMaxColors < 64)
             {
                 if (proportional > .018 && proportional < .022)
                     ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(3.872) / maxbins);
@@ -183,7 +180,7 @@ namespace PnnQuant
             else
                 ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 0.14 * Math.Exp(4.681 * proportional));
 
-            if (quan_sqrt < 0)
+            if (quan_rt < 0)
             {
                 ratio += 0.45;
                 ratio = Math.Min(1.0, ratio);
@@ -207,7 +204,7 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-            if (quan_sqrt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05))
+            if (quan_rt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05))
                 ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(2.347) / maxbins);
 
             /* Merge bins which increase error the least */
