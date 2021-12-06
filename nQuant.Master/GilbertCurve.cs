@@ -54,16 +54,16 @@ namespace nQuant.Master
         private const byte DITHER_MAX = 9;
         private const float BLOCK_SIZE = 343f;
 
-        private GilbertCurve(int width, int height, int[] image, Color[] palette, int[] qPixels, Ditherable ditherable, float divisor)
+        private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float divisor)
         {
             this.divisor = divisor;
             this.width = width;
             this.height = height;
-            this.pixels = image;
+            this.pixels = pixels;
             this.palette = palette;
             this.qPixels = qPixels;
             this.ditherable = ditherable;
-            errorq = new Queue<ErrorBox>();
+            errorq = new();
             weights = new float[DITHER_MAX];
             lookup = new int[65536];
         }

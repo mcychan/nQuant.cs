@@ -67,13 +67,13 @@ namespace PnnQuant
         {
 		    if (quan_rt > 0) {
 			    if (nMaxColors< 64)
-				    return (float cnt) => (int) Math.Sqrt(cnt);
-			    return (float cnt) => (float) Math.Sqrt(cnt);
+				    return cnt => (int) Math.Sqrt(cnt);
+			    return cnt => (float) Math.Sqrt(cnt);
 		    }
 		    if (quan_rt < 0)
-                return (float cnt) => (int) Math.Cbrt(cnt);
-            return (float cnt) => cnt;
-	    }
+                return cnt => (int) Math.Cbrt(cnt);
+            return cnt => cnt;
+        }
         protected virtual void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             var bins = new Pnnbin[ushort.MaxValue + 1];

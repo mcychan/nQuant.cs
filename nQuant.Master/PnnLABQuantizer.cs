@@ -94,13 +94,13 @@ namespace PnnQuant
         protected override QuanFn GetQuanFn(int nMaxColors, short quan_rt) {
 		    if (quan_rt > 0) {
 			    if (quan_rt > 1)
-				    return (float cnt) => (int) Math.Pow(cnt, 0.75);
+				    return cnt => (int) Math.Pow(cnt, 0.75);
 			    if (nMaxColors< 64)
-				    return (float cnt) => (int) Math.Sqrt(cnt);
-                return (float cnt) => (float) Math.Sqrt(cnt);
+				    return cnt => (int) Math.Sqrt(cnt);
+                return cnt => (float) Math.Sqrt(cnt);
 		    }
-		    return (float cnt) => cnt;
-	    }
+		    return cnt => cnt;
+        }
         protected override void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
@@ -175,7 +175,7 @@ namespace PnnQuant
                 else
                     ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(1.997) / maxbins);
             }
-	    else if(nMaxColors > 256)
+            else if (nMaxColors > 256)
                 ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 1 - 1.0 / proportional);
             else
                 ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 0.14 * Math.Exp(4.681 * proportional));
