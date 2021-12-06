@@ -137,8 +137,10 @@ namespace PnnQuant
             var proportional = BitmapUtilities.Sqr(nMaxColors) / maxbins;
             if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
                 quan_sqrt = -1;
-            else if ((proportional < .018 || proportional > .5) && nMaxColors < 64)
-                quan_sqrt = 0;
+            
+	    var weight = nMaxColors * 1.0 / maxbins;
+		if (weight > .0015 && weight < .002)
+			quan_rt = 2;
 
             int j = 0;
             for (; j < maxbins - 1; ++j)
@@ -148,16 +150,22 @@ namespace PnnQuant
 
                 if (quan_sqrt > 0)
                 {
-                    bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
+                    if (quan_sqrt > 1)
+                        bins[j].cnt = (int) Math.Pow(bins[j].cnt, 0.75);
                     if (nMaxColors < 64)
-                        bins[j].cnt = (int) bins[j].cnt;
+                        bins[j].cnt = (int) Math.Sqrt(bins[j].cnt);
+                    else
+                        bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
                 }
             }
             if (quan_sqrt > 0)
             {
-                bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
+                if (quan_sqrt > 1)
+                    bins[j].cnt = (int) Math.Pow(bins[j].cnt, 0.75);
                 if (nMaxColors < 64)
-                    bins[j].cnt = (int) bins[j].cnt;
+                    bins[j].cnt = (int) Math.Sqrt(bins[j].cnt);
+                else
+                    bins[j].cnt = (float) Math.Sqrt(bins[j].cnt);
             }
 
             int h, l, l2;
