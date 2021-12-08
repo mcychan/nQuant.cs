@@ -211,15 +211,15 @@ namespace PnnQuant
                     palettes[0] = m_transparentColor;
                 }
 
-                if (extbins < 0)
-                {
-                    if (bins[++i] == null)
-                        break;
-                    continue;
-                }
-
                 if ((i = bins[i].fw) == 0)
                     break;
+            }
+	    
+	    if (k < nMaxColors - 1)
+            {
+                nMaxColors = k + 1;
+                Array.Resize(ref palettes, nMaxColors);
+                Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
         }
         protected virtual ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
