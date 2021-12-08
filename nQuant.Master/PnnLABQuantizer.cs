@@ -92,19 +92,19 @@ namespace PnnQuant
         }
         
         protected override QuanFn GetQuanFn(int nMaxColors, short quan_rt) {
-		    if (quan_rt > 0) {
-			    if (quan_rt > 1)
-				    return cnt => (int) Math.Pow(cnt, 0.75);
-			    if (nMaxColors< 64)
-				    return cnt => (int) Math.Sqrt(cnt);
+            if (quan_rt > 0) {
+                if (quan_rt > 1)
+                    return cnt => (int) Math.Pow(cnt, 0.75);
+                if (nMaxColors< 64)
+                    return cnt => (int) Math.Sqrt(cnt);
                 return cnt => (float) Math.Sqrt(cnt);
-		    }
-		    return cnt => cnt;
+            }
+            return cnt => cnt;
         }
         protected override void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
-			if (noBias)
+            if (noBias)
                 PR = PG = PB = 1.0;
             else if (pixels.Length < BitmapUtilities.Sqr(512))
             {
@@ -273,15 +273,15 @@ namespace PnnQuant
                     palettes[0] = m_transparentColor;
                 }
 
-                if (extbins < 0)
-                {
-                    if (bins[++i] == null)
-                        break;
-                    continue;
-                }
-
                 if ((i = bins[i].fw) == 0)
                     break;
+            }
+	    
+	    if (k < nMaxColors - 1)
+            {
+                nMaxColors = k + 1;
+                Array.Resize(ref palettes, nMaxColors);
+                Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
         }
 
