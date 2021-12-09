@@ -181,7 +181,7 @@ namespace PnnQuant
                 ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 0.14 * Math.Exp(4.681 * proportional));
 
             if (quan_rt < 0)
-                ratio = Math.min(1.0, nMaxColors * Math.exp(1.997) / maxbins);
+                ratio = Math.Min(1.0, nMaxColors * Math.Exp(1.997) / maxbins);
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
