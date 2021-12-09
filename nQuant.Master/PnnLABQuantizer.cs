@@ -149,7 +149,7 @@ namespace PnnQuant
             if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
                 quan_rt = -1;
             
-	        var weight = nMaxColors * 1.0 / maxbins;
+            var weight = nMaxColors * 1.0 / maxbins;
             if (weight > .0015 && weight < .002)
                 quan_rt = 2;
 
@@ -181,10 +181,7 @@ namespace PnnQuant
                 ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 0.14 * Math.Exp(4.681 * proportional));
 
             if (quan_rt < 0)
-            {
-                ratio += 0.45;
-                ratio = Math.Min(1.0, ratio);
-            }
+                ratio = Math.min(1.0, nMaxColors * Math.exp(1.997) / maxbins);
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
