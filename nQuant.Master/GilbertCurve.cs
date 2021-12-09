@@ -93,7 +93,7 @@ namespace nQuant.Master
             int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
             Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-            if (palette.Length < 64 && a_pix == 0xff)
+            if (palette.Length < 64 && a_pix > 0xF0)
             {
                 int offset = ditherable.GetColorIndex(c2.ToArgb());
                 if (lookup[offset] == 0)
