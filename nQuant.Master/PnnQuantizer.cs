@@ -362,7 +362,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 dither = true;
 
-            if (hasSemiTransparency || nMaxColors <= 32)
+            if (hasSemiTransparency || nMaxColors <= 32 || nMaxColors > 256)
                 PR = PG = PB = 1;
             else if (bitmapWidth < 512 || bitmapHeight < 512)
             {
