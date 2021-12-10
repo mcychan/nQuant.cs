@@ -375,7 +375,7 @@ namespace PnnQuant
             {
                 if (m_transparentPixelIndex >= 0)
                 {
-                    palettes[0] = Color.Transparent;
+                    palettes[0] = m_transparentColor;
                     palettes[1] = Color.Black;
                 }
                 else
