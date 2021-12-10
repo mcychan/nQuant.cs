@@ -394,7 +394,7 @@ namespace nQuant.Master
                             argb = argb1;
                         }
 
-                        if (pixelAlpha < 200)
+                        if (pixelAlpha < 0xF0)
                         {
                             if (pixelAlpha == 0)
                             {
@@ -403,7 +403,7 @@ namespace nQuant.Master
                                 if (transparentColor.ToArgb() < Byte.MaxValue && transparentIndex < 0)
                                     argb = transparentColor = Color.FromArgb(0, 51, 102, 102);
                             }
-                            else
+                            else if(pixelAlpha > 0xF)
                                 hasSemiTransparency = true;
                         }
                         pixels[pixelIndex++] = argb.ToArgb();
