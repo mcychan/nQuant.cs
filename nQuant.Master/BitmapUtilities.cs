@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
 
 namespace nQuant.Master
 {
@@ -171,7 +169,7 @@ namespace nQuant.Master
             return qPixels;
         }
 		
-		public static Bitmap ProcessImagePixels(Bitmap dest, int[] qPixels, bool hasSemiTransparency, int transparentPixelIndex)
+        public static Bitmap ProcessImagePixels(Bitmap dest, int[] qPixels, bool hasSemiTransparency, int transparentPixelIndex)
         {
             int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
             if (bpp < 16)
@@ -394,7 +392,7 @@ namespace nQuant.Master
                             argb = argb1;
                         }
 
-                        if (pixelAlpha < 0xF0)
+                        if (pixelAlpha < 0xE0)
                         {
                             if (pixelAlpha == 0)
                             {
