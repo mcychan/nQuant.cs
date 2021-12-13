@@ -172,12 +172,12 @@ namespace nQuant.Master
 		
         public static Bitmap ProcessImagePixels(Bitmap dest, int[] qPixels, bool hasSemiTransparency, int transparentPixelIndex)
         {
-            int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
+            var bpp = Image.GetPixelFormatSize(dest.PixelFormat);
             if (bpp < 16)
                 return dest;
 
-            int w = dest.Width;
-            int h = dest.Height;
+            var w = dest.Width;
+            var h = dest.Height;
 
             if (hasSemiTransparency && dest.PixelFormat < PixelFormat.Format32bppArgb)
                 dest = new Bitmap(w, h, PixelFormat.Format32bppArgb);
@@ -266,9 +266,9 @@ namespace nQuant.Master
                 palette.Entries[i] = palettes[i];
             dest.Palette = palette;
 
-            int bpp = Image.GetPixelFormatSize(dest.PixelFormat);
-            int w = dest.Width;
-            int h = dest.Height;
+            var bpp = Image.GetPixelFormatSize(dest.PixelFormat);
+            var w = dest.Width;
+            var h = dest.Height;
 
             var targetData = dest.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, dest.PixelFormat);
 
@@ -337,23 +337,27 @@ namespace nQuant.Master
             return dest;
         }        
 		
-        public static bool GrabPixels(Bitmap source, int[] pixels, ref bool hasSemiTransparency, ref Color transparentColor, ref int transparentPixelIndex)
+        public static bool GrabPixels(Bitmap source, int[] pixels, ref bool hasSemiTransparency, ref Color transparentColor, ref int transparentPixelIndex, byte alphaThreshold, int nMaxColors = 2)
         {
-            int bitmapWidth = source.Width;
-            int bitmapHeight = source.Height;
+            var bitmapWidth = source.Width;
+            var bitmapHeight = source.Height;
 
             hasSemiTransparency = false;
             transparentPixelIndex = -1;
 
             int transparentIndex = -1;
             var palettes = source.Palette.Entries;
-            foreach (var pPropertyItem in source.PropertyItems)
+            if (nMaxColors > 2)
             {
-                if (pPropertyItem.Id == PropertyTagIndexTransparent)
+                foreach (var pPropertyItem in source.PropertyItems)
                 {
-                    transparentIndex = pPropertyItem.Value[0];
-                    var c = palettes[transparentIndex];
-                    transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
+                    if (pPropertyItem.Id == PropertyTagIndexTransparent)
+                    {
+                        transparentIndex = pPropertyItem.Value[0];
+                        var c = palettes[transparentIndex];
+                        transparentColor = Color.FromArgb(0, c.R, c.G, c.B);
+                        break;
+                    }
                 }
             }
 
@@ -380,10 +384,10 @@ namespace nQuant.Master
                     // For each row...
                     for (int x = 0; x < bitmapWidth; ++x)
                     {
-                        byte pixelBlue = *pPixelSource++;
-                        byte pixelGreen = *pPixelSource++;
-                        byte pixelRed = *pPixelSource++;
-                        byte pixelAlpha = *pPixelSource++;
+                        var pixelBlue = *pPixelSource++;
+                        var pixelGreen = *pPixelSource++;
+                        var pixelRed = *pPixelSource++;
+                        var pixelAlpha = *pPixelSource++;
 
                         var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
                         var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
@@ -397,12 +401,13 @@ namespace nQuant.Master
                         {
                             if (pixelAlpha == 0)
                             {
-                                transparentColor = argb;
                                 transparentPixelIndex = pixelIndex;
-                                if (transparentColor.ToArgb() < Byte.MaxValue && transparentIndex < 0)
-                                    argb = transparentColor = Color.FromArgb(0, 51, 102, 102);
+                                if (nMaxColors > 2 && transparentIndex > -1)
+                                    transparentColor = argb;
+                                else
+                                    argb = transparentColor;
                             }
-                            else if(pixelAlpha > 0xF)
+                            else if(pixelAlpha > alphaThreshold)
                                 hasSemiTransparency = true;
                         }
                         pixels[pixelIndex++] = argb.ToArgb();

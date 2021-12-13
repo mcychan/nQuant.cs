@@ -13,15 +13,15 @@ namespace PnnQuant
 {
     public class PnnQuantizer : Ditherable
     {
-        protected byte alphaThreshold = 0;
+        protected byte alphaThreshold = 0xF;
         protected bool dither = true, hasSemiTransparency = false;
         protected int m_transparentPixelIndex = -1;
         protected Color m_transparentColor = Color.Transparent;
         protected readonly Random rand = new();
         protected readonly Dictionary<int, ushort[]> closestMap = new();
-        protected readonly Dictionary<int, ushort> nearestMap = new();        
+        protected readonly Dictionary<int, ushort> nearestMap = new();
 
-        private double PR = .2126, PG = .7152, PB = .0722;
+        protected double PR = .2126, PG = .7152, PB = .0722;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -74,7 +74,7 @@ namespace PnnQuant
                 return cnt => (int) Math.Cbrt(cnt);
             return cnt => cnt;
         }
-        protected virtual void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
+        protected virtual void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
@@ -200,6 +200,9 @@ namespace PnnQuant
             }
 
             /* Fill palette */
+            if (extbins < 0)
+                palettes = new Color[maxbins];
+
             int k = 0;
             for (int i = 0; ; ++k)
             {
@@ -218,11 +221,10 @@ namespace PnnQuant
 	    if (k < nMaxColors - 1)
             {
                 nMaxColors = k + 1;
-                Array.Resize(ref palettes, nMaxColors);
                 Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
         }
-        protected virtual ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        protected virtual ushort NearestColorIndex(Color[] palette, int pixel)
         {
             if (nearestMap.TryGetValue(pixel, out var k))
                 return k;
@@ -231,7 +233,8 @@ namespace PnnQuant
             if (c.A <= alphaThreshold)
                 return 0;
 
-            double mindist = 1e100;
+            double mindist = int.MaxValue;
+            var nMaxColors = palette.Length;
             for (int i = 0; i < nMaxColors; ++i)
             {
                 var c2 = palette[i];
@@ -258,7 +261,7 @@ namespace PnnQuant
             return k;
         }
         
-        protected virtual ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        protected virtual ushort ClosestColorIndex(Color[] palette, int pixel)
         {
             ushort k = 0;
             var c = Color.FromArgb(pixel);
@@ -270,6 +273,7 @@ namespace PnnQuant
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
 
+                var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
                 {
                     Color c2 = palette[k];
@@ -296,19 +300,19 @@ namespace PnnQuant
 
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
                 if (closest[2] > palette.Length)
-                    return NearestColorIndex(palette, nMaxColors, pixel);
+                    return NearestColorIndex(palette, pixel);
                 return closest[0];
             }
             if (closest[3] > palette.Length)
-                return NearestColorIndex(palette, nMaxColors, pixel);
+                return NearestColorIndex(palette, pixel);
             return closest[1];
         }
 
         public virtual ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             if (dither)
-                return NearestColorIndex(palette, nMaxColors, pixel);
-            return ClosestColorIndex(palette, nMaxColors, pixel);
+                return NearestColorIndex(palette, pixel);
+            return ClosestColorIndex(palette, pixel);
         }
 
         protected bool IsValidFormat(PixelFormat pixelFormat, int nMaxColors)
@@ -353,7 +357,7 @@ namespace PnnQuant
 
             var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             var pixels = new int[bitmapWidth * bitmapHeight];
-            if(!BitmapUtilities.GrabPixels(source, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
+            if(!BitmapUtilities.GrabPixels(source, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold, nMaxColors))
                 return dest;
 
             var palettes = dest.Palette.Entries;
@@ -370,7 +374,7 @@ namespace PnnQuant
             }
 
             if (nMaxColors > 2)
-                Pnnquan(pixels, palettes, ref nMaxColors, 1);
+                Pnnquan(pixels, ref palettes, ref nMaxColors, 1);
             else
             {
                 if (m_transparentPixelIndex >= 0)

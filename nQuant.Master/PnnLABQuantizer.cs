@@ -7,7 +7,6 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double PR = .2126, PG = .7152, PB = .0722;
         private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
         private sealed class Pnnbin
@@ -101,7 +100,7 @@ namespace PnnQuant
             }
             return cnt => cnt;
         }
-        protected override void Pnnquan(int[] pixels, Color[] palettes, ref int nMaxColors, short quan_rt)
+        protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors, short quan_rt)
         {
             bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
             if (noBias)
@@ -136,7 +135,7 @@ namespace PnnQuant
                 if (bins[i] == null)
                     continue;
 
-                var d = 1.0f / (float)bins[i].cnt;
+                var d = 1.0f / bins[i].cnt;
                 bins[i].ac *= d;
                 bins[i].Lc *= d;
                 bins[i].Ac *= d;
@@ -256,6 +255,9 @@ namespace PnnQuant
             }
 
             /* Fill palette */
+            if (extbins < 0)
+                palettes = new Color[maxbins];
+
             int k = 0;
             for (int i = 0; ; ++k)
             {
@@ -274,15 +276,14 @@ namespace PnnQuant
                     break;
             }
 	    
-	    if (k < nMaxColors - 1)
+	        if (k < nMaxColors - 1)
             {
                 nMaxColors = k + 1;
-                Array.Resize(ref palettes, nMaxColors);
                 Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
         }
 
-        protected override ushort NearestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        protected override ushort NearestColorIndex(Color[] palette, int pixel)
         {
             if (nearestMap.TryGetValue(pixel, out var k))
                 return k;
@@ -291,7 +292,8 @@ namespace PnnQuant
             if (c.A <= alphaThreshold)
                 return 0;
 
-            double mindist = ushort.MaxValue;
+            double mindist = int.MaxValue;
+            var nMaxColors = palette.Length;
             GetLab(pixel, out var lab1);
 
             for (int i = 0; i < nMaxColors; ++i)
@@ -351,7 +353,7 @@ namespace PnnQuant
             nearestMap[pixel] = k;
             return k;
         }
-        protected override ushort ClosestColorIndex(Color[] palette, int nMaxColors, int pixel)
+        protected override ushort ClosestColorIndex(Color[] palette, int pixel)
         {
             ushort k = 0;
 	        var c = Color.FromArgb(pixel);
@@ -362,7 +364,8 @@ namespace PnnQuant
             {
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
-                
+
+                var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
@@ -390,19 +393,19 @@ namespace PnnQuant
             var MAX_ERR = palette.Length;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
                 if (closest[2] > MAX_ERR)
-                    return NearestColorIndex(palette, nMaxColors, pixel);
+                    return NearestColorIndex(palette, pixel);
                 return closest[0];
             }
             if (closest[3] > MAX_ERR)
-                return NearestColorIndex(palette, nMaxColors, pixel);
+                return NearestColorIndex(palette, pixel);
             return closest[1];
         }
 
         public override ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
         {
             if(hasSemiTransparency)
-                return NearestColorIndex(palette, nMaxColors, pixel);
-            return ClosestColorIndex(palette, nMaxColors, pixel);
+                return NearestColorIndex(palette, pixel);
+            return ClosestColorIndex(palette, pixel);
         }
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)

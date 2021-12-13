@@ -13,7 +13,7 @@ namespace OtsuThreshold
 {
 	public class Otsu : Ditherable
 	{
-		protected byte alphaThreshold = 0;
+		protected byte alphaThreshold = 0xF;
 		protected bool hasSemiTransparency = false;
 
 		protected int m_transparentPixelIndex = -1;
@@ -254,7 +254,7 @@ namespace OtsuThreshold
 			int bitmapHeight = srcimg.Height;
 
 			var pixels = new int[bitmapWidth * bitmapHeight];
-			if (!BitmapUtilities.GrabPixels(srcimg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex))
+			if (!BitmapUtilities.GrabPixels(srcimg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold))
 				return srcimg;
 
 			if(!isGrayscale)
@@ -267,7 +267,7 @@ namespace OtsuThreshold
 			var palettes = dest.Palette.Entries;
 			if (m_transparentPixelIndex >= 0)
 			{
-				palettes[0] = m_transparentColor = Color.FromArgb(0, 51, 102, 102);
+				palettes[0] = m_transparentColor;
 				palettes[1] = Color.Black;
 			}
 			else
