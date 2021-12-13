@@ -402,7 +402,7 @@ namespace nQuant.Master
                             if (pixelAlpha == 0)
                             {
                                 transparentPixelIndex = pixelIndex;
-                                if (nMaxColors > 2 && transparentIndex > -1)
+                                if (nMaxColors > 2)
                                     transparentColor = argb;
                                 else
                                     argb = transparentColor;
