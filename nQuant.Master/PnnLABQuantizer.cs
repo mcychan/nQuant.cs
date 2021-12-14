@@ -46,8 +46,8 @@ namespace PnnQuant
                 {
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
-                double alphaDiff = hasSemiTransparency ? Math.Abs(lab2.alpha - lab1.alpha) : 0;
-                double nerr = nerr2 * BitmapUtilities.Sqr(alphaDiff) / Math.Exp(1.5);
+                double alphaDiff = hasSemiTransparency ? (lab2.alpha - lab1.alpha) / Math.Exp(1.5) : 0;
+                double nerr = nerr2 * BitmapUtilities.Sqr(alphaDiff);
                 if (nerr >= err)
                     continue;
 
@@ -168,11 +168,11 @@ namespace PnnQuant
             if (quan_rt != 0 && nMaxColors < 64)
             {
                 if (proportional > .018 && proportional < .022)
-                    ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(3.872) / maxbins);
+                    ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.872));
                 else if (proportional > .1)
-                    ratio = Math.Min(1.0, proportional + nMaxColors * Math.Exp(3.23) / maxbins);
+                    ratio = Math.Min(1.0, 1.0 - weight);
                 else
-                    ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(1.997) / maxbins);
+                    ratio = Math.Min(1.0, proportional - weight * Math.Exp(1.997));
             }
             else if (nMaxColors > 256)
                 ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 1 - 1.0 / proportional);
@@ -180,7 +180,7 @@ namespace PnnQuant
                 ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 0.14 * Math.Exp(4.681 * proportional));
 
             if (quan_rt < 0)
-                ratio = Math.Min(1.0, nMaxColors * Math.Exp(1.997) / maxbins);
+                ratio = Math.Min(1.0, weight * Math.Exp(1.997));
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
@@ -200,8 +200,8 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-            if (quan_rt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05))
-                ratio = Math.Min(1.0, proportional - nMaxColors * Math.Exp(2.347) / maxbins);
+            if (quan_rt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05) && proportional < .1)
+                ratio = Math.Min(1.0, proportional - weight * Math.Exp(2.347));
 
             /* Merge bins which increase error the least */
             int extbins = maxbins - nMaxColors;
@@ -300,33 +300,21 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) : 0;
+                var curdist = hasSemiTransparency ? Math.abs(c2.A - c.A) / Math.exp(0.75) : 0;
                 if (curdist > mindist)
                     continue;
                 
+		GetLab(c2.ToArgb(), out var lab2);
                 if (nMaxColors > 32 || nMaxColors <= 4 || hasSemiTransparency)
                 {
-                    curdist += PR * BitmapUtilities.Sqr(c2.R - c.R);
+                    curdist += PR * Math.abs(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += PG * BitmapUtilities.Sqr(c2.G - c.G);
-                    if (curdist > mindist)
-                        continue;
-
-                    curdist += PB * BitmapUtilities.Sqr(c2.B - c.B);
-                    if (PB < 1)
-                    {
-                        if (curdist > mindist)
-                            continue;
-
-                        GetLab(c2.ToArgb(), out var lab2);
-                        curdist += BitmapUtilities.Sqr(lab2.B - lab1.B) / 2.0;
-                    }
+                    curdist += Math.sqrt(BitmapUtilities.Sqr(lab2.A - lab1.A) + BitmapUtilities.Sqr(lab2.B - lab1.B));
                 }
                 else
                 {
-                    GetLab(c2.ToArgb(), out var lab2);
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += BitmapUtilities.Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
@@ -411,7 +399,7 @@ namespace PnnQuant
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
             int[] qPixels;
-	        if (hasSemiTransparency)
+            if (hasSemiTransparency)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.75f);
             else if (nMaxColors < 64 && nMaxColors > 32)
                 qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, this, hasSemiTransparency, dither);
