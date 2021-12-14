@@ -300,18 +300,18 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = hasSemiTransparency ? Math.abs(c2.A - c.A) / Math.exp(0.75) : 0;
+                var curdist = hasSemiTransparency ? Math.Abs(c2.A - c.A) / Math.Exp(0.75) : 0;
                 if (curdist > mindist)
                     continue;
                 
 		GetLab(c2.ToArgb(), out var lab2);
                 if (nMaxColors > 32 || nMaxColors <= 4 || hasSemiTransparency)
                 {
-                    curdist += PR * Math.abs(lab2.L - lab1.L);
+                    curdist += PR * Math.Abs(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
 
-                    curdist += Math.sqrt(BitmapUtilities.Sqr(lab2.A - lab1.A) + BitmapUtilities.Sqr(lab2.B - lab1.B));
+                    curdist += Math.Sqrt(BitmapUtilities.Sqr(lab2.A - lab1.A) + BitmapUtilities.Sqr(lab2.B - lab1.B));
                 }
                 else
                 {
