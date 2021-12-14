@@ -175,12 +175,12 @@ namespace PnnQuant
                     ratio = Math.Min(1.0, proportional - weight * Math.Exp(1.997));
             }
             else if (nMaxColors > 256)
-                ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 1 - 1.0 / proportional);
+                ratio = Math.Min(m_transparentPixelIndex >= 0 ? 0.0 : 1.0, 1 - 1.0 / proportional);
             else
-                ratio = Math.Min(hasSemiTransparency ? 0.0 : 1.0, 0.14 * Math.Exp(4.681 * proportional));
+                ratio = Math.Min(m_transparentPixelIndex >= 0 ? 0.0 : 1.0, 0.14 * Math.Exp(4.681 * proportional));
 
             if (quan_rt < 0)
-                ratio = Math.Min(1.0, weight * Math.Exp(1.997));
+                ratio = Math.Min(m_transparentPixelIndex >= 0 ? 0.0 : 1.0, weight * Math.Exp(1.997));
 
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
