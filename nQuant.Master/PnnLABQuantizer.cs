@@ -24,7 +24,7 @@ namespace PnnQuant
                 pixelMap[argb] = lab1;
             }
         }
-        private void Find_nn(Pnnbin[] bins, int idx)
+        private void Find_nn(Pnnbin[] bins, int idx, bool texicab)
         {
             int nn = 0;
             var err = 1e100;
@@ -51,15 +51,26 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.L - lab1.L);
-                if (nerr >= err)
-                    continue;
+                if (hasSemiTransparency || !texicab)
+                {
+                    nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.L - lab1.L);
+                    if (nerr >= err)
+                        continue;
 
-                nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.A - lab1.A);
-                if (nerr >= err)
-                    continue;
+                    nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.A - lab1.A);
+                    if (nerr >= err)
+                        continue;
 
-                nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.B - lab1.B);
+                    nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.B - lab1.B);
+                }
+                else
+                {
+                    nerr += (1 - ratio) * nerr2 * Math.Abs(lab2.L - lab1.L);
+                    if (nerr >= err)
+                        continue;
+
+                    nerr += (1 - ratio) * nerr2 * Math.Sqrt(BitmapUtilities.Sqr(lab2.A - lab1.A) + BitmapUtilities.Sqr(lab2.B - lab1.B));
+                }
 
                 if (nerr >= err)
                     continue;
@@ -164,6 +175,7 @@ namespace PnnQuant
             }
             bins[j].cnt = quanFn(bins[j].cnt);
 
+            var texicab = proportional > .025;
             int h, l, l2;
             if (quan_rt != 0 && nMaxColors < 64)
             {
@@ -186,7 +198,7 @@ namespace PnnQuant
             var heap = new int[bins.Length + 1];
             for (int i = 0; i < maxbins; ++i)
             {
-                Find_nn(bins, i);
+                Find_nn(bins, i, texicab);
                 /* Push slot on heap */
                 var err = bins[i].err;
 
@@ -220,7 +232,7 @@ namespace PnnQuant
                         b1 = heap[1] = heap[heap[0]--];
                     else /* Too old error value */
                     {
-                        Find_nn(bins, b1);
+                        Find_nn(bins, b1, texicab && proportional < 1);
                         tb.tm = i;
                     }
                     /* Push slot down */
