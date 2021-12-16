@@ -108,7 +108,7 @@ namespace nQuant.Master
                         int a_pix = ditherPixel[3];
 
                         var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-                        if (noBias)
+                        if (noBias && a_pix > 0xF0)
                         {
                             int offset = ditherable.GetColorIndex(c1.ToArgb());
                             if (lookup[offset] == 0)
