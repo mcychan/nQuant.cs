@@ -315,17 +315,17 @@ namespace PnnQuant
                 var curdist = hasSemiTransparency ? Math.Abs(c2.A - c.A) / Math.Exp(0.75) : 0;
                 if (curdist > mindist)
                     continue;
-                
-		GetLab(c2.ToArgb(), out var lab2);
-		if (nMaxColors <= 4)
+
+                GetLab(c2.ToArgb(), out var lab2);
+                if (nMaxColors <= 4)
                 {
                     curdist = BitmapUtilities.Sqr(c2.R - c.R) + BitmapUtilities.Sqr(c2.G - c.G) + BitmapUtilities.Sqr(c2.B - c.B);
                     if(hasSemiTransparency)
                         curdist += BitmapUtilities.Sqr(c2.A - c.A);
-		}
+                }
                 else if (nMaxColors > 32 || hasSemiTransparency)
                 {
-                    curdist += PR * Math.Abs(lab2.L - lab1.L);
+                    curdist += Math.Abs(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
 
