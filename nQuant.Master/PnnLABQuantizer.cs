@@ -183,8 +183,10 @@ namespace PnnQuant
                     ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.872));
                 else if (proportional > .1)
                     ratio = Math.Min(1.0, 1.0 - weight);
-                else if (proportional > .03)
+                else if (proportional > .04)
                     ratio = Math.Min(1.0, weight * Math.Exp(2.28));
+                else if (proportional > .03)
+                    ratio = Math.Min(1.0, weight * Math.Exp(3.275));
                 else
                     ratio = Math.Min(1.0, proportional - weight * Math.Exp(1.997));
             }
