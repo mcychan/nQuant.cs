@@ -113,14 +113,6 @@ namespace PnnQuant
         }
         protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors, short quan_rt)
         {
-            bool noBias = m_transparentPixelIndex >= 0 || hasSemiTransparency || nMaxColors < 64;
-            if (noBias)
-                PR = PG = PB = 1.0;
-            else if (pixels.Length < BitmapUtilities.Sqr(512))
-            {
-                PR = 0.299; PG = 0.587; PB = 0.114;
-            }
-
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
             /* Build histogram */
@@ -402,11 +394,11 @@ namespace PnnQuant
 
             var MAX_ERR = palette.Length;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
-                if (closest[2] > MAX_ERR)
+                if (closest[2] >= MAX_ERR)
                     return NearestColorIndex(palette, pixel);
                 return closest[0];
             }
-            if (closest[3] > MAX_ERR)
+            if (closest[3] >= MAX_ERR)
                 return NearestColorIndex(palette, pixel);
             return closest[1];
         }
