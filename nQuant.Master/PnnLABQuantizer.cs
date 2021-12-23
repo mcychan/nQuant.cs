@@ -168,6 +168,9 @@ namespace PnnQuant
             bins[j].cnt = quanFn(bins[j].cnt);
 
             var texicab = proportional > .025;
+	    if(weight < .025)
+                PR = PG = PB = 1;
+			
             int h, l, l2;
             if (quan_rt != 0 && nMaxColors < 64)
             {
