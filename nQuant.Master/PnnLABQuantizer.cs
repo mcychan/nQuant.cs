@@ -191,7 +191,7 @@ namespace PnnQuant
             else if (nMaxColors > 256)
                 ratio = Math.Min(m_transparentPixelIndex >= 0 ? 0.0 : 1.0, 1 - 1.0 / proportional);
             else
-                ratio = Math.Min(m_transparentPixelIndex >= 0 ? 0.0 : .99, Math.Max(.98, 1 - weight * .7));
+                ratio = Math.Min(m_transparentPixelIndex >= 0 ? 0.0 : 1.0, Math.Max(.98, 1 - weight * .7));
 
             if (quan_rt < 0)
                 ratio = Math.Min(m_transparentPixelIndex >= 0 ? 0.0 : 1.0, weight * Math.Exp(1.997));
@@ -421,8 +421,6 @@ namespace PnnQuant
             int[] qPixels;
             if (hasSemiTransparency)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.75f);
-            else if (nMaxColors < 64 && nMaxColors > 32)
-                qPixels = BitmapUtilities.Quantize_image(width, height, pixels, palettes, this, hasSemiTransparency, dither);
             else if (nMaxColors <= 32)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
             else
