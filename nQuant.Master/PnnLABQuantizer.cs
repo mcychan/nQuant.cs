@@ -154,6 +154,11 @@ namespace PnnQuant
             var weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
             if (weight > .0015 && weight < .002)
                 quan_rt = 2;
+            if (weight < .025) {
+                var delta = 3 * (.025 + weight);
+                PG -= delta;
+                PB += delta;
+            }
 
             var quanFn = GetQuanFn(nMaxColors, quan_rt);
 
@@ -167,14 +172,7 @@ namespace PnnQuant
             }
             bins[j].cnt = quanFn(bins[j].cnt);
 
-            var texicab = proportional > .025;
-	    if(weight < .025)
-                PR = PG = PB = 1;
-	    if(weight < .025) {
-                var delta = 3 * (.025 + weight);
-                PG -= delta;
-                PB += delta;
-            }
+            var texicab = proportional > .025;	    
 			
             int h, l, l2;
             if (quan_rt != 0 && nMaxColors < 64)
