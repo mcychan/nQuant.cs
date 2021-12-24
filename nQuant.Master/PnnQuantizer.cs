@@ -117,6 +117,11 @@ namespace PnnQuant
             var weight = nMaxColors * 1.0 / maxbins;
             if (weight > .003 && weight < .005)
                 quan_rt = 0;
+            if(weight < .025) {
+                var delta = 3 * (.025 + weight);
+                PG -= delta;
+                PB += delta;
+            }
 
             var quanFn = GetQuanFn(nMaxColors, quan_rt);
 
@@ -367,7 +372,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 dither = true;
 
-            if (hasSemiTransparency || nMaxColors <= 32 || nMaxColors > 256)
+            if (hasSemiTransparency || nMaxColors <= 32)
                 PR = PG = PB = 1;
             else if (bitmapWidth < 512 || bitmapHeight < 512)
             {
