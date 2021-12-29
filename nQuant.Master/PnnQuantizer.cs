@@ -369,8 +369,6 @@ namespace PnnQuant
             var palettes = dest.Palette.Entries;
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
-            if (nMaxColors > 256)
-                dither = true;
 
             if (hasSemiTransparency || nMaxColors <= 32)
                 PR = PG = PB = 1;
