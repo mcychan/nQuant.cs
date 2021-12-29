@@ -181,7 +181,7 @@ namespace nQuant.Master
 			14, -9, -91, -55, 99, -111, -20, 31, 88, -3, 105, 53, -29, -90, -10, -70, 9, -57, 123, -99, 5			
 		};
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, float weight = 1.0f)
+        public static void Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, float weight = 1.0f)
         {
 			float strength = 1 / 3.0f;
 			for (int y = 0; y < height; ++y)
@@ -207,7 +207,6 @@ namespace nQuant.Master
 					qPixels[x + y * width] = ditherable.DitherColorIndex(palette, c1.ToArgb(), x + y);
 				}
 			}
-			return qPixels;
         }
     }
 }

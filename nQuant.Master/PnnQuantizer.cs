@@ -223,8 +223,8 @@ namespace PnnQuant
                 if ((i = bins[i].fw) == 0)
                     break;
             }
-	    
-	    if (k < nMaxColors - 1)
+
+            if (k < nMaxColors - 1)
             {
                 nMaxColors = k + 1;
                 Console.WriteLine("Maximum number of colors: " + palettes.Length);
@@ -344,7 +344,7 @@ namespace PnnQuant
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
             if (!dither)
-                return BlueNoise.Dither(width, height, pixels, palettes, this, qPixels);
+                BlueNoise.Dither(width, height, pixels, palettes, this, qPixels);
             return qPixels;
         }
 

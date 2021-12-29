@@ -430,7 +430,7 @@ namespace PnnQuant
             {
                 var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
                 var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
-                return BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
+                BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
             }
 
             pixelMap.Clear();
