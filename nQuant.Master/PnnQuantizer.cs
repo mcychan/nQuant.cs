@@ -266,7 +266,7 @@ namespace PnnQuant
             return k;
         }
         
-        protected virtual ushort ClosestColorIndex(Color[] palette, int pixel)
+        protected virtual ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
         {
             ushort k = 0;
             var c = Color.FromArgb(pixel);
@@ -304,21 +304,22 @@ namespace PnnQuant
             }
 
             var MAX_ERR = palette.Length;
-	    if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
-                if (closest[2] >= MAX_ERR)
-                    return NearestColorIndex(palette, pixel);
-                return closest[0];
-            }
-            if (closest[3] >= MAX_ERR)
+            int idx = (pos + 1) % 2;
+            if (closest[3] * .67 < (closest[3] - closest[2]))
+                idx = 0;
+            else if (closest[0] > closest[1])
+                idx = pos % 2;
+
+            if (closest[idx + 2] >= MAX_ERR)
                 return NearestColorIndex(palette, pixel);
-            return closest[1];
+            return closest[idx];
         }
 
-        public virtual ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
+        public virtual ushort DitherColorIndex(Color[] palette, int pixel, int pos)
         {
             if (dither)
                 return NearestColorIndex(palette, pixel);
-            return ClosestColorIndex(palette, pixel);
+            return ClosestColorIndex(palette, pixel, pos);
         }
 
         protected bool IsValidFormat(PixelFormat pixelFormat, int nMaxColors)

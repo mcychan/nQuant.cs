@@ -116,7 +116,7 @@ namespace OtsuThreshold
 		}
 
 
-		public ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
+		public ushort DitherColorIndex(Color[] palette, int pixel, int pos)
 		{
 			if (nearestMap.TryGetValue(pixel, out var k))
 				return k;
@@ -126,7 +126,7 @@ namespace OtsuThreshold
 				return 0;
 
 			double mindist = 1e100;
-			for (int i = 0; i < nMaxColors; ++i)
+			for (int i = 0; i < palette.Length; ++i)
 			{
 				var c2 = palette[i];
 				var curdist = BitmapUtilities.Sqr(c2.A - c.A);

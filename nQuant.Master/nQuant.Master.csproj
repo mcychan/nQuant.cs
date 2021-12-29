@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Miller Cy Chan</Authors>
 	<Copyright>Copyright Miller Cy Chan 2018 - 2021</Copyright>
-    <PackageVersion>1.2.3</PackageVersion>
+    <PackageVersion>1.2.5</PackageVersion>
 	<PackageIcon>ImgV64.png</PackageIcon>
 	<PackageProjectUrl>http://imgv64.rf.gd</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>

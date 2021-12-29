@@ -204,7 +204,7 @@ namespace nQuant.Master
 					a_pix = (int)Math.Min(0xff, Math.Max(a_pix + (adj * (a_pix - c1.A)), 0));
 
 					c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-					qPixels[x + y * width] = ditherable.DitherColorIndex(palette, palette.Length, c1.ToArgb());
+					qPixels[x + y * width] = ditherable.DitherColorIndex(palette, c1.ToArgb(), x + y);
 				}
 			}
 			return qPixels;

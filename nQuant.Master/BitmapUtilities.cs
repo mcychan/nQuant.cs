@@ -112,11 +112,11 @@ namespace nQuant.Master
                         {
                             int offset = ditherable.GetColorIndex(c1.ToArgb());
                             if (lookup[offset] == 0)
-                                lookup[offset] = (c.A == 0) ? 1 : ditherable.DitherColorIndex(palette, nMaxColors, c1.ToArgb()) + 1;
+                                lookup[offset] = (c.A == 0) ? 1 : ditherable.DitherColorIndex(palette, c1.ToArgb(), i + j) + 1;
                             qPixels[pixelIndex] = lookup[offset] - 1;
                         }
                         else
-                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ditherable.DitherColorIndex(palette, nMaxColors, c1.ToArgb());
+                            qPixels[pixelIndex] = (c.A == 0) ? 0 : ditherable.DitherColorIndex(palette, c1.ToArgb(), i + j);
 
                         var c2 = palette[qPixels[pixelIndex]];
                         if (nMaxColors > 256)
@@ -165,7 +165,7 @@ namespace nQuant.Master
             }
 
             for (int i = 0; i < qPixels.Length; ++i)
-                qPixels[i] = ditherable.DitherColorIndex(palette, nMaxColors, pixels[i]);            
+                qPixels[i] = ditherable.DitherColorIndex(palette, pixels[i], i);            
 
             return qPixels;
         }

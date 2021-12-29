@@ -7,31 +7,39 @@ namespace PnnQuant
 {
     internal class CIELABConvertor
     {
+		private static readonly double XYZ_WHITE_REFERENCE_X = 95.047;
+		private static readonly double XYZ_WHITE_REFERENCE_Y = 100;
+		private static readonly double XYZ_WHITE_REFERENCE_Z = 108.883;
+		private static readonly double XYZ_EPSILON = 0.008856;
+		private static readonly double XYZ_KAPPA = 903.3;
+
 		internal struct Lab {
             internal double alpha, A, B, L;
 	    }
 
-        internal static Lab RGB2LAB(Color c1)
+		private static float pivotXyzComponent(double component)
+		{
+			return component > XYZ_EPSILON
+					? (float) Math.Cbrt(component)
+					: (float)((XYZ_KAPPA * component + 16) / 116.0);
+		}
+
+		internal static Lab RGB2LAB(Color c1)
 	    {
-			float r = c1.R / 255.0f, g = c1.G / 255.0f, b = c1.B / 255.0f;
-			float x, y, z;
+			var sr = c1.R / 255.0;
+			sr = sr < 0.04045 ? sr / 12.92 : Math.Pow((sr + 0.055) / 1.055, 2.4);
+			var sg = c1.G / 255.0;
+			sg = sg < 0.04045 ? sg / 12.92 : Math.Pow((sg + 0.055) / 1.055, 2.4);
+			var sb = c1.B / 255.0;
+			sb = sb < 0.04045 ? sb / 12.92 : Math.Pow((sb + 0.055) / 1.055, 2.4);
+			var x = pivotXyzComponent(100 * (sr * 0.4124 + sg * 0.3576 + sb * 0.1805) / XYZ_WHITE_REFERENCE_X);
+			var y = pivotXyzComponent(100 * (sr * 0.2126 + sg * 0.7152 + sb * 0.0722) / XYZ_WHITE_REFERENCE_Y);
+			var z = pivotXyzComponent(100 * (sr * 0.0193 + sg * 0.1192 + sb * 0.9505) / XYZ_WHITE_REFERENCE_Z);
 
-		    r = (r > 0.04045) ? (float) Math.Pow((r + 0.055) / 1.055, 2.4) : r / 12.92f;
-		    g = (g > 0.04045) ? (float) Math.Pow((g + 0.055) / 1.055, 2.4) : g / 12.92f;
-		    b = (b > 0.04045) ? (float) Math.Pow((b + 0.055) / 1.055, 2.4) : b / 12.92f;
-
-		    x = (float)(r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047f;
-		    y = (float)(r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000f;
-		    z = (float)(r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883f;
-
-		    x = (x > 0.008856) ? (float) Math.Cbrt(x) : (float)(7.787 * x) + 16.0f / 116.0f;
-		    y = (y > 0.008856) ? (float) Math.Cbrt(y) : (float)(7.787 * y) + 16.0f / 116.0f;
-		    z = (z > 0.008856) ? (float) Math.Cbrt(z) : (float)(7.787 * z) + 16.0f / 116.0f;
-
-            Lab lab = new Lab
+			Lab lab = new()
             {
                 alpha = c1.A,
-                L = (116 * y) - 16,
+                L = Math.Max(0, 116 * y - 16),
                 A = 500 * (x - y),
                 B = 200 * (y - z)
             };
@@ -40,24 +48,26 @@ namespace PnnQuant
 
         internal static Color LAB2RGB(Lab lab)
         {
-			var y = (float)(lab.L + 16) / 116;
-			var x = (float)lab.A / 500 + y;
-			var z = y - (float)lab.B / 200;
-			float r, g, b;
+			var fy = (lab.L + 16.0) / 116.0;
+			var fx = lab.A / 500 + fy;
+			var fz = fy - lab.B / 200.0;
+			var tmp = fx * fx * fx;
+			var xr = tmp > XYZ_EPSILON ? tmp : (116.0 * fx - 16) / XYZ_KAPPA;
+			var yr = lab.L > XYZ_KAPPA * XYZ_EPSILON ? fy * fy * fy : lab.L / XYZ_KAPPA;
+			tmp = fz * fz * fz;
+			var zr = tmp > XYZ_EPSILON ? tmp : (116.0 * fz - 16) / XYZ_KAPPA;
+			var x = xr * XYZ_WHITE_REFERENCE_X;
+			var y = yr * XYZ_WHITE_REFERENCE_Y;
+			var z = zr * XYZ_WHITE_REFERENCE_Z;
 
-		    x = (float)(0.95047 * ((x * x * x > 0.008856) ? x * x * x : (x - 16.0 / 116.0) / 7.787));
-		    y = (float)(1.00000 * ((y * y * y > 0.008856) ? y * y * y : (y - 16.0 / 116.0) / 7.787));
-		    z = (float)(1.08883 * ((z * z * z > 0.008856) ? z * z * z : (z - 16.0 / 116.0) / 7.787));
-
-		    r = x *  3.2406f + y * -1.5372f + z * -0.4986f;
-		    g = x * -0.9689f + y *  1.8758f + z *  0.0415f;
-		    b = x *  0.0557f + y * -0.2040f + z *  1.0570f;
-
-		    r = (r > 0.0031308) ? (float)(1.055 * Math.Pow(r, 1.0 / 2.4) - 0.055) : 12.92f * r;
-		    g = (g > 0.0031308) ? (float)(1.055 * Math.Pow(g, 1.0 / 2.4) - 0.055) : 12.92f * g;
-		    b = (b > 0.0031308) ? (float)(1.055 * Math.Pow(b, 1.0 / 2.4) - 0.055) : 12.92f * b;
-
-            var alpha = Math.Clamp((int) lab.alpha, Byte.MinValue, Byte.MaxValue);
+			var alpha = Math.Clamp((int)lab.alpha, Byte.MinValue, Byte.MaxValue);
+			double r = (x * 3.2406 + y * -1.5372 + z * -0.4986) / 100.0;
+			double g = (x * -0.9689 + y * 1.8758 + z * 0.0415) / 100.0;
+			double b = (x * 0.0557 + y * -0.2040 + z * 1.0570) / 100.0;
+			r = r > 0.0031308 ? 1.055 * Math.Pow(r, 1 / 2.4) - 0.055 : 12.92 * r;
+			g = g > 0.0031308 ? 1.055 * Math.Pow(g, 1 / 2.4) - 0.055 : 12.92 * g;
+			b = b > 0.0031308 ? 1.055 * Math.Pow(b, 1 / 2.4) - 0.055 : 12.92 * b;
+			
             return Color.FromArgb(alpha, Math.Clamp((int)(r * Byte.MaxValue), Byte.MinValue, Byte.MaxValue), Math.Clamp((int)(g * Byte.MaxValue), Byte.MinValue, Byte.MaxValue), Math.Clamp((int)(b * Byte.MaxValue), Byte.MinValue, Byte.MaxValue));
 	    }
 

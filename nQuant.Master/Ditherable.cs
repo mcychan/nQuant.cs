@@ -6,7 +6,7 @@ namespace nQuant.Master
     {
 		public int GetColorIndex(int pixel);
 
-		public ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel);
+		public ushort DitherColorIndex(Color[] palette, int pixel, int pos);
 
 	}
 }

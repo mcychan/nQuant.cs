@@ -361,7 +361,7 @@ namespace PnnQuant
             nearestMap[pixel] = k;
             return k;
         }
-        protected override ushort ClosestColorIndex(Color[] palette, int pixel)
+        protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
         {
             ushort k = 0;
 	        var c = Color.FromArgb(pixel);
@@ -399,21 +399,20 @@ namespace PnnQuant
             }
 
             var MAX_ERR = palette.Length;
-            if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3]) {
-                if (closest[2] >= MAX_ERR)
-                    return NearestColorIndex(palette, pixel);
-                return closest[0];
-            }
-            if (closest[3] >= MAX_ERR)
+            int idx = 1;
+            if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
+                idx = 0;
+
+            if (closest[idx + 2] >= MAX_ERR)
                 return NearestColorIndex(palette, pixel);
-            return closest[1];
+            return closest[idx];
         }
 
-        public override ushort DitherColorIndex(Color[] palette, int nMaxColors, int pixel)
+        public override ushort DitherColorIndex(Color[] palette, int pixel, int pos)
         {
             if(hasSemiTransparency)
                 return NearestColorIndex(palette, pixel);
-            return ClosestColorIndex(palette, pixel);
+            return ClosestColorIndex(palette, pixel, pos);
         }
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
