@@ -74,8 +74,9 @@ namespace PnnQuant
                 return cnt => (int) Math.Cbrt(cnt);
             return cnt => cnt;
         }
-        protected virtual void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors, short quan_rt)
+        protected virtual void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
+            short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
             /* Build histogram */
@@ -379,7 +380,7 @@ namespace PnnQuant
             }
 
             if (nMaxColors > 2)
-                Pnnquan(pixels, ref palettes, ref nMaxColors, 1);
+                Pnnquan(pixels, ref palettes, ref nMaxColors);
             else
             {
                 if (m_transparentPixelIndex >= 0)

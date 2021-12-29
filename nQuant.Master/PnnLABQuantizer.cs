@@ -111,8 +111,9 @@ namespace PnnQuant
             }
             return cnt => cnt;
         }
-        protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors, short quan_rt)
+        protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
+            short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
             /* Build histogram */
