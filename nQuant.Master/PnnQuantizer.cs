@@ -21,7 +21,7 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort[]> closestMap = new();
         protected readonly Dictionary<int, ushort> nearestMap = new();
 
-        protected double PR = .2126, PG = .7152, PB = .0722;
+        protected double PR = .2126, PG = .7152, PB = .0722, PA = .25;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -244,7 +244,7 @@ namespace PnnQuant
             for (int i = 0; i < nMaxColors; ++i)
             {
                 var c2 = palette[i];
-                var curdist = BitmapUtilities.Sqr(c2.A - c.A);
+                var curdist = PA * BitmapUtilities.Sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
 
@@ -282,8 +282,11 @@ namespace PnnQuant
                 var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
                 {
-                    Color c2 = palette[k];
-                    var err = Math.Abs(c.A - c2.A) + Math.Abs(c.R - c2.R) + Math.Abs(c.G - c2.G) + Math.Abs(c.B - c2.B);                   
+                    var c2 = palette[k];
+                    var err = PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
+                    if (hasSemiTransparency)
+                        err += PA * BitmapUtilities.Sqr(c.A - c2.A);
+
                     if (err < closest[2])
                     {
                         closest[1] = closest[0];
@@ -370,8 +373,8 @@ namespace PnnQuant
             if (palettes.Length != nMaxColors)
                 palettes = new Color[nMaxColors];
 
-            if (hasSemiTransparency || nMaxColors <= 32)
-                PR = PG = PB = 1;
+            if (nMaxColors <= 32)
+                PR = PG = PB = PA = 1;
             else if (bitmapWidth < 512 || bitmapHeight < 512)
             {
                 PR = 0.299; PG = 0.587; PB = 0.114;

@@ -46,8 +46,8 @@ namespace PnnQuant
                 {
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
-                double alphaDiff = hasSemiTransparency ? (lab2.alpha - lab1.alpha) / Math.Exp(1.5) : 0;
-                double nerr = nerr2 * BitmapUtilities.Sqr(alphaDiff);
+                var alphaDiff = hasSemiTransparency ? (lab2.alpha - lab1.alpha) / Math.Exp(1.5) : 0;
+                var nerr = nerr2 * BitmapUtilities.Sqr(alphaDiff);
                 if (nerr >= err)
                     continue;
 
@@ -378,7 +378,10 @@ namespace PnnQuant
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
-                    var err = PR * BitmapUtilities.Sqr(c2.R - c.R) + PG * BitmapUtilities.Sqr(c2.G - c.G) + PB * BitmapUtilities.Sqr(c2.B - c.B);  
+                    var err = PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
+                    if (hasSemiTransparency)
+                        err += PA * BitmapUtilities.Sqr(c.A - c2.A);
+
                     if (err < closest[2])
                     {
                         closest[1] = closest[0];
@@ -411,8 +414,6 @@ namespace PnnQuant
 
         public override ushort DitherColorIndex(Color[] palette, int pixel, int pos)
         {
-            if(hasSemiTransparency)
-                return NearestColorIndex(palette, pixel);
             return ClosestColorIndex(palette, pixel, pos);
         }
 
