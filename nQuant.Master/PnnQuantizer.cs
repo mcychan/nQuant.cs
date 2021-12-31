@@ -21,7 +21,7 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort[]> closestMap = new();
         protected readonly Dictionary<int, ushort> nearestMap = new();
 
-        protected double PR = .2126, PG = .7152, PB = .0722, PA = .25;
+        protected double PR = .2126, PG = .7152, PB = .0722, PA = .3333;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
