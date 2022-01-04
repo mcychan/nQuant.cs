@@ -404,9 +404,6 @@ namespace nQuant.Master
                                 transparentPixelIndex = pixelIndex;
                             }
 
-                            if (pixelAlpha <= alphaThreshold)
-                                argb = transparentColor;
-
                             if (pixelAlpha > alphaThreshold)
                                 hasSemiTransparency = true;
                         }
