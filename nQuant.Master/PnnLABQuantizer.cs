@@ -116,7 +116,6 @@ namespace PnnQuant
             short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
-            GetLab(m_transparentColor.ToArgb(), out var lab0);
             /* Build histogram */
             foreach (var pixel in pixels)
             {
@@ -126,18 +125,15 @@ namespace PnnQuant
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                if (lab1.alpha <= alphaThreshold) {
-                    bins[index].Lc += (float)lab0.L;
-                    bins[index].Ac += (float)lab0.A;
-                    bins[index].Bc += (float)lab0.B;
-                }
+                if (lab1.alpha <= alphaThreshold)
+                    bins[index].cnt = 1.0f;
                 else {
                     bins[index].ac += (float)lab1.alpha;
                     bins[index].Lc += (float)lab1.L;
                     bins[index].Ac += (float)lab1.A;
                     bins[index].Bc += (float)lab1.B;
-		}
-                bins[index].cnt += 1.0f;
+		    bins[index].cnt += 1.0f;
+		}                
             }
 
             /* Cluster nonempty bins at one end of array */
