@@ -89,18 +89,15 @@ namespace PnnQuant
                 int index = BitmapUtilities.GetARGBIndex(pixel, hasSemiTransparency, nMaxColors < 64 || m_transparentPixelIndex > -1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                if (c.A <= alphaThreshold) {
-                    bins[index].rc += m_transparentColor.R;
-                    bins[index].gc += m_transparentColor.G;
-                    bins[index].bc += m_transparentColor.B;
-                }
+                if (c.A <= alphaThreshold)
+                    bins[index].cnt = 1.0f;
                 else {
                     bins[index].ac += c.A;
                     bins[index].rc += c.R;
                     bins[index].gc += c.G;
                     bins[index].bc += c.B;
-		}
-                bins[index].cnt += 1.0f;
+		    bins[index].cnt += 1.0f;
+		}                
             }
 
             /* Cluster nonempty bins at one end of array */
