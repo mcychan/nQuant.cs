@@ -65,12 +65,12 @@ namespace PnnQuant
         protected delegate float QuanFn(float cnt);
         protected virtual QuanFn GetQuanFn(int nMaxColors, short quan_rt)
         {
-		    if (quan_rt > 0) {
-			    if (nMaxColors< 64)
-				    return cnt => (int) Math.Sqrt(cnt);
-			    return cnt => (float) Math.Sqrt(cnt);
-		    }
-		    if (quan_rt < 0)
+            if (quan_rt > 0) {
+                if (nMaxColors< 64)
+                    return cnt => (int) Math.Sqrt(cnt);
+                return cnt => (float) Math.Sqrt(cnt);
+            }
+            if (quan_rt < 0)
                 return cnt => (int) Math.Cbrt(cnt);
             return cnt => cnt;
         }
@@ -79,6 +79,7 @@ namespace PnnQuant
             short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
+            var c0 = Color.FromArgb(m_transparentColor);
             /* Build histogram */
             foreach (var pixel in pixels)
             {
@@ -89,10 +90,17 @@ namespace PnnQuant
                 int index = BitmapUtilities.GetARGBIndex(pixel, hasSemiTransparency, nMaxColors < 64 || m_transparentPixelIndex > -1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                bins[index].ac += c.A;
-                bins[index].rc += c.R;
-                bins[index].gc += c.G;
-                bins[index].bc += c.B;
+                if (c.A <= alphaThreshold) {
+                    bins[index].rc += c0.R;
+                    bins[index].gc += c0.G;
+                    bins[index].bc += c0.B;
+                }
+                else {
+                    bins[index].ac += c.A;
+                    bins[index].rc += c.R;
+                    bins[index].gc += c.G;
+                    bins[index].bc += c.B;
+		}
                 bins[index].cnt += 1.0f;
             }
 
