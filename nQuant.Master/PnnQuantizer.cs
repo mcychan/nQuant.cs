@@ -79,7 +79,6 @@ namespace PnnQuant
             short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
-            var c0 = Color.FromArgb(m_transparentColor);
             /* Build histogram */
             foreach (var pixel in pixels)
             {
@@ -91,9 +90,9 @@ namespace PnnQuant
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 if (c.A <= alphaThreshold) {
-                    bins[index].rc += c0.R;
-                    bins[index].gc += c0.G;
-                    bins[index].bc += c0.B;
+                    bins[index].rc += m_transparentColor.R;
+                    bins[index].gc += m_transparentColor.G;
+                    bins[index].bc += m_transparentColor.B;
                 }
                 else {
                     bins[index].ac += c.A;
