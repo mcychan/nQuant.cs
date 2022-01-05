@@ -82,22 +82,19 @@ namespace PnnQuant
             /* Build histogram */
             foreach (var pixel in pixels)
             {
-                // !!! Can throw gamma correction in here, but what to do about perceptual
-                // !!! nonuniformity then?
                 var c = Color.FromArgb(pixel);
+		if (c.A <= alphaThreshold)
+                    c = m_transparentColor;
 
                 int index = BitmapUtilities.GetARGBIndex(pixel, hasSemiTransparency, nMaxColors < 64 || m_transparentPixelIndex > -1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                if (c.A <= alphaThreshold)
-                    bins[index].cnt = 1.0f;
-                else {
-                    bins[index].ac += c.A;
-                    bins[index].rc += c.R;
-                    bins[index].gc += c.G;
-                    bins[index].bc += c.B;
-		    bins[index].cnt += 1.0f;
-		}                
+                bins[index].cnt = 1.0f;
+                bins[index].ac += c.A;
+                bins[index].rc += c.R;
+                bins[index].gc += c.G;
+                bins[index].bc += c.B;
+                bins[index].cnt += 1.0f;               
             }
 
             /* Cluster nonempty bins at one end of array */
