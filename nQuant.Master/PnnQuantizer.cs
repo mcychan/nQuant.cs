@@ -339,7 +339,7 @@ namespace PnnQuant
         {
             this.dither = dither;
             int[] qPixels;
-            if (nMaxColors <= 32)
+            if (nMaxColors <= 32 || (hasSemiTransparency && palettes.Length == nMaxColors))
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, nMaxColors > 2 ? 1.8f : 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
@@ -378,6 +378,7 @@ namespace PnnQuant
                 PR = 0.299; PG = 0.587; PB = 0.114;
             }
 
+            var maxColors = nMaxColors;
             if (nMaxColors > 2)
                 Pnnquan(pixels, ref palettes, ref nMaxColors);
             else
@@ -394,7 +395,7 @@ namespace PnnQuant
                 }
             }
 
-            var qPixels = Dither(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
+            var qPixels = Dither(pixels, palettes, maxColors, bitmapWidth, bitmapHeight, dither);
 
             if (m_transparentPixelIndex >= 0 && nMaxColors <= 256)
             {
