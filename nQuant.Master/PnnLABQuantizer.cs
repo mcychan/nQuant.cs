@@ -122,7 +122,8 @@ namespace PnnQuant
                 var c = Color.FromArgb(pixel);
                 if (c.A <= alphaThreshold)
                     c = m_transparentColor;
-                int index = BitmapUtilities.GetARGBIndex(c.Value, hasSemiTransparency, m_transparentPixelIndex > -1);
+
+                int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
