@@ -422,14 +422,14 @@ namespace PnnQuant
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
             int[] qPixels;
-            if (nMaxColors <= 32 || (hasSemiTransparency && palettes.Length == nMaxColors))
+	    var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
+            if (nMaxColors <= 32 || (hasSemiTransparency && delta < 1))
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
             if (!dither)
-            {
-                var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
+            {                
                 var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
                 BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
             }
