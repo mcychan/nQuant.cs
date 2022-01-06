@@ -22,6 +22,7 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort> nearestMap = new();
 
         protected double PR = .2126, PG = .7152, PB = .0722, PA = .3333;
+        protected double weight;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -115,7 +116,7 @@ namespace PnnQuant
             if (nMaxColors < 16)
                 nMaxColors = -1;
                 
-            var weight = nMaxColors * 1.0 / maxbins;
+            weight = nMaxColors * 1.0 / maxbins;
             if (weight > .003 && weight < .005)
                 quan_rt = 0;
             if (weight < .025 && PG < 1) {
@@ -339,7 +340,7 @@ namespace PnnQuant
         {
             this.dither = dither;
             int[] qPixels;
-            if (nMaxColors <= 32 || (hasSemiTransparency && palettes.Length == nMaxColors))
+            if (nMaxColors <= 32 || (hasSemiTransparency && weight < .3))
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, nMaxColors > 2 ? 1.8f : 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
@@ -378,7 +379,6 @@ namespace PnnQuant
                 PR = 0.299; PG = 0.587; PB = 0.114;
             }
 
-            var maxColors = nMaxColors;
             if (nMaxColors > 2)
                 Pnnquan(pixels, ref palettes, ref nMaxColors);
             else
@@ -395,7 +395,7 @@ namespace PnnQuant
                 }
             }
 
-            var qPixels = Dither(pixels, palettes, maxColors, bitmapWidth, bitmapHeight, dither);
+            var qPixels = Dither(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
 
             if (m_transparentPixelIndex >= 0 && nMaxColors <= 256)
             {
