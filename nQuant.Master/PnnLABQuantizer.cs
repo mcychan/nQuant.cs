@@ -154,7 +154,7 @@ namespace PnnQuant
             if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
                 quan_rt = -1;
             
-            var weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
+            weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
             if (weight > .0015 && weight < .002)
                 quan_rt = 2;
             if (weight < .025 && PG < 1) {
@@ -421,15 +421,15 @@ namespace PnnQuant
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
-            int[] qPixels;
-	    var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
-            if (nMaxColors <= 32 || (hasSemiTransparency && delta < 1))
+            int[] qPixels;	    
+            if (nMaxColors <= 32 || (hasSemiTransparency && weight < .3))
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
             if (!dither)
-            {                
+            {        
+                var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
                 var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
                 BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
             }
