@@ -67,12 +67,6 @@ namespace nQuant.Master
             weights = new float[DITHER_MAX];
             lookup = new int[65536];
         }
-		
-		private static int Sign(int x) {
-    	    if(x < 0)
-    		    return -1;
-    	    return (x > 0) ? 1 : 0;
-        }
 
         private void DitherPixel(int x, int y)
         {
@@ -129,10 +123,10 @@ namespace nQuant.Master
 	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
 		int w = Math.Abs(ax + ay);
 		int h = Math.Abs(bx + by);
-		int dax = Sign(ax);
-		int day = Sign(ay);
-		int dbx = Sign(bx);
-		int dby = Sign(by);
+		int dax = Math.Sign(ax);
+		int day = Math.Sign(ay);
+		int dbx = Math.Sign(bx);
+		int dby = Math.Sign(by);
 
 		if (h == 1) {
 			for (int i = 0; i < w; ++i){
