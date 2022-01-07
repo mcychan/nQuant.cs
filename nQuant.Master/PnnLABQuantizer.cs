@@ -104,12 +104,22 @@ namespace PnnQuant
         protected override QuanFn GetQuanFn(int nMaxColors, short quan_rt) {
             if (quan_rt > 0) {
                 if (quan_rt > 1)
-                    return cnt => (int) Math.Pow(cnt, 0.75);
-                if (nMaxColors< 64)
-                    return cnt => (int) Math.Sqrt(cnt);
-                return cnt => (float) Math.Sqrt(cnt);
+                    return (cnt, isBlack) => (int) Math.Pow(cnt, .75);
+                if (nMaxColors < 64)
+                    return (cnt, isBlack) =>
+                    {
+                        if (isBlack)
+                            return (int)Math.Pow(cnt, .75);
+                        return (int)Math.Sqrt(cnt);
+                    };
+                return (cnt, isBlack) =>
+                {
+                    if (isBlack)
+                        return (float)Math.Pow(cnt, .75);
+                    return (float)Math.Sqrt(cnt);
+                };
             }
-            return cnt => cnt;
+            return (cnt, isBlack) => cnt;
         }
         protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
@@ -171,9 +181,9 @@ namespace PnnQuant
                 bins[j].fw = j + 1;
                 bins[j + 1].bk = j;
 
-                bins[j].cnt = quanFn(bins[j].cnt);                
+                bins[j].cnt = quanFn(bins[j].cnt, j == 0);                
             }
-            bins[j].cnt = quanFn(bins[j].cnt);
+            bins[j].cnt = quanFn(bins[j].cnt, j == 0);
 
             var texicab = proportional > .025;	    
 			
