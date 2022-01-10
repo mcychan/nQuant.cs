@@ -449,7 +449,8 @@ namespace PnnQuant
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
         {
-            int[] qPixels;	    
+            int[] qPixels;
+	    dither &= nMaxColors <= palette.Length;
             if (nMaxColors <= 32 || (hasSemiTransparency && weight < .3))
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
             else
