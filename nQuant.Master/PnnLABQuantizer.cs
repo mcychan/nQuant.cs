@@ -173,6 +173,24 @@ namespace PnnQuant
                 PB += delta;
             }
 
+            if (pixelMap.Count <= nMaxColors)
+            {
+                /* Fill palette */
+                palettes = new Color[pixelMap.Count];
+                int i = 0;
+                foreach (var pixel in pixelMap.Keys)
+                {
+                    var c = Color.FromArgb(pixel);
+                    palettes[i++] = c;
+
+                    if (c.A == 0)
+                        BitmapUtilities.Swap(ref palettes[0], ref palettes[i - 1]);
+                }
+                nMaxColors = i;
+                Console.WriteLine("Maximum number of colors: " + palettes.Length);
+                return;
+            }
+
             var quanFn = GetQuanFn(nMaxColors, quan_rt);
 
             int j = 0;
