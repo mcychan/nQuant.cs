@@ -318,7 +318,7 @@ namespace PnnQuant
                 closestMap[pixel] = closest;
             }
 
-            var MAX_ERR = palette.Length;
+            var MAX_ERR = palette.Length << 2;
             int idx = (pos + 1) % 2;
             if (closest[3] * .67 < (closest[3] - closest[2]))
                 idx = 0;
