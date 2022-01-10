@@ -414,7 +414,7 @@ namespace PnnQuant
                 closestMap[pixel] = closest;
             }
 
-            var MAX_ERR = palette.Length;
+            var MAX_ERR = palette.Length << 2;
             int idx = 1;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
                 idx = 0;
