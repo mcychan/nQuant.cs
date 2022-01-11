@@ -248,7 +248,7 @@ namespace PnnQuant
 
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
-                return 0;
+                c = m_transparentColor;
 
             double mindist = int.MaxValue;
             var nMaxColors = palette.Length;
@@ -283,7 +283,7 @@ namespace PnnQuant
             ushort k = 0;
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
-                return 0;
+                c = m_transparentColor;
 
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
