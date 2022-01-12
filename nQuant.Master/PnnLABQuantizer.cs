@@ -46,8 +46,8 @@ namespace PnnQuant
                 {
                     alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
-                var alphaDiff = hasSemiTransparency ? (lab2.alpha - lab1.alpha) / Math.Exp(1.5) : 0;
-                var nerr = nerr2 * BitmapUtilities.Sqr(alphaDiff);
+                var alphaDiff = hasSemiTransparency ? BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.5) : 0;
+                var nerr = nerr2 * alphaDiff;
                 if (nerr >= err)
                     continue;
 
@@ -397,7 +397,7 @@ namespace PnnQuant
             ushort k = 0;
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
-                c = m_transparentColor;
+                return NearestColorIndex(palette, pixel);
 		
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
