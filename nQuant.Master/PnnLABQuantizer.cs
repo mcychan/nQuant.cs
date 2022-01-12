@@ -164,7 +164,7 @@ namespace PnnQuant
             if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
                 quan_rt = -1;
             
-            weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
+            var weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
             if (weight > .0015 && weight < .002)
                 quan_rt = 2;
             if (weight < .025 && PG < 1) {
@@ -345,7 +345,7 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = hasSemiTransparency ? Math.Abs(c2.A - c.A) / Math.Exp(0.75) : 0;
+                var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(0.75) : 0;
                 if (curdist > mindist)
                     continue;
 
@@ -433,8 +433,8 @@ namespace PnnQuant
             }
 
             var MAX_ERR = palette.Length << 2;
-	    if(c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
-                MAX_ERR = Math.min(0x40, MAX_ERR);
+            if (c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
+                MAX_ERR = Math.Min(0x40, MAX_ERR);
 			
             int idx = 1;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
@@ -450,17 +450,18 @@ namespace PnnQuant
             return ClosestColorIndex(palette, pixel, pos);
         }
 
-        protected override int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
+        protected override int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
+            this.dither = dither;
             int[] qPixels;
-            if (nMaxColors <= 32 || (hasSemiTransparency && weight < .3))
+            if (palettes.Length <= 32 || (hasSemiTransparency && (semiTransCount * 1.0 / pixels.Length) > .3))
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
             if (!dither)
             {        
-                var delta = BitmapUtilities.Sqr(nMaxColors) / pixelMap.Count;
+                var delta = BitmapUtilities.Sqr(palettes.Length) / pixelMap.Count;
                 var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
                 BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
             }

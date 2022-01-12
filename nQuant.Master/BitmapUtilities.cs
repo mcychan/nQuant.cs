@@ -337,12 +337,12 @@ namespace nQuant.Master
             return dest;
         }        
 		
-        public static bool GrabPixels(Bitmap source, int[] pixels, ref bool hasSemiTransparency, ref Color transparentColor, ref int transparentPixelIndex, byte alphaThreshold, int nMaxColors = 2)
+        public static bool GrabPixels(Bitmap source, int[] pixels, ref int semiTransCount, ref Color transparentColor, ref int transparentPixelIndex, byte alphaThreshold, int nMaxColors = 2)
         {
             var bitmapWidth = source.Width;
             var bitmapHeight = source.Height;
 
-            hasSemiTransparency = false;
+            semiTransCount = 0;
             transparentPixelIndex = -1;
 
             int transparentIndex = -1;
@@ -408,7 +408,7 @@ namespace nQuant.Master
                                     argb = transparentColor;
                             }
                             else if(pixelAlpha > alphaThreshold)
-                                hasSemiTransparency = true;
+                                ++semiTransCount;
                         }
                         pixels[pixelIndex++] = argb.ToArgb();
                     }

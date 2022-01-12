@@ -22,7 +22,6 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort> nearestMap = new();
 
         protected double PR = .2126, PG = .7152, PB = .0722, PA = .3333;
-        protected double weight;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -126,7 +125,7 @@ namespace PnnQuant
             if (nMaxColors < 16)
                 nMaxColors = -1;
                 
-            weight = nMaxColors * 1.0 / maxbins;
+            var weight = nMaxColors * 1.0 / maxbins;
             if (weight > .003 && weight < .005)
                 quan_rt = 0;
             if (weight < .025 && PG < 1) {
@@ -283,7 +282,7 @@ namespace PnnQuant
             ushort k = 0;
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
-                c = m_transparentColor;
+                return NearestColorIndex(palette, pixel);
 
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
@@ -346,12 +345,12 @@ namespace PnnQuant
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
 
-        protected virtual int[] Dither(int[] pixels, Color[] palettes, int nMaxColors, int width, int height, bool dither)
+        protected virtual int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
             this.dither = dither;
             int[] qPixels;
-            if (nMaxColors <= 32 || (hasSemiTransparency && weight < .3))
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, nMaxColors > 2 ? 1.8f : 1.5f);
+            if (palettes.Length <= 32 || (hasSemiTransparency && (semiTransCount * 1.0 / pixels.Length) > .3))
+                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, palettes.Length > 2 ? 1.8f : 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
@@ -375,8 +374,10 @@ namespace PnnQuant
 
             var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
             var pixels = new int[bitmapWidth * bitmapHeight];
-            if(!BitmapUtilities.GrabPixels(source, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold, nMaxColors))
+            int semiTransCount = 0;
+            if (!BitmapUtilities.GrabPixels(source, pixels, ref semiTransCount, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold, nMaxColors))
                 return dest;
+            hasSemiTransparency = semiTransCount > 0;
 
             var palettes = dest.Palette.Entries;
             if (palettes.Length != nMaxColors)
@@ -405,7 +406,7 @@ namespace PnnQuant
                 }
             }
 
-            var qPixels = Dither(pixels, palettes, nMaxColors, bitmapWidth, bitmapHeight, dither);
+            var qPixels = Dither(pixels, palettes, semiTransCount, bitmapWidth, bitmapHeight, dither);
 
             if (m_transparentPixelIndex >= 0 && nMaxColors <= 256)
             {

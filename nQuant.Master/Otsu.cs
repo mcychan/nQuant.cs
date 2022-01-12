@@ -254,10 +254,12 @@ namespace OtsuThreshold
 			int bitmapHeight = srcimg.Height;
 
 			var pixels = new int[bitmapWidth * bitmapHeight];
-			if (!BitmapUtilities.GrabPixels(srcimg, pixels, ref hasSemiTransparency, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold))
+			int semiTransCount = 0;
+			if (!BitmapUtilities.GrabPixels(srcimg, pixels, ref semiTransCount, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold))
 				return srcimg;
+			hasSemiTransparency = semiTransCount > 0;
 
-			if(!isGrayscale)
+			if (!isGrayscale)
 				ConvertToGrayScale(pixels);
 
 			var otsuThreshold = GetOtsuThreshold(pixels);
