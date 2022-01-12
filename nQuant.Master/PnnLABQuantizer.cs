@@ -433,6 +433,9 @@ namespace PnnQuant
             }
 
             var MAX_ERR = palette.Length << 2;
+	    if(c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
+                MAX_ERR = Math.min(0x40, MAX_ERR);
+			
             int idx = 1;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
                 idx = 0;
