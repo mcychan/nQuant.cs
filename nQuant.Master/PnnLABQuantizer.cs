@@ -345,7 +345,7 @@ namespace PnnQuant
             {
                 var c2 = palette[i];
 
-                var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(0.75) : 0;
+                var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5) : 0;
                 if (curdist > mindist)
                     continue;
 
@@ -356,7 +356,19 @@ namespace PnnQuant
                     if(hasSemiTransparency)
                         curdist += BitmapUtilities.Sqr(c2.A - c.A);
                 }
-                else if (nMaxColors > 32 || hasSemiTransparency)
+		else if (hasSemiTransparency)
+		{				
+                    curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
+                    if (curdist > mindist)
+                        continue;
+				
+                    curdist += BitmapUtilities.Sqr(lab2.A - lab1.A);
+                    if (curdist > mindist)
+                        continue;
+				
+                    curdist += BitmapUtilities.Sqr(lab2.B - lab1.B);
+		}
+                else if (nMaxColors > 32)
                 {
                     curdist += Math.Abs(lab2.L - lab1.L);
                     if (curdist > mindist)
