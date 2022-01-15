@@ -135,7 +135,7 @@ namespace PnnQuant
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                bins[index].ac += (float)Math.Max(alphaThreshold >> 1, lab1.alpha);
+                bins[index].ac += (float)Math.Max(alphaThreshold + 1, lab1.alpha);
                 bins[index].Lc += (float)lab1.L;
                 bins[index].Ac += (float)lab1.A;
                 bins[index].Bc += (float)lab1.B;
