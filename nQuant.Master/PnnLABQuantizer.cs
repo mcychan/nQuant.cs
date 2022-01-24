@@ -169,6 +169,8 @@ namespace PnnQuant
                 var delta = 3 * (.025 + weight);
                 PG -= delta;
                 PB += delta;
+		if (nMaxColors >= 64)
+                    quan_rt = 0;
             }
 
             if (pixelMap.Count <= nMaxColors)
