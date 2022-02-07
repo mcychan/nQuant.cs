@@ -93,11 +93,13 @@ namespace PnnQuant
             foreach (var pixel in pixels)
             {
                 var c = Color.FromArgb(pixel);
+                if (c.A <= alphaThreshold)
+                    c = m_transparentColor;
 
                 int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, nMaxColors < 64 || m_transparentPixelIndex > -1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
-                bins[index].ac += Math.Max(alphaThreshold + 1, c.A);
+                bins[index].ac += c.A;
                 bins[index].rc += c.R;
                 bins[index].gc += c.G;
                 bins[index].bc += c.B;
