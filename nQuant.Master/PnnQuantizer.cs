@@ -351,7 +351,7 @@ namespace PnnQuant
         {
             this.dither = dither;
             int[] qPixels;
-            if (palettes.Length <= 32 || (hasSemiTransparency && (semiTransCount * 1.0 / pixels.Length) > .3))
+            if (palettes.Length <= 32 || (hasSemiTransparency && (semiTransCount * 1.0 / pixels.Length) > .099))
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, palettes.Length > 2 ? 1.8f : 1.5f);
             else
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
