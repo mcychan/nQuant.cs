@@ -224,7 +224,7 @@ namespace PnnQuant
             int k = 0;
             for (int i = 0; ; ++k)
             {
-                var alpha = Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue);
+                var alpha = (hasSemiTransparency || m_transparentPixelIndex >= 0) ? Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue) : Byte.MaxValue;
                 palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
                 if (m_transparentPixelIndex >= 0 && alpha == 0)
                 {

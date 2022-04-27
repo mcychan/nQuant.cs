@@ -310,7 +310,8 @@ namespace PnnQuant
             {
                 var lab1 = new CIELABConvertor.Lab
                 {
-                    alpha = Math.Round(bins[i].ac), L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
+                    alpha = (hasSemiTransparency || m_transparentPixelIndex >= 0) ? Math.Round(bins[i].ac) : Byte.MaxValue,
+                    L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
                 if (m_transparentPixelIndex >= 0 && lab1.alpha == 0)
