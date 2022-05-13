@@ -219,7 +219,7 @@ class ProductInfo extends preact.Component {
 				'<p>The Undo of editing also has a Redo option. Both are on the toolbar for easy scrolling through changes.</p>',
 				'<p>There is a Set as Wallpaper function in the Image menu to make the current image your desktop wallpaper.</p>',
 				'<h3><u>System requirement</u></h3>' +
-				'<p>It works on Windows 10, 8 & 8.1, 7, Vista, Server 2008/2012/2016. 64-bit Windows versions are also supported.</p>'
+				'<p>It works on Windows 11, 10, 8, 7, Vista, Server 2008/2012/2016. 64-bit Windows versions are also supported.</p>'
 			]
 		];
 		
