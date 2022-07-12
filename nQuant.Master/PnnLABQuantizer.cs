@@ -9,6 +9,7 @@ namespace PnnQuant
     {
         private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
+        private double[] saliencies;
         private sealed class Pnnbin
         {
             internal float ac, Lc, Ac, Bc;
@@ -121,20 +122,29 @@ namespace PnnQuant
             }
             return (cnt, isBlack) => cnt;
         }
+
+        private static double GetSaliency(double L)
+        {
+            var saliencyBase = 0.1;
+            return saliencyBase + (1 - saliencyBase) * L / 255.0;
+        }
         protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
             short quan_rt = 1;
+            saliencies = new double[pixels.Length];
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
             /* Build histogram */
-            foreach (var pixel in pixels)
+            for (int i = 0; i < pixels.Length; ++i)
             {
+                var pixel = pixels[i];
                 var c = Color.FromArgb(pixel);
                 if (c.A <= alphaThreshold)
                     c = m_transparentColor;
 
                 int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
                 GetLab(pixel, out var lab1);
+                saliencies[i] = GetSaliency(lab1.L);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += (float)lab1.alpha;
@@ -331,7 +341,7 @@ namespace PnnQuant
             }
         }
 
-        protected override ushort NearestColorIndex(Color[] palette, int pixel)
+        protected override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
         {
             if (nearestMap.TryGetValue(pixel, out var k))
                 return k;
@@ -359,8 +369,12 @@ namespace PnnQuant
                     if(hasSemiTransparency)
                         curdist += BitmapUtilities.Sqr(c2.A - c.A);
                 }
-		else if (hasSemiTransparency)
-		{				
+                else if (hasSemiTransparency)
+                {
+                    curdist += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
+                    if (curdist > mindist)
+                        continue;
+
                     curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
@@ -370,9 +384,13 @@ namespace PnnQuant
                         continue;
 				
                     curdist += BitmapUtilities.Sqr(lab2.B - lab1.B);
-		}
+                }
                 else if (nMaxColors > 32)
                 {
+                    curdist += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
+                    if (curdist > mindist)
+                        continue;
+
                     curdist += Math.Abs(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
@@ -381,6 +399,10 @@ namespace PnnQuant
                 }
                 else
                 {
+                    curdist += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
+                    if (curdist > mindist)
+                        continue;
+
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += BitmapUtilities.Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
@@ -412,7 +434,7 @@ namespace PnnQuant
             ushort k = 0;
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
-                return NearestColorIndex(palette, pixel);
+                return NearestColorIndex(palette, pixel, pos);
 		
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
@@ -456,7 +478,7 @@ namespace PnnQuant
                 idx = 0;
 
             if (closest[idx + 2] >= MAX_ERR)
-                return NearestColorIndex(palette, pixel);
+                return NearestColorIndex(palette, pixel, pos);
             return closest[idx];
         }
 

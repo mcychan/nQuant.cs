@@ -91,11 +91,11 @@ namespace nQuant.Master
             {
                 int offset = ditherable.GetColorIndex(c2.ToArgb());
                 if (lookup[offset] == 0)
-                    lookup[offset] = (pixel.A == 0) ? 1 : ditherable.DitherColorIndex(palette, c2.ToArgb(), x + y) + 1;
+                    lookup[offset] = (pixel.A == 0) ? 1 : ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
                 qPixels[bidx] = lookup[offset] - 1;
             }
             else
-                qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), x + y);
+                qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 
             if (errorq.Count > 0)
                 errorq.Dequeue();

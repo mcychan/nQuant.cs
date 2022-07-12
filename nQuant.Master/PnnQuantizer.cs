@@ -242,7 +242,7 @@ namespace PnnQuant
                 Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
         }
-        protected virtual ushort NearestColorIndex(Color[] palette, int pixel)
+        protected virtual ushort NearestColorIndex(Color[] palette, int pixel, int pos)
         {
             if (nearestMap.TryGetValue(pixel, out var k))
                 return k;
@@ -284,7 +284,7 @@ namespace PnnQuant
             ushort k = 0;
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
-                return NearestColorIndex(palette, pixel);
+                return NearestColorIndex(palette, pixel, pos);
 
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
@@ -327,14 +327,14 @@ namespace PnnQuant
                 idx = pos % 2;
 
             if (closest[idx + 2] >= MAX_ERR)
-                return NearestColorIndex(palette, pixel);
+                return NearestColorIndex(palette, pixel, pos);
             return closest[idx];
         }
 
         public virtual ushort DitherColorIndex(Color[] palette, int pixel, int pos)
         {
             if (dither)
-                return NearestColorIndex(palette, pixel);
+                return NearestColorIndex(palette, pixel, pos);
             return ClosestColorIndex(palette, pixel, pos);
         }
 
