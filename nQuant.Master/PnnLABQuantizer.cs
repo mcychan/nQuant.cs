@@ -435,7 +435,9 @@ namespace PnnQuant
                     var c2 = palette[k];
 		    GetLab(c2.ToArgb(), out var lab2);
                     var err = PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
-		    err += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
+		    if(saliencies != null)
+			err += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
+			
                     if (hasSemiTransparency)
                         err += PA * BitmapUtilities.Sqr(c.A - c2.A);
 
