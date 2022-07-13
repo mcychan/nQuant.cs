@@ -371,10 +371,6 @@ namespace PnnQuant
                 }
                 else if (hasSemiTransparency)
                 {
-                    curdist += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
-                    if (curdist > mindist)
-                        continue;
-
                     curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
@@ -387,10 +383,6 @@ namespace PnnQuant
                 }
                 else if (nMaxColors > 32)
                 {
-                    curdist += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
-                    if (curdist > mindist)
-                        continue;
-
                     curdist += Math.Abs(lab2.L - lab1.L);
                     if (curdist > mindist)
                         continue;
@@ -399,10 +391,6 @@ namespace PnnQuant
                 }
                 else
                 {
-                    curdist += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
-                    if (curdist > mindist)
-                        continue;
-
                     var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
                     curdist += BitmapUtilities.Sqr(deltaL_prime_div_k_L_S_L);
                     if (curdist > mindist)
@@ -445,7 +433,9 @@ namespace PnnQuant
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
+		    GetLab(c2.ToArgb(), out var lab2);
                     var err = PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
+		    err += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
                     if (hasSemiTransparency)
                         err += PA * BitmapUtilities.Sqr(c.A - c2.A);
 
