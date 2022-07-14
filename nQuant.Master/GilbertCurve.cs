@@ -40,7 +40,7 @@ namespace nQuant.Master
             }
         }
 
-        private readonly float divisor;
+        private float divisor;
         private readonly int width;
         private readonly int height;
         private readonly int[] pixels;
