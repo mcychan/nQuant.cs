@@ -57,7 +57,7 @@ namespace nQuant.Master
         private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float divisor)
         {
             this.divisor = (divisor < 3) ? 0.4f + divisor - palette.Length / 64f : divisor;
-            if (divisor < 3 && this.divisor > divisor)
+            if (divisor < 3 && this.divisor > 1.5f)
     		this.divisor = divisor;
             this.width = width;
             this.height = height;
