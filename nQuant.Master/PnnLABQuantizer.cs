@@ -432,11 +432,12 @@ namespace PnnQuant
                 var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
                 {
-                    var c2 = palette[k];
-		    GetLab(c2.ToArgb(), out var lab2);
+                    var c2 = palette[k];		    
                     var err = PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
-		    if(saliencies != null)
+		    if(saliencies != null) {
+                        GetLab(c2.ToArgb(), out var lab2);
 			err += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
+		    }
 			
                     if (hasSemiTransparency)
                         err += PA * BitmapUtilities.Sqr(c.A - c2.A);
