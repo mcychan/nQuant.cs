@@ -9,7 +9,6 @@ namespace PnnQuant
     {
         private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
-        private double[] saliencies;
         private sealed class Pnnbin
         {
             internal float ac, Lc, Ac, Bc;
@@ -123,11 +122,6 @@ namespace PnnQuant
             return (cnt, isBlack) => cnt;
         }
 
-        private static double GetSaliency(double L)
-        {
-            var saliencyBase = 0.1;
-            return saliencyBase + (1 - saliencyBase) * L / 255.0;
-        }
         protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
             short quan_rt = 1;
@@ -144,7 +138,6 @@ namespace PnnQuant
 
                 int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
                 GetLab(pixel, out var lab1);
-                saliencies[i] = GetSaliency(lab1.L);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += (float)lab1.alpha;
@@ -434,10 +427,6 @@ namespace PnnQuant
                 {
                     var c2 = palette[k];		    
                     var err = PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
-		    if(saliencies != null) {
-                        GetLab(c2.ToArgb(), out var lab2);
-			err += BitmapUtilities.Sqr(GetSaliency(lab2.L) - saliencies[pos]);
-		    }
 			
                     if (hasSemiTransparency)
                         err += PA * BitmapUtilities.Sqr(c.A - c2.A);
