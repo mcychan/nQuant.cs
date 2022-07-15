@@ -125,7 +125,6 @@ namespace PnnQuant
         protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
             short quan_rt = 1;
-            saliencies = new double[pixels.Length];
             var bins = new Pnnbin[ushort.MaxValue + 1];
 
             /* Build histogram */
