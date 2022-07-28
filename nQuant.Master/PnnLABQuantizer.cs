@@ -435,15 +435,36 @@ namespace PnnQuant
 
                     if (hasSemiTransparency || pos % 2 == 0)
                     {
-                        if (hasSemiTransparency)
+                        if (hasSemiTransparency) {
                             err += PA * BitmapUtilities.Sqr(c.A - c2.A);
-                        err += PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
+			    if (err >= closest[3])
+                        	continue;
+                        }
+                        err += PR * BitmapUtilities.Sqr(c.R - c2.R);			
+			if (err >= closest[3])
+			    continue;
+			    
+                        err += PG * BitmapUtilities.Sqr(c.G - c2.G);			
+                        if (err >= closest[3])
+			    continue;
+			    
+                        err += PB * BitmapUtilities.Sqr(c.B - c2.B);
                     }
                     else
                     {
-                        for (short i = 0; i < coeffs.GetLength(0); ++i)
-                            err += BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R)) + BitmapUtilities.Sqr(coeffs[i, 1] * (c.G - c2.G)) + BitmapUtilities.Sqr(coeffs[i, 2] * (c.B - c2.B));
-                    }
+                        for (short i = 0; i < coeffs.GetLength(0); ++i) {
+                            err += BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));			    
+			    if (err >= closest[3])
+                        	break;
+			    err += BitmapUtilities.Sqr(coeffs[i, 1] * (c.G - c2.G));			    
+			    if (err >= closest[3])
+                        	break;
+				
+			    err += BitmapUtilities.Sqr(coeffs[i, 2] * (c.B - c2.B));			    
+			    if (err >= closest[3])
+                        	break;
+                        }
+		    }
 
                     if (err < closest[2])
                     {
