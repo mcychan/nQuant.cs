@@ -482,9 +482,12 @@ namespace PnnQuant
                 closestMap[pixel] = closest;
             }
 
-            var MAX_ERR = palette.Length << 1;
-            if (c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
-                MAX_ERR = palette.Length >> 1;
+            var MAX_ERR = palette.Length;
+            if(hasSemiTransparency && MAX_ERR > 32) {
+                MAX_ERR = palette.Length << 1;
+                if (c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
+                    MAX_ERR = palette.Length >> 1;
+            }
 			
             int idx = 1;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
