@@ -7,7 +7,8 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double ratio = 1.0;
+        private int width;
+	private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
         private static readonly float[,] coeffs = new float[,] {
@@ -510,6 +511,7 @@ namespace PnnQuant
         protected override int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
             this.dither = dither;
+	    this.width = width;
             int[] qPixels;
 	    if ((semiTransCount * 1.0 / pixels.Length) > .099)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
