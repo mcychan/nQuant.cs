@@ -12,8 +12,8 @@ namespace PnnQuant
 
         private static readonly float[,] coeffs = new float[,] {
             {0.299f, 0.587f, 0.114f},
-            {-0.168735f, -0.331264f, 0.5f},
-            {0.5f, -0.418688f, -0.081312f}
+            {-0.14713f, -0.28886f, 0.436f},
+            {0.615f, -0.51499f, -0.10001f}
         };
         private sealed class Pnnbin
         {
@@ -426,6 +426,10 @@ namespace PnnQuant
             {
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
+		
+		var channel = coeffs.GetLength(0);
+                if((pos / width) % 2 > 0 || (pos % width) % 2 > 0)
+                    channel = 1;
 
                 var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
@@ -447,7 +451,7 @@ namespace PnnQuant
                            err += PA * (1 - ratio) * BitmapUtilities.Sqr(c.A - c2.A);			    
                     else
                     {
-                        for (short i = 0; i < coeffs.GetLength(0); ++i) {
+                        for (short i = 0; i < channel; ++i) {
                             err += ratio * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));			    
                             if (err >= closest[3])
                         	    break;
