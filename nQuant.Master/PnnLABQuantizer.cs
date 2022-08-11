@@ -7,7 +7,6 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private int width;
 	private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
@@ -428,9 +427,9 @@ namespace PnnQuant
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
 		
-		var channel = coeffs.GetLength(0);
-                if((pos / width) % 2 > 0 || (pos % width) % 2 > 0)
-                    channel = 1;
+		int start = 0;
+                if((pos % 5) > 0)
+                    start = 1;
 
                 var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
@@ -452,7 +451,7 @@ namespace PnnQuant
                            err += PA * (1 - ratio) * BitmapUtilities.Sqr(c.A - c2.A);			    
                     else
                     {
-                        for (short i = 0; i < channel; ++i) {
+                        for (var i = start; i < coeffs.GetLength(0); ++i) {
                             err += ratio * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));			    
                             if (err >= closest[3])
                         	    break;
@@ -511,7 +510,6 @@ namespace PnnQuant
         protected override int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
             this.dither = dither;
-	    this.width = width;
             int[] qPixels;
 	    if ((semiTransCount * 1.0 / pixels.Length) > .099)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
