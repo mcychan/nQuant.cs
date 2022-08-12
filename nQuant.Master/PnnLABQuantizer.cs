@@ -488,9 +488,9 @@ namespace PnnQuant
 
             var MAX_ERR = palette.Length;
             if(hasSemiTransparency && MAX_ERR > 32) {
-                MAX_ERR = palette.Length << 1;
+                MAX_ERR <<= 1;
                 if (c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
-                    MAX_ERR = palette.Length >> 1;
+                    MAX_ERR >>= 1;
             }
 			
             int idx = 1;
