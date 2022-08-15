@@ -428,7 +428,7 @@ namespace PnnQuant
                 closest[2] = closest[3] = ushort.MaxValue;
 		
 		int start = 0;
-                if((pos % 5) > 0)
+                if((pos % (rand.Next(4) + 1)) > 0)
                     start = 1;
 
                 var nMaxColors = palette.Length;
