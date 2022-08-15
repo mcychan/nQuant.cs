@@ -21,7 +21,7 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort[]> closestMap = new();
         protected readonly Dictionary<int, ushort> nearestMap = new();
 
-        protected double PR = .2126, PG = .7152, PB = .0722, PA = .3333;
+        protected double PR = 0.299, PG = 0.587, PB = 0.114, PA = .3333;
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -387,10 +387,6 @@ namespace PnnQuant
 
             if (nMaxColors <= 32)
                 PR = PG = PB = PA = 1;
-            else if (bitmapWidth < 512 || bitmapHeight < 512)
-            {
-                PR = 0.299; PG = 0.587; PB = 0.114;
-            }
 
             if (nMaxColors > 2)
                 Pnnquan(pixels, ref palettes, ref nMaxColors);
