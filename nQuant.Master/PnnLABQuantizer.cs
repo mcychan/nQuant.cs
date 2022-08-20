@@ -57,7 +57,7 @@ namespace PnnQuant
                 if (nerr >= err)
                     continue;
 
-                if (hasSemiTransparency || !texicab)
+                if (!texicab)
                 {
                     nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.L - lab1.L);
                     if (nerr >= err)
@@ -216,7 +216,9 @@ namespace PnnQuant
             var texicab = proportional > .025;	    
 			
             int h, l, l2;
-            if (quan_rt != 0 && nMaxColors < 64)
+            if(hasSemiTransparency)
+                ratio = .5;
+            else if (quan_rt != 0 && nMaxColors < 64)
             {
                 if (proportional > .018 && proportional < .022)
                     ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.872));
@@ -234,7 +236,7 @@ namespace PnnQuant
             else
                 ratio = Math.Min(1.0, Math.Max(.98, 1 - weight * .7));
 
-            if (quan_rt < 0)
+            if (!hasSemiTransparency && quan_rt < 0)
                 ratio = Math.Min(1.0, weight * Math.Exp(1.997));
 
             /* Initialize nearest neighbors and build heap of them */
@@ -427,7 +429,6 @@ namespace PnnQuant
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
 		
-		var delta = hasSemiTransparency ? 0.5 : ratio;
 		int start = 0;
                 if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > 0)
                     start = 1;
@@ -436,33 +437,33 @@ namespace PnnQuant
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];		    
-                    var err = PR * (1 - delta) * BitmapUtilities.Sqr(c.R - c2.R);
+                    var err = PR * (1 - ratio) * BitmapUtilities.Sqr(c.R - c2.R);
                     if (err >= closest[3])
                         continue;
 
-                    err += PG * (1 - delta) * BitmapUtilities.Sqr(c.G - c2.G);
+                    err += PG * (1 - ratio) * BitmapUtilities.Sqr(c.G - c2.G);
                     if (err >= closest[3])
                         continue;
 
-                    err += PB * (1 - delta) * BitmapUtilities.Sqr(c.B - c2.B);
+                    err += PB * (1 - ratio) * BitmapUtilities.Sqr(c.B - c2.B);
                     if (err >= closest[3])
                         continue;
 
                     if (hasSemiTransparency) {
-                           err += PA * (1 - delta) * BitmapUtilities.Sqr(c.A - c2.A);
+                           err += PA * (1 - ratio) * BitmapUtilities.Sqr(c.A - c2.A);
 			   start = 1;
                     }
 		    
                     for (var i = start; i < coeffs.GetLength(0); ++i) {
-                        err += delta * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));			    
+                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));			    
                         if (err >= closest[3])
 			   break;
 
-                        err += delta * BitmapUtilities.Sqr(coeffs[i, 1] * (c.G - c2.G));			    
+                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 1] * (c.G - c2.G));			    
                         if (err >= closest[3])
 			   break;
 				
-                        err += delta * BitmapUtilities.Sqr(coeffs[i, 2] * (c.B - c2.B));			    
+                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 2] * (c.B - c2.B));			    
                         if (err >= closest[3])
 			   break;
                     }
@@ -498,7 +499,7 @@ namespace PnnQuant
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
                 idx = 0;
 
-            if (!hasSemiTransparency && closest[idx + 2] >= MAX_ERR)
+            if (closest[idx + 2] >= MAX_ERR)
                 return NearestColorIndex(palette, pixel, pos);
             return closest[idx];
         }
