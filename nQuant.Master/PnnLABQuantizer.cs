@@ -430,7 +430,7 @@ namespace PnnQuant
                 closest[2] = closest[3] = ushort.MaxValue;
 		
 		int start = 0;
-                if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > 0)
+                if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -64)
                     start = 1;
 
                 var nMaxColors = palette.Length;
