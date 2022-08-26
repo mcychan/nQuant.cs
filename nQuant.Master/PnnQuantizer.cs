@@ -22,6 +22,13 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort> nearestMap = new();
 
         protected double PR = 0.299, PG = 0.587, PB = 0.114, PA = .3333;
+        private double ratio = .5;
+
+        private static readonly float[,] coeffs = new float[,] {
+            {0.299f, 0.587f, 0.114f},
+            {-0.14713f, -0.28886f, 0.436f},
+            {0.615f, -0.51499f, -0.10001f}
+        };
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
@@ -46,15 +53,54 @@ namespace PnnQuant
             var wr = bin1.rc;
             var wg = bin1.gc;
             var wb = bin1.bc;
+
+            int start = 0;
+            if (BlueNoise.RAW_BLUE_NOISE[idx & 4095] > -77)
+                start = 1;
+
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
-                var nerr = PR * BitmapUtilities.Sqr(bins[i].rc - wr) + PG * BitmapUtilities.Sqr(bins[i].gc - wg) + PB * BitmapUtilities.Sqr(bins[i].bc - wb);
-                if (hasSemiTransparency)
-                    nerr += PA * BitmapUtilities.Sqr(bins[i].ac - wa);
                 var n2 = bins[i].cnt;
-                nerr *= (n1 * n2) / (n1 + n2);
+                var nerr2 = (n1 * n2) / (n1 + n2);
+                if (nerr2 >= err)
+                    continue;
+
+                var nerr = 0.0;
+                if (hasSemiTransparency)
+                {
+                    start = 1;
+                    nerr += nerr2 * (1 - ratio) * PA * BitmapUtilities.Sqr(bins[i].ac - wa);
+                    if (nerr >= err)
+                        continue;
+                }
+
+                nerr += nerr2 * (1 - ratio) * PR * BitmapUtilities.Sqr(bins[i].rc - wr);
                 if (nerr >= err)
                     continue;
+
+                nerr += nerr2 * (1 - ratio) * PG * BitmapUtilities.Sqr(bins[i].gc - wg);
+                if (nerr >= err)
+                    continue;
+
+                nerr += nerr2 * (1 - ratio) * PB * BitmapUtilities.Sqr(bins[i].bc - wb);
+                if (nerr >= err)
+                    continue;
+
+                for (int j = start; j < coeffs.GetLength(0); ++j)
+                {
+                    nerr += nerr2 * ratio * BitmapUtilities.Sqr(coeffs[j, 0] * (bins[i].rc - wr));
+                    if (nerr >= err)
+                        break;
+
+                    nerr += nerr2 * ratio * BitmapUtilities.Sqr(coeffs[j, 1] * (bins[i].gc - wg));
+                    if (nerr >= err)
+                        break;
+
+                    nerr += nerr2 * ratio * BitmapUtilities.Sqr(coeffs[j, 2] * (bins[i].bc - wb));
+                    if (nerr >= err)
+                        break;
+                }
+
                 err = nerr;
                 nn = i;
             }
@@ -295,7 +341,18 @@ namespace PnnQuant
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
-                    var err = PR * BitmapUtilities.Sqr(c.R - c2.R) + PG * BitmapUtilities.Sqr(c.G - c2.G) + PB * BitmapUtilities.Sqr(c.B - c2.B);
+                    var err = PR * BitmapUtilities.Sqr(c.R - c2.R);
+                    if (err >= closest[3])
+                        break;
+
+                    err += PG * BitmapUtilities.Sqr(c.G - c2.G);
+                    if (err >= closest[3])
+                        break;
+
+                    err += PB * BitmapUtilities.Sqr(c.B - c2.B);
+                    if (err >= closest[3])
+                        break;
+
                     if (hasSemiTransparency)
                         err += PA * BitmapUtilities.Sqr(c.A - c2.A);
 
