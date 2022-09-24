@@ -186,7 +186,7 @@ class Download extends preact.Component {
 					preact.createElement("div", {style: {float: "left", width: "40%", textAlign: "right"}}, 
 						preact.createElement("span", {key: "wi"}, "Without installer:" )),
 					preact.createElement("div", {style: {float: "right", paddingLeft: "2em", width: "50%"}}, 
-						preact.createElement("a", {href: "https://github.com/mcychan/nQuant.cs/releases/download/1.80/imgV64_18.zip"}, "portable x86 64 bit version Download"))
+						preact.createElement("a", {href: "https://github.com/mcychan/nQuant.cs/releases/download/1.82/imgV64_18.zip"}, "portable x86 64 bit version Download"))
 				])
 			],
 			preact.createElement(Promotors, {key: "supporters"})
