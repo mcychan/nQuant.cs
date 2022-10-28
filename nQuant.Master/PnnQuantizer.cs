@@ -55,8 +55,8 @@ namespace PnnQuant
             var wb = bin1.bc;
 
             int start = 0;
-            if (BlueNoise.RAW_BLUE_NOISE[idx & 4095] > -77)
-                start = 1;
+            if (BlueNoise.RAW_BLUE_NOISE[idx & 4095] > -88)
+                start = (PG < coeffs[0, 1]) ? coeffs.GetLength(0) : 1;
 
             for (int i = bin1.fw; i != 0; i = bins[i].fw)
             {
@@ -108,27 +108,17 @@ namespace PnnQuant
             bin1.nn = nn;
         }
 
-        protected delegate float QuanFn(float cnt, bool isBlack);
+        protected delegate float QuanFn(float cnt);
         protected virtual QuanFn GetQuanFn(int nMaxColors, short quan_rt)
         {
             if (quan_rt > 0) {
                 if (nMaxColors < 64)
-                    return (cnt, isBlack) =>
-                    {
-                        if(isBlack)
-                            return (int)Math.Pow(cnt, .75);
-                        return (int)Math.Sqrt(cnt);
-                    };
-                return (cnt, isBlack) =>
-                {
-                    if (isBlack)
-                        return (float)Math.Pow(cnt, .75);
-                    return (float)Math.Sqrt(cnt);
-                };
+                    return cnt => (int)Math.Sqrt(cnt);
+                return cnt => (float)Math.Sqrt(cnt);
             }
             if (quan_rt < 0)
-                return (cnt, isBlack) => (int) Math.Cbrt(cnt);
-            return (cnt, isBlack) => cnt;
+                return cnt => (int) Math.Cbrt(cnt);
+            return cnt => cnt;
         }
         protected virtual void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
@@ -174,10 +164,8 @@ namespace PnnQuant
             var weight = nMaxColors * 1.0 / maxbins;
             if (weight > .003 && weight < .005)
                 quan_rt = 0;
-            if (weight < .025 && PG < 1 && PG >= coeffs[0, 1]) {
-                var delta = 3 * (.025 + weight);
-                PG -= delta;
-                PB += delta;
+            if (weight < .04 && PG < 1 && PG >= coeffs[0, 1]) {
+                PR = PG = PB = PA = 1;
                 if (nMaxColors >= 64)
                     quan_rt = 0;
             }
@@ -190,9 +178,9 @@ namespace PnnQuant
                 bins[j].fw = j + 1;
                 bins[j + 1].bk = j;
 
-                bins[j].cnt = quanFn(bins[j].cnt, j == 0);
+                bins[j].cnt = quanFn(bins[j].cnt);
             }
-            bins[j].cnt = quanFn(bins[j].cnt, j == 0);
+            bins[j].cnt = quanFn(bins[j].cnt);
 
             int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
@@ -254,7 +242,7 @@ namespace PnnQuant
                 tb.rc = d * (float) Math.Round(n1 * tb.rc + n2 * nb.rc);
                 tb.gc = d * (float) Math.Round(n1 * tb.gc + n2 * nb.gc);
                 tb.bc = d * (float) Math.Round(n1 * tb.bc + n2 * nb.bc);
-                tb.cnt += nb.cnt;
+                tb.cnt += n2;
                 tb.mtm = ++i;
 
                 /* Unchain deleted bin */
@@ -297,6 +285,11 @@ namespace PnnQuant
             if (c.A <= alphaThreshold)
                 c = m_transparentColor;
 
+            double pr = PR, pg = PG, pb = PB;
+            if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88) {
+                pr = coeffs[0, 0]; pg = coeffs[0, 1]; pb = coeffs[0, 2];
+            }
+
             double mindist = int.MaxValue;
             var nMaxColors = palette.Length;
             for (int i = 0; i < nMaxColors; ++i)
@@ -306,15 +299,15 @@ namespace PnnQuant
                 if (curdist > mindist)
                     continue;
 
-                curdist += PR * BitmapUtilities.Sqr(c2.R - c.R);
+                curdist += pr * BitmapUtilities.Sqr(c2.R - c.R);
                 if (curdist > mindist)
                     continue;
 
-                curdist += PG * BitmapUtilities.Sqr(c2.G - c.G);
+                curdist += pg * BitmapUtilities.Sqr(c2.G - c.G);
                 if (curdist > mindist)
                     continue;
 
-                curdist += PB * BitmapUtilities.Sqr(c2.B - c.B);
+                curdist += pb * BitmapUtilities.Sqr(c2.B - c.B);
                 if (curdist > mindist)
                     continue;
 
@@ -337,19 +330,24 @@ namespace PnnQuant
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
 
+                double pr = PR, pg = PG, pb = PB;
+                if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88) {
+                    pr = coeffs[0, 0]; pg = coeffs[0, 1]; pb = coeffs[0, 2];
+                }
+
                 var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
                 {
                     var c2 = palette[k];
-                    var err = PR * BitmapUtilities.Sqr(c.R - c2.R);
+                    var err = pr * BitmapUtilities.Sqr(c.R - c2.R);
                     if (err >= closest[3])
                         break;
 
-                    err += PG * BitmapUtilities.Sqr(c.G - c2.G);
+                    err += pg * BitmapUtilities.Sqr(c.G - c2.G);
                     if (err >= closest[3])
                         break;
 
-                    err += PB * BitmapUtilities.Sqr(c.B - c2.B);
+                    err += pb * BitmapUtilities.Sqr(c.B - c2.B);
                     if (err >= closest[3])
                         break;
 

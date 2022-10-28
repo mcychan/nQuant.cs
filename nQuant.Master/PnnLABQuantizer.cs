@@ -7,7 +7,7 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-	private double ratio = 1.0;
+        private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
         private static readonly float[,] coeffs = new float[,] {
@@ -30,6 +30,7 @@ namespace PnnQuant
                 pixelMap[argb] = lab1;
             }
         }
+
         private void Find_nn(Pnnbin[] bins, int idx, bool texicab)
         {
             int nn = 0;
@@ -110,22 +111,13 @@ namespace PnnQuant
         protected override QuanFn GetQuanFn(int nMaxColors, short quan_rt) {
             if (quan_rt > 0) {
                 if (quan_rt > 1)
-                    return (cnt, isBlack) => (int) Math.Pow(cnt, .75);
+                    return cnt => (int) Math.Pow(cnt, .75);
                 if (nMaxColors < 64)
-                    return (cnt, isBlack) =>
-                    {
-                        if (isBlack)
-                            return (int)Math.Pow(cnt, .75);
-                        return (int)Math.Sqrt(cnt);
-                    };
-                return (cnt, isBlack) =>
-                {
-                    if (isBlack)
-                        return (float)Math.Pow(cnt, .75);
-                    return (float)Math.Sqrt(cnt);
-                };
+                    return cnt => (int)Math.Sqrt(cnt);
+
+                return cnt => (float)Math.Sqrt(cnt);
             }
-            return (cnt, isBlack) => cnt;
+            return cnt => cnt;
         }
 
         protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
@@ -175,11 +167,11 @@ namespace PnnQuant
             var weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
             if (weight > .0015 && weight < .002)
                 quan_rt = 2;
-            if (weight < .025 && PG < 1 && PG >= coeffs[0, 1]) {
-                var delta = 3 * (.025 + weight);
+            if (weight < .04 && PG < 1 && PG >= coeffs[0, 1]) {
+                var delta = Math.Exp(1.75) * weight;
                 PG -= delta;
                 PB += delta;
-		if (nMaxColors >= 64)
+            if (nMaxColors >= 64)
                     quan_rt = 0;
             }
 
@@ -209,12 +201,12 @@ namespace PnnQuant
                 bins[j].fw = j + 1;
                 bins[j + 1].bk = j;
 
-                bins[j].cnt = quanFn(bins[j].cnt, j == 0);                
+                bins[j].cnt = quanFn(bins[j].cnt);
             }
-            bins[j].cnt = quanFn(bins[j].cnt, j == 0);
+            bins[j].cnt = quanFn(bins[j].cnt);
 
-            var texicab = proportional > .025;	    
-			
+            var texicab = proportional > .025;
+
             int h, l, l2;
             if(hasSemiTransparency)
                 ratio = .5;
@@ -302,7 +294,7 @@ namespace PnnQuant
                 tb.Lc = d * (n1 * tb.Lc + n2 * nb.Lc);
                 tb.Ac = d * (n1 * tb.Ac + n2 * nb.Ac);
                 tb.Bc = d * (n1 * tb.Bc + n2 * nb.Bc);
-                tb.cnt += nb.cnt;
+                tb.cnt += n2;
                 tb.mtm = ++i;
 
                 /* Unchain deleted bin */
@@ -333,8 +325,8 @@ namespace PnnQuant
                 if ((i = bins[i].fw) == 0)
                     break;
             }
-	    
-	        if (k < nMaxColors - 1)
+
+            if (k < nMaxColors - 1)
             {
                 nMaxColors = k + 1;
                 Console.WriteLine("Maximum number of colors: " + palettes.Length);
@@ -417,19 +409,20 @@ namespace PnnQuant
             nearestMap[pixel] = k;
             return k;
         }
+
         protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
         {
             ushort k = 0;
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
                 return NearestColorIndex(palette, pixel, pos);
-		
+
             if (!closestMap.TryGetValue(pixel, out var closest))
             {
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
-		
-		int start = 0;
+
+                int start = 0;
                 if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
                     start = 1;
 
@@ -450,29 +443,29 @@ namespace PnnQuant
                         continue;
 
                     if (hasSemiTransparency) {
-                           err += PA * (1 - ratio) * BitmapUtilities.Sqr(c.A - c2.A);
-			   start = 1;
+                        err += PA * (1 - ratio) * BitmapUtilities.Sqr(c.A - c2.A);
+                        start = 1;
                     }
-		    
-                    for (var i = start; i < coeffs.GetLength(0); ++i) {
-                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));			    
-                        if (err >= closest[3])
-			   break;
 
-                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 1] * (c.G - c2.G));			    
+                    for (var i = start; i < coeffs.GetLength(0); ++i) {
+                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));
                         if (err >= closest[3])
-			   break;
-				
-                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 2] * (c.B - c2.B));			    
+                           break;
+
+                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 1] * (c.G - c2.G));
                         if (err >= closest[3])
-			   break;
+                           break;
+
+                        err += ratio * BitmapUtilities.Sqr(coeffs[i, 2] * (c.B - c2.B));
+                        if (err >= closest[3])
+                           break;
                     }
 
                     if (err < closest[2])
                     {
                         closest[1] = closest[0];
                         closest[3] = closest[2];
-                        closest[0] = k;                        
+                        closest[0] = k;
                         closest[2] = (ushort) err;
                     }
                     else if (err < closest[3])
@@ -484,7 +477,7 @@ namespace PnnQuant
 
                 if (closest[3] == ushort.MaxValue)
                     closest[1] = closest[0];
-		    
+
                 closestMap[pixel] = closest;
             }
 
@@ -494,7 +487,10 @@ namespace PnnQuant
                 if (c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
                     MAX_ERR >>= 1;
             }
-			
+
+            if(PG < coeffs[0, 1] && BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
+                return NearestColorIndex(palette, pixel, pos);
+
             int idx = 1;
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
                 idx = 0;
@@ -513,7 +509,7 @@ namespace PnnQuant
         {
             this.dither = dither;
             int[] qPixels;
-	    if ((semiTransCount * 1.0 / pixels.Length) > .099)
+            if ((semiTransCount * 1.0 / pixels.Length) > .099)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
             else if (palettes.Length <= 32)
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.25f);
@@ -521,7 +517,7 @@ namespace PnnQuant
                 qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
 
             if (!dither)
-            {        
+            {
                 var delta = BitmapUtilities.Sqr(palettes.Length) / pixelMap.Count;
                 var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
                 BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
