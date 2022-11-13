@@ -221,7 +221,10 @@ namespace PnnQuant
                 else if (proportional > .03)
                     ratio = Math.Min(1.0, weight * Math.Exp(3.275));
                 else
-                    ratio = Math.Min(1.0, proportional - weight * Math.Exp(1.997));
+                {
+                    var beta = (maxbins % 2 == 0) ? -1 : 1;
+                    ratio = Math.Min(1.0, proportional + beta * weight * Math.Exp(1.997));
+                }
             }
             else if (nMaxColors > 256)
                 ratio = Math.Min(1.0, 1 - 1.0 / proportional);
