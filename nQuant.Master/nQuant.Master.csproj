@@ -6,7 +6,7 @@
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Miller Cy Chan</Authors>
-	<Copyright>Copyright Miller Cy Chan 2018 - 2021</Copyright>
+	<Copyright>Copyright Miller Cy Chan 2018 - 2022</Copyright>
     <PackageVersion>1.2.5</PackageVersion>
 	<PackageIcon>ImgV64.png</PackageIcon>
 	<PackageProjectUrl>http://imgv64.rf.gd</PackageProjectUrl>
@@ -15,7 +15,7 @@
 	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/mcychan/nQuant.cs.git</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>    
-	<Title>nQuant.cs</Title>
+	<Title>nQuant.c#</Title>
 	<Summary>nQuant is a C# color quantizer which produces high quality 256 color 8 bit PNG images. nQuant uses an algorithm adapted from fast pairwise nearest neighbor based algorithm color quantizer. nQuant often produces high quality 256 color 8 bit PNG images minimizing color loss for photo having red lips and supports 256 or less colors with transparency.</Summary>
 	<PackageTags>color-quantization;error-diffusion;image-processing;cielab;dithering</PackageTags>
     <Description>
