@@ -22,7 +22,7 @@ namespace PnnQuant
         protected readonly Dictionary<int, ushort> nearestMap = new();
 
         protected double PR = 0.299, PG = 0.587, PB = 0.114, PA = .3333;
-        private double ratio = .5;
+        protected double ratio = .5, weight = 1;
 
         private static readonly float[,] coeffs = new float[,] {
             {0.299f, 0.587f, 0.114f},
@@ -161,7 +161,7 @@ namespace PnnQuant
             if (nMaxColors < 16)
                 nMaxColors = -1;
                 
-            var weight = nMaxColors * 1.0 / maxbins;
+            weight = nMaxColors * 1.0 / maxbins;
             if (weight > .003 && weight < .005)
                 quan_rt = 0;
             if (weight < .04 && PG < 1 && PG >= coeffs[0, 1]) {
@@ -405,11 +405,9 @@ namespace PnnQuant
         protected virtual int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
             this.dither = dither;
-            int[] qPixels;
-            if (palettes.Length <= 32 || (hasSemiTransparency && (semiTransCount * 1.0 / pixels.Length) > .099))
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, palettes.Length > 2 ? 1.8f : 1.5f);
-            else
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
+			if ((semiTransCount * 1.0 / pixels.Length) > .099)
+				weight *= .01;
+            var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, weight);
 
             if (!dither)
                 BlueNoise.Dither(width, height, pixels, palettes, this, qPixels);

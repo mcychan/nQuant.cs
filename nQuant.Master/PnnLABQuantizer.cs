@@ -7,7 +7,6 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-        private double ratio = 1.0;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
         private static readonly float[,] coeffs = new float[,] {
@@ -164,7 +163,7 @@ namespace PnnQuant
             if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
                 quan_rt = -1;
             
-            var weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
+            weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
             if (weight > .0015 && weight < .002)
                 quan_rt = 2;
             if (weight < .04 && PG < 1 && PG >= coeffs[0, 1]) {
@@ -511,13 +510,9 @@ namespace PnnQuant
         protected override int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
             this.dither = dither;
-            int[] qPixels;
-            if ((semiTransCount * 1.0 / pixels.Length) > .099)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.5f);
-            else if (palettes.Length <= 32)
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, 1.25f);
-            else
-                qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this);
+			if ((semiTransCount * 1.0 / pixels.Length) > .099)
+				weight *= .01;
+            var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, weight);
 
             if (!dither)
             {

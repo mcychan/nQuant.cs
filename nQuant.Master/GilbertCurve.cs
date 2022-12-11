@@ -40,7 +40,6 @@ namespace nQuant.Master
             }
         }
 
-        private float divisor;
         private readonly int width;
         private readonly int height;
         private readonly int[] pixels;
@@ -51,14 +50,11 @@ namespace nQuant.Master
         private readonly float[] weights;
         private readonly int[] lookup;
 
-        private const byte DITHER_MAX = 9;
+        private readonly byte DITHER_MAX;
         private const float BLOCK_SIZE = 343f;
 
-        private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float divisor)
+        private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, double weight)
         {
-            this.divisor = (divisor < 3) ? 0.4f + divisor - palette.Length / 64f : divisor;
-            if (divisor >= 1.5f || this.divisor > 1.5f)
-    		this.divisor = divisor;
             this.width = width;
             this.height = height;
             this.pixels = pixels;
@@ -66,6 +62,7 @@ namespace nQuant.Master
             this.qPixels = qPixels;
             this.ditherable = ditherable;
             errorq = new();
+			DITHER_MAX = (byte)(weight < .01 ? 25 : 9);
             weights = new float[DITHER_MAX];
             lookup = new int[65536];
         }
@@ -76,10 +73,16 @@ namespace nQuant.Master
             Color pixel = Color.FromArgb(pixels[bidx]);
             ErrorBox error = new ErrorBox(pixel);
             int i = 0;
+			float maxErr = DITHER_MAX - 1;
             foreach (ErrorBox eb in errorq)
             {
                 for (int j = 0; j < eb.Length; ++j)
                     error[j] += eb[j] * weights[i];
+
+				for (int j = 0; j < eb.Length; ++j) {
+					if(error[j] > maxErr)
+						maxErr = error[j];
+				}
                 ++i;
             }
 
@@ -110,16 +113,14 @@ namespace nQuant.Master
             error[2] = b_pix - c2.B;
             error[3] = a_pix - c2.A;
 
-            if (divisor < 3 || palette.Length > 16) {
-                for (int j = 0; j < error.Length; ++j)
-                {
-                    if (Math.Abs(error[j]) < DITHER_MAX)
-                        continue;
+			for (int j = 0; j < error.Length; ++j)
+			{
+				if (Math.Abs(error[j]) < DITHER_MAX)
+					continue;
 
-                    error[j] /= divisor;
-                }
-            }
-            errorq.Enqueue(error);
+				error[j] = (float) Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
+			}
+			errorq.Enqueue(error);
         }
 		
 	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
@@ -202,10 +203,10 @@ namespace nQuant.Master
                 Generate2d(0, 0, 0, height, width, 0);
         }
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, float divisor = 3.0f)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, double weight = 1.0)
         {
             var qPixels = new int[pixels.Length];
-            new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, divisor).Run();
+            new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, weight).Run();
             return qPixels;
         }
     }
