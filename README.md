@@ -48,7 +48,7 @@ OTSU method (OTSU) is a global adaptive binarization threshold image segmentatio
     }
 ```
 <p>Example image:<br /><img src="https://user-images.githubusercontent.com/26831069/142559831-f8f6f2ce-487e-4353-8aa1-7845706e7833.png" /></p>
-<p>Resulted image:<br /><img src="https://user-images.githubusercontent.com/26831069/142559920-88143e07-2787-46a2-a07c-cccf5a39065a.png" /></p>
+<p>Resulted image:<br /><img src="https://user-images.githubusercontent.com/26831069/142559920-88143e07-2787-46a2-a07c-cccf5a39065a.png#gh-light-mode-only" /></p>
 
 If you are using the command line. Assuming you are in the same directory as nQuant.exe and nQuant.Master.dll, you would enter:
 `nQuant yourImage.jpg /o yourNewImage.png`
