@@ -78,11 +78,8 @@ namespace nQuant.Master
             {
                 for (int j = 0; j < eb.Length; ++j)
                     error[j] += eb[j] * weights[i];
-
-				for (int j = 0; j < eb.Length; ++j) {
-					if(error[j] > maxErr)
-						maxErr = error[j];
-				}
+                    if(error[j] > maxErr)
+                    	maxErr = error[j];
                 ++i;
             }
 
