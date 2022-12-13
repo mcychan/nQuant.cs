@@ -73,13 +73,15 @@ namespace nQuant.Master
             Color pixel = Color.FromArgb(pixels[bidx]);
             ErrorBox error = new ErrorBox(pixel);
             int i = 0;
-			float maxErr = DITHER_MAX - 1;
+            float maxErr = DITHER_MAX - 1;
             foreach (ErrorBox eb in errorq)
             {
                 for (int j = 0; j < eb.Length; ++j)
+		{
                     error[j] += eb[j] * weights[i];
                     if(error[j] > maxErr)
                     	maxErr = error[j];
+		}
                 ++i;
             }
 
