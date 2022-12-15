@@ -116,8 +116,9 @@ namespace nQuant.Master
 			{
 				if (Math.Abs(error[j]) < DITHER_MAX)
 					continue;
-
-				error[j] = (float) Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
+				
+				if (palette.Length > 2)
+					error[j] = (float) Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
 			}
 			errorq.Enqueue(error);
         }
