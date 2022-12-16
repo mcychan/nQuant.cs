@@ -260,11 +260,6 @@ namespace PnnQuant
             {
                 var alpha = (hasSemiTransparency || m_transparentPixelIndex >= 0) ? Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue) : Byte.MaxValue;
                 palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
-                if (m_transparentPixelIndex >= 0 && alpha == 0)
-                {
-                    BitmapUtilities.Swap(ref palettes[0], ref palettes[k]);
-                    palettes[0] = m_transparentColor;
-                }
 
                 if ((i = bins[i].fw) == 0)
                     break;
@@ -284,6 +279,8 @@ namespace PnnQuant
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
                 c = m_transparentColor;
+            if (palette.Length > 2 && m_transparentPixelIndex > -1 && c.A > alphaThreshold)
+                k = 1;
 
             double pr = PR, pg = PG, pb = PB;
             if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88) {
@@ -292,7 +289,7 @@ namespace PnnQuant
 
             double mindist = int.MaxValue;
             var nMaxColors = palette.Length;
-            for (int i = 0; i < nMaxColors; ++i)
+            for (int i = k; i < nMaxColors; ++i)
             {
                 var c2 = palette[i];
                 var curdist = PA * BitmapUtilities.Sqr(c2.A - c.A);
@@ -381,7 +378,7 @@ namespace PnnQuant
             else if (closest[0] > closest[1])
                 idx = pos % 2;
 
-            if (closest[idx + 2] >= MAX_ERR)
+            if (closest[idx + 2] >= MAX_ERR || (m_transparentPixelIndex > -1 && closest[idx] == 0))
                 return NearestColorIndex(palette, pixel, pos);
             return closest[idx];
         }

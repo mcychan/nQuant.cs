@@ -318,11 +318,6 @@ namespace PnnQuant
                     L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
-                if (m_transparentPixelIndex >= 0 && lab1.alpha == 0)
-                {
-                    BitmapUtilities.Swap(ref palettes[0], ref palettes[k]);
-                    palettes[0] = m_transparentColor;
-                }
 
                 if ((i = bins[i].fw) == 0)
                     break;
@@ -343,12 +338,14 @@ namespace PnnQuant
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
                 c = m_transparentColor;
+            if (palette.Length > 2 && m_transparentPixelIndex > -1 && c.A > alphaThreshold)
+                k = 1;
 
             double mindist = int.MaxValue;
             var nMaxColors = palette.Length;
             GetLab(pixel, out var lab1);
 
-            for (int i = 0; i < nMaxColors; ++i)
+            for (int i = k; i < nMaxColors; ++i)
             {
                 var c2 = palette[i];
 
@@ -497,7 +494,7 @@ namespace PnnQuant
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
                 idx = 0;
 
-            if (closest[idx + 2] >= MAX_ERR)
+            if (closest[idx + 2] >= MAX_ERR || (m_transparentPixelIndex > -1 && closest[idx] == 0))
                 return NearestColorIndex(palette, pixel, pos);
             return closest[idx];
         }
