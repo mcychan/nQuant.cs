@@ -8,7 +8,7 @@
       </style>
 
       <div class="container">
-        <img src="otsu.png" style="max-width: 100%;" />
+        <img src="https://raw.githubusercontent.com/mcychan/nQuant.cs/core/samples/otsu.png" style="max-width: 100%;" />
       </div>
     </div>
   </foreignObject>
