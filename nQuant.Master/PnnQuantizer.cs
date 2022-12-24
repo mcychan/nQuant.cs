@@ -279,7 +279,7 @@ namespace PnnQuant
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
                 c = m_transparentColor;
-            if (m_transparentPixelIndex > -1 && c.A > alphaThreshold)
+            if (palette.Length > 2 && m_transparentPixelIndex > -1 && c.A > alphaThreshold)
                 k = 1;
 
             double pr = PR, pg = PG, pb = PB;
