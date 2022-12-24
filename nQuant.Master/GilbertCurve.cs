@@ -46,14 +46,16 @@ namespace nQuant.Master
         private readonly Color[] palette;
         private readonly int[] qPixels;
         private readonly Ditherable ditherable;
+		private readonly float[] saliencies;
         private readonly Queue<ErrorBox> errorq;
         private readonly float[] weights;
         private readonly int[] lookup;
 
         private readonly byte DITHER_MAX;
+		private readonly float DIVISOR;
         private const float BLOCK_SIZE = 343f;
 
-        private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, double weight)
+        private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
         {
             this.width = width;
             this.height = height;
@@ -61,8 +63,10 @@ namespace nQuant.Master
             this.palette = palette;
             this.qPixels = qPixels;
             this.ditherable = ditherable;
+			this.saliencies = saliencies;
             errorq = new();
 			DITHER_MAX = (byte)(weight < .01 ? 25 : 9);
+			DIVISOR = saliencies != null ? 3f : (float) weight;
             weights = new float[DITHER_MAX];
             lookup = new int[65536];
         }
@@ -77,11 +81,11 @@ namespace nQuant.Master
             foreach (ErrorBox eb in errorq)
             {
                 for (int j = 0; j < eb.Length; ++j)
-		{
+				{
                     error[j] += eb[j] * weights[i];
                     if(error[j] > maxErr)
                     	maxErr = error[j];
-		}
+				}
                 ++i;
             }
 
@@ -97,6 +101,12 @@ namespace nQuant.Master
                 if (lookup[offset] == 0)
                     lookup[offset] = (pixel.A == 0) ? 1 : ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
                 qPixels[bidx] = lookup[offset] - 1;
+				
+				if(saliencies != null && saliencies[bidx] > .65f && saliencies[bidx] < .75f) {
+					var strength = 1 / 3f;
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+				}
             }
             else
                 qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
@@ -116,13 +126,17 @@ namespace nQuant.Master
 			{
 				if (Math.Abs(error[j]) < DITHER_MAX)
 					continue;
-				
-				if (palette.Length > 2)
-					error[j] = (float) Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
+
+				if (palette.Length > 2) {
+					if(saliencies != null || BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88)
+						error[j] = (float) Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
+					else
+						error[j] /= DIVISOR;
+				}
 			}
 			errorq.Enqueue(error);
-        }
-		
+		}
+
 	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
 		int w = Math.Abs(ax + ay);
 		int h = Math.Abs(bx + by);
@@ -174,14 +188,14 @@ namespace nQuant.Master
 
 		Generate2d(x, y, bx2, by2, ax2, ay2);
 		Generate2d(x + bx2, y + by2, ax, ay, bx - bx2, by - by2);
-		Generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));    		
+		Generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));
 	}
 
         private void Run()
         {
             /* Dithers all pixels of the image in sequence using
              * the Gilbert path, and distributes the error in
-             * a sequence of 9 pixels.
+             * a sequence of DITHER_MAX pixels.
              */
             float weightRatio = (float)Math.Pow(BLOCK_SIZE + 1f, 1f / (DITHER_MAX - 1f));
             float weight = 1f, sumweight = 0f;
@@ -203,10 +217,10 @@ namespace nQuant.Master
                 Generate2d(0, 0, 0, height, width, 0);
         }
 
-        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, double weight = 1.0)
+        public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, float[] saliencies = null, double weight = 1.0)
         {
             var qPixels = new int[pixels.Length];
-            new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, weight).Run();
+            new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, saliencies, weight).Run();
             return qPixels;
         }
     }

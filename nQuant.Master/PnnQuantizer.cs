@@ -402,9 +402,10 @@ namespace PnnQuant
         protected virtual int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
             this.dither = dither;
+			var weight = 3.0;
 			if ((semiTransCount * 1.0 / pixels.Length) > .099)
-				weight *= .01;
-            var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, weight);
+				weight /= 2;
+            var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, null, weight);
 
             if (!dither)
                 BlueNoise.Dither(width, height, pixels, palettes, this, qPixels);

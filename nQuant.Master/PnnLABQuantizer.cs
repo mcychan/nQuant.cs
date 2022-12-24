@@ -7,6 +7,7 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
+		protected float[] saliencies;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
         private static readonly float[,] coeffs = new float[,] {
@@ -123,6 +124,8 @@ namespace PnnQuant
         {
             short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
+			saliencies = new float[pixels.Length];
+			var saliencyBase = .1f;
 
             /* Build histogram */
             for (int i = 0; i < pixels.Length; ++i)
@@ -140,7 +143,9 @@ namespace PnnQuant
                 bins[index].Lc += (float)lab1.L;
                 bins[index].Ac += (float)lab1.A;
                 bins[index].Bc += (float)lab1.B;
-                bins[index].cnt += 1.0f;             
+                bins[index].cnt += 1.0f;
+				if(lab1.alpha > alphaThreshold)
+					saliencies[i] = (float) (saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
             }
 
             /* Cluster nonempty bins at one end of array */
@@ -509,7 +514,7 @@ namespace PnnQuant
             this.dither = dither;
 			if ((semiTransCount * 1.0 / pixels.Length) > .099)
 				weight *= .01;
-            var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, weight);
+            var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight);
 
             if (!dither)
             {

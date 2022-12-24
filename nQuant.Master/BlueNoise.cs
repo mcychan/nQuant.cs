@@ -180,33 +180,40 @@ namespace nQuant.Master
 			-65, -32, 85, 7, -16, 80, -32, 10, 95, 50, 88, 123, -121, -12, -79, -42, -102, -53, 42, -75, 85, -107, 21, -82, -25, 
 			14, -9, -91, -55, 99, -111, -20, 31, 88, -3, 105, 53, -29, -90, -10, -70, 9, -57, 123, -99, 5			
 		};
+		
+		public static Color Diffuse(Color pixel, Color qPixel, float weight, float strength, int x, int y)
+		{
+			int r_pix = pixel.R;
+			int g_pix = pixel.G;
+			int b_pix = pixel.B;
+			int a_pix = pixel.A;
 
-        public static void Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, float weight = 1.0f)
-        {
+			var adj = (RAW_BLUE_NOISE[(x & 63) | (y & 63) << 6] + 0.5f) / 127.5f;
+			adj += ((x + y & 1) - 0.5f) * strength / 8.0f;
+			adj *= weight;
+			r_pix = (int)Math.Min(0xff, Math.Max(r_pix + (adj * (r_pix - qPixel.R)), 0));
+			g_pix = (int)Math.Min(0xff, Math.Max(g_pix + (adj * (g_pix - qPixel.G)), 0));
+			b_pix = (int)Math.Min(0xff, Math.Max(b_pix + (adj * (b_pix - qPixel.B)), 0));
+			a_pix = (int)Math.Min(0xff, Math.Max(a_pix + (adj * (a_pix - qPixel.A)), 0));
+
+			return Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+		}
+
+		public static void Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, float weight = 1.0f)
+		{
 			float strength = 1 / 3.0f;
 			for (int y = 0; y < height; ++y)
 			{
 				for (int x = 0; x < width; ++x)
 				{
-					Color pixel = Color.FromArgb(pixels[x + y * width]);
-					int r_pix = pixel.R;
-					int g_pix = pixel.G;
-					int b_pix = pixel.B;
-					int a_pix = pixel.A;
+					int bidx = x + y * width;
+					Color pixel = Color.FromArgb(pixels[bidx]);
+					Color c1 = palette[qPixels[bidx]];
 
-					Color c1 = palette[qPixels[x + y * width]];
-					float adj = (RAW_BLUE_NOISE[(x & 63) | (y & 63) << 6] + 0.5f) / 127.5f;
-					adj += ((x + y & 1) - 0.5f) * strength / 8.0f;
-					adj *= weight;
-					r_pix = (int)Math.Min(0xff, Math.Max(r_pix + (adj * (r_pix - c1.R)), 0));
-					g_pix = (int)Math.Min(0xff, Math.Max(g_pix + (adj * (g_pix - c1.G)), 0));
-					b_pix = (int)Math.Min(0xff, Math.Max(b_pix + (adj * (b_pix - c1.B)), 0));
-					a_pix = (int)Math.Min(0xff, Math.Max(a_pix + (adj * (a_pix - c1.A)), 0));
-
-					c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-					qPixels[x + y * width] = ditherable.DitherColorIndex(palette, c1.ToArgb(), x + y);
+					c1 = Diffuse(pixel, c1, weight, strength, x, y);
+					qPixels[bidx] = ditherable.DitherColorIndex(palette, c1.ToArgb(), bidx);
 				}
 			}
-        }
-    }
+		}
+	}
 }
