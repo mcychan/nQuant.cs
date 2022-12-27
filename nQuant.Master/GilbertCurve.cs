@@ -46,13 +46,13 @@ namespace nQuant.Master
         private readonly Color[] palette;
         private readonly int[] qPixels;
         private readonly Ditherable ditherable;
-		private readonly float[] saliencies;
+        private readonly float[] saliencies;
         private readonly Queue<ErrorBox> errorq;
         private readonly float[] weights;
         private readonly int[] lookup;
 
         private readonly byte DITHER_MAX;
-		private readonly float DIVISOR;
+        private readonly float DIVISOR;
         private const float BLOCK_SIZE = 343f;
 
         private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
@@ -102,11 +102,11 @@ namespace nQuant.Master
                     lookup[offset] = (pixel.A == 0) ? 1 : ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
                 qPixels[bidx] = lookup[offset] - 1;
 				
-				if(saliencies != null && saliencies[bidx] > .65f && saliencies[bidx] < .75f) {
-					var strength = 1 / 3f;
-					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
-					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
-				}
+		if(saliencies != null && saliencies[bidx] > .65f && saliencies[bidx] < .75f) {
+			var strength = 1 / 3f;
+			c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+			qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+		}
             }
             else
                 qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
@@ -124,7 +124,7 @@ namespace nQuant.Master
 
             for (int j = 0; j < error.Length; ++j)
             {
-            	int k = DIVISOR < 2 ? 0 : DITHER_MAX;
+            	int k = (palette.Length < 3 || DIVISOR < 2) ? 0 : DITHER_MAX;
                 while (Math.Abs(error[j]) >= DITHER_MAX && k-- > 0)
                 {
                     if (saliencies != null || (DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88))
