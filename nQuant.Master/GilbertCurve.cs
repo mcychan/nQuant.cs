@@ -122,12 +122,9 @@ namespace nQuant.Master
             error[2] = b_pix - c2.B;
             error[3] = a_pix - c2.A;
 
-			for (int j = 0; j < error.Length; ++j)
-			{
-				if (Math.Abs(error[j]) < DITHER_MAX)
-					continue;
-
-				int k = DIVISOR < 2 ? 0 : DITHER_MAX;
+            for (int j = 0; j < error.Length; ++j)
+            {
+            	int k = DIVISOR < 2 ? 0 : DITHER_MAX;
                 while (Math.Abs(error[j]) >= DITHER_MAX && k-- > 0)
                 {
                     if (saliencies != null || (DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88))
@@ -137,7 +134,7 @@ namespace nQuant.Master
                 }              
             }
 			errorq.Enqueue(error);
-		}
+        }
 
 	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
 		int w = Math.Abs(ax + ay);
