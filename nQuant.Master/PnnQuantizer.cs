@@ -283,7 +283,7 @@ namespace PnnQuant
                 k = 1;
 
             double pr = PR, pg = PG, pb = PB;
-            if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88) {
+            if(palette.Length > 2 && BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88) {
                 pr = coeffs[0, 0]; pg = coeffs[0, 1]; pb = coeffs[0, 2];
             }
 

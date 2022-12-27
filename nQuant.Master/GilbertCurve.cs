@@ -127,13 +127,15 @@ namespace nQuant.Master
 				if (Math.Abs(error[j]) < DITHER_MAX)
 					continue;
 
-				if (palette.Length > 2) {
-					if(saliencies != null || (DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88))
-						error[j] = (float) Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
-					else
-						error[j] /= DIVISOR;
-				}
-			}
+				int k = DIVISOR < 2 ? 0 : DITHER_MAX;
+                while (Math.Abs(error[j]) >= DITHER_MAX && k-- > 0)
+                {
+                    if (saliencies != null || (DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88))
+                        error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
+                    else
+                        error[j] /= DIVISOR;
+                }              
+            }
 			errorq.Enqueue(error);
 		}
 
