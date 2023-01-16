@@ -124,8 +124,8 @@ namespace nQuant.Master
 
             for (int j = 0; j < error.Length; ++j)
             {
-            	int k = (palette.Length < 3 || DIVISOR < 2) ? 0 : DITHER_MAX;
-                while (Math.Abs(error[j]) >= DITHER_MAX && k-- > 0)
+            	var diffuse = (palette.Length < 3 || DIVISOR < 2) ? false : true;
+                if (Math.Abs(error[j]) >= DITHER_MAX && diffuse)
                 {
                     if (saliencies != null || (DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88))
                         error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
@@ -133,7 +133,7 @@ namespace nQuant.Master
                         error[j] /= DIVISOR;
                 }              
             }
-			errorq.Enqueue(error);
+            errorq.Enqueue(error);
         }
 
 	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
