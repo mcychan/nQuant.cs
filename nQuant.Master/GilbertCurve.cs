@@ -122,12 +122,14 @@ namespace nQuant.Master
             error[2] = b_pix - c2.B;
             error[3] = a_pix - c2.A;
 
+            var dither = (palette.Length < 3 || DIVISOR < 2) ? false : true;
+            var diffuse = DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
+
             for (int j = 0; j < error.Length; ++j)
-            {
-            	var diffuse = (palette.Length < 3 || DIVISOR < 2) ? false : true;
-                if (Math.Abs(error[j]) >= DITHER_MAX && diffuse)
+            {            	
+                if (Math.Abs(error[j]) >= DITHER_MAX && dither)
                 {
-                    if (saliencies != null || (DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88))
+                    if (diffuse)
                         error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
                     else
                         error[j] /= DIVISOR;
