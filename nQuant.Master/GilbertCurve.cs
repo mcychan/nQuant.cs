@@ -99,14 +99,14 @@ namespace nQuant.Master
 			{
 				int offset = ditherable.GetColorIndex(c2.ToArgb());
 				if (lookup[offset] == 0)
-					lookup[offset] = (pixel.A == 0) ? 1 : ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
+					lookup[offset] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
 				qPixels[bidx] = lookup[offset] - 1;
 				
-		if(saliencies != null && saliencies[bidx] > .65f && saliencies[bidx] < .75f) {
-			var strength = 1 / 3f;
-			c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
-			qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
-		}
+				if(saliencies != null && saliencies[bidx] > .65f && saliencies[bidx] < .75f) {
+					var strength = 1 / 3f;
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+				}
 			}
 			else
 				qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
