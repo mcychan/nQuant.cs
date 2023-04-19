@@ -7,7 +7,7 @@ namespace PnnQuant
 {
     public class PnnLABQuantizer : PnnQuantizer
     {
-		protected float[] saliencies;
+        protected float[] saliencies;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
         private static readonly float[,] coeffs = new float[,] {
@@ -124,8 +124,8 @@ namespace PnnQuant
         {
             short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
-			saliencies = new float[pixels.Length];
-			var saliencyBase = .1f;
+            saliencies = new float[pixels.Length];
+            var saliencyBase = .1f;
 
             /* Build histogram */
             for (int i = 0; i < pixels.Length; ++i)
@@ -144,8 +144,8 @@ namespace PnnQuant
                 bins[index].Ac += (float)lab1.A;
                 bins[index].Bc += (float)lab1.B;
                 bins[index].cnt += 1.0f;
-				if(lab1.alpha > alphaThreshold)
-					saliencies[i] = (float) (saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
+                if(lab1.alpha > alphaThreshold && nMaxColors < 32)
+                    saliencies[i] = (float) (saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
             }
 
             /* Cluster nonempty bins at one end of array */
@@ -175,7 +175,7 @@ namespace PnnQuant
                 var delta = Math.Exp(1.75) * weight;
                 PG -= delta;
                 PB += delta;
-            if (nMaxColors >= 64)
+                if (nMaxColors >= 64)
                     quan_rt = 0;
             }
 
@@ -512,8 +512,8 @@ namespace PnnQuant
         protected override int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
         {
             this.dither = dither;
-			if ((semiTransCount * 1.0 / pixels.Length) > .099)
-				weight *= .01;
+            if ((semiTransCount * 1.0 / pixels.Length) > .099)
+                weight *= .01;
             var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight);
 
             if (!dither)
