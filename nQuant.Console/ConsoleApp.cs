@@ -77,7 +77,7 @@ namespace nQuant
             }
 
             System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
-            System.Console.WriteLine("Copyright (C) 2018 - 2021 Miller Cy Chan.");
+            System.Console.WriteLine("Copyright (C) 2018 - 2023 Miller Cy Chan.");
 
             var quantizer = (algorithm == "PNN") ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
             using (var bitmap = new Bitmap(sourcePath))
