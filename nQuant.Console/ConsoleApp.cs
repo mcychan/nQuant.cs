@@ -13,6 +13,10 @@ namespace nQuant
         private static bool dither = true;
         private static string targetPath = string.Empty;
 
+        static ConsoleApp()
+        {
+            AppContext.SetSwitch("System.Drawing.EnableUnixSupport", true);
+        }
         public static void Main(string[] args)
         {
             string algorithm = "";
@@ -46,7 +50,7 @@ namespace nQuant
             if(algorithm == "OTSU")
             {
                 System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", Assembly.GetExecutingAssembly().GetName().Version);
-                System.Console.WriteLine("Copyright (C) 2018 - 2021 Miller Cy Chan.");
+                System.Console.WriteLine("Copyright (C) 2018 - 2023 Miller Cy Chan.");
 
                 using (var bitmap = new Bitmap(sourcePath))
                 {

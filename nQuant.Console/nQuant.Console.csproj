@@ -3,7 +3,7 @@
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
 	<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <StartupObject>nQuant.ConsoleApp</StartupObject>
     <PackageId>nQuant.ConsoleApp</PackageId>
