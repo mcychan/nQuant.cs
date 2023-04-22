@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace nQuant
 {
@@ -46,11 +47,13 @@ namespace nQuant
                 targetPath = sourcePath.Substring(0, lastDot) + "-" + algorithm + "quant" + maxColors + ".png";
             }
 
+            Console.OutputEncoding = Encoding.UTF8;
+            var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
             Stopwatch stopwatch = Stopwatch.StartNew();
             if(algorithm == "OTSU")
             {
                 System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", Assembly.GetExecutingAssembly().GetName().Version);
-                System.Console.WriteLine("Copyright (C) 2018 - 2023 Miller Cy Chan.");
+                System.Console.WriteLine(copyright.Copyright);
 
                 using (var bitmap = new Bitmap(sourcePath))
                 {
@@ -77,7 +80,7 @@ namespace nQuant
             }
 
             System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
-            System.Console.WriteLine("Copyright (C) 2018 - 2023 Miller Cy Chan.");
+            System.Console.WriteLine(copyright.Copyright);
 
             var quantizer = (algorithm == "PNN") ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
             using (var bitmap = new Bitmap(sourcePath))
