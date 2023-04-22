@@ -75,10 +75,10 @@ namespace nQuant.Master
 		{
 			int bidx = x + y * width;
 			Color pixel = Color.FromArgb(pixels[bidx]);
-			ErrorBox error = new ErrorBox(pixel);
+			var error = new ErrorBox(pixel);
 			int i = 0;
 			float maxErr = DITHER_MAX - 1;
-			foreach (ErrorBox eb in errorq)
+			foreach (var eb in errorq)
 			{
 				for (int j = 0; j < eb.Length; ++j)
 				{
@@ -133,9 +133,9 @@ namespace nQuant.Master
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
 					else
-						error[j] = (float) (error[j] / maxErr * yDiff) * (DITHER_MAX - 1);
+						error[j] = (float)(error[j] / maxErr * yDiff) * (DITHER_MAX - 1);
 				}
-			}
+            }
 			errorq.Enqueue(error);
 		}
 
