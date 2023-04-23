@@ -14,5 +14,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: AssemblyTrademarkAttribute("ImgV64 ®")]
-[assembly: AssemblyVersion("1.2.8")]
-[assembly: AssemblyFileVersion("1.2.8")]
+[assembly: AssemblyVersion("1.2.8.0")]
+[assembly: AssemblyFileVersion("1.2.8.0")]
