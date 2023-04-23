@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -123,7 +123,7 @@ namespace nQuant.Master
 			error[3] = a_pix - c1.A;
 
 			var dither = (palette.Length < 3 || DIVISOR < 2) ? false : true;
-			var diffuse = DIVISOR > 2 && BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
+			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
 			for (int j = 0; j < error.Length; ++j)
@@ -135,63 +135,63 @@ namespace nQuant.Master
 					else
 						error[j] = (float)(error[j] / maxErr * yDiff) * (DITHER_MAX - 1);
 				}
-            }
+			}
 			errorq.Enqueue(error);
 		}
 
-	private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
-		int w = Math.Abs(ax + ay);
-		int h = Math.Abs(bx + by);
-		int dax = Math.Sign(ax);
-		int day = Math.Sign(ay);
-		int dbx = Math.Sign(bx);
-		int dby = Math.Sign(by);
+		private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
+			int w = Math.Abs(ax + ay);
+			int h = Math.Abs(bx + by);
+			int dax = Math.Sign(ax);
+			int day = Math.Sign(ay);
+			int dbx = Math.Sign(bx);
+			int dby = Math.Sign(by);
 
-		if (h == 1) {
-			for (int i = 0; i < w; ++i){
-				DitherPixel(x, y);
-				x += dax;
-				y += day;
+			if (h == 1) {
+				for (int i = 0; i < w; ++i){
+					DitherPixel(x, y);
+					x += dax;
+					y += day;
+				}
+				return;
 			}
-			return;
-		}
 
-		if (w == 1) {
-			for (int i = 0; i < h; ++i){
-				DitherPixel(x, y);
-				x += dbx;
-				y += dby;
+			if (w == 1) {
+				for (int i = 0; i < h; ++i){
+					DitherPixel(x, y);
+					x += dbx;
+					y += dby;
+				}
+				return;
 			}
-			return;
+
+			int ax2 = ax / 2;
+			int ay2 = ay / 2;
+			int bx2 = bx / 2;
+			int by2 = by / 2;
+
+			int w2 = Math.Abs(ax2 + ay2);
+			int h2 = Math.Abs(bx2 + by2);
+
+			if (2 * w > 3 * h) {
+				if ((w2 % 2) != 0 && w > 2) {
+					ax2 += dax;
+					ay2 += day;
+				}    		
+				Generate2d(x, y, ax2, ay2, bx, by);
+				Generate2d(x + ax2, y + ay2, ax - ax2, ay - ay2, bx, by);
+				return;
+			}
+
+			if ((h2 % 2) != 0 && h > 2) {
+				bx2 += dbx;
+				by2 += dby;
+			}
+
+			Generate2d(x, y, bx2, by2, ax2, ay2);
+			Generate2d(x + bx2, y + by2, ax, ay, bx - bx2, by - by2);
+			Generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));
 		}
-
-		int ax2 = ax / 2;
-		int ay2 = ay / 2;
-		int bx2 = bx / 2;
-		int by2 = by / 2;
-
-		int w2 = Math.Abs(ax2 + ay2);
-		int h2 = Math.Abs(bx2 + by2);
-
-		if (2 * w > 3 * h) {
-			if ((w2 % 2) != 0 && w > 2) {
-				ax2 += dax;
-				ay2 += day;
-			}    		
-			Generate2d(x, y, ax2, ay2, bx, by);
-			Generate2d(x + ax2, y + ay2, ax - ax2, ay - ay2, bx, by);
-			return;
-		}
-
-		if ((h2 % 2) != 0 && h > 2) {
-			bx2 += dbx;
-			by2 += dby;
-		}
-
-		Generate2d(x, y, bx2, by2, ax2, ay2);
-		Generate2d(x + bx2, y + by2, ax, ay, bx - bx2, by - by2);
-		Generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));
-	}
 
 		private void Run()
 		{
