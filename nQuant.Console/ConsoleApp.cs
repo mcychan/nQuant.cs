@@ -48,11 +48,11 @@ namespace nQuant
             }
 
             Console.OutputEncoding = Encoding.UTF8;
-            var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
+            var copyright = typeof(PnnQuant.PnnQuantizer).Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
             Stopwatch stopwatch = Stopwatch.StartNew();
             if(algorithm == "OTSU")
             {
-                System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", Assembly.GetExecutingAssembly().GetName().Version);
+                System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", typeof(OtsuThreshold.Otsu).Assembly.GetName().Version);
                 System.Console.WriteLine(copyright.Copyright);
 
                 using (var bitmap = new Bitmap(sourcePath))
@@ -79,7 +79,7 @@ namespace nQuant
                 return;
             }
 
-            System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
+            System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", typeof(PnnQuant.PnnQuantizer).Assembly.GetName().Version);
             System.Console.WriteLine(copyright.Copyright);
 
             var quantizer = (algorithm == "PNN") ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
