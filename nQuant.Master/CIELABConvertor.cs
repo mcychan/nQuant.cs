@@ -206,16 +206,16 @@ namespace nQuant.Master
 		
 		internal static double Y_Diff(Color c1, Color c2)
 		{
-			var sr = gammaToLinear(c1.R);
-			var sg = gammaToLinear(c1.G);
-			var sb = gammaToLinear(c1.B);
-			var y = sr * 0.2126 + sg * 0.7152 + sb * 0.0722;
-			
-			sr = gammaToLinear(c2.R);
-			sg = gammaToLinear(c2.G);
-			sb = gammaToLinear(c2.B);
-			var y2 = sr * 0.2126 + sg * 0.7152 + sb * 0.0722;
-			var result = Math.Abs(y2 - y) / 100;
+			Func<double, Color> color2Y = c => {
+				var sr = gammaToLinear(c.R);
+				var sg = gammaToLinear(c.G);
+				var sb = gammaToLinear(c.B);
+				return sr * 0.2126 + sg * 0.7152 + sb * 0.0722;
+			};
+		
+			var y = color2Y(c1);
+			var y2 = color2Y(c2);
+			var result = Math.Abs(y2 - y) / XYZ_WHITE_REFERENCE_Y;
 			var aDiff = Math.Abs(c1.A - c2.A);
 			if(aDiff < 16)
 				return result;
