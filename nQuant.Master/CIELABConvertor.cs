@@ -206,7 +206,7 @@ namespace nQuant.Master
 		
 		internal static double Y_Diff(Color c1, Color c2)
 		{
-			Func<double, Color> color2Y = c => {
+			Func<Color, double> color2Y = c => {
 				var sr = gammaToLinear(c.R);
 				var sg = gammaToLinear(c.G);
 				var sb = gammaToLinear(c.B);
