@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+	<PropertyGroup>
+		<Version>1.2.8.0</Version>
+		<Product>nQuant.cs</Product>
+		<Company>Miller Cy Chan</Company>
+		<Copyright>Copyright © Miller Cy Chan 2018 - 2023</Copyright>
+	</PropertyGroup>
+</Project>
