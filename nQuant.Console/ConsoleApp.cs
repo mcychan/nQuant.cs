@@ -27,8 +27,8 @@ namespace nQuant
 #else
             if (args.Length < 1)
             {
-               PrintUsage();
-               Environment.Exit(1);
+                PrintUsage();
+                Environment.Exit(1);
             }
             var sourcePath = args[0];
             algorithm = ProcessArgs(args);
@@ -48,11 +48,11 @@ namespace nQuant
             }
 
             Console.OutputEncoding = Encoding.UTF8;
-            var copyright = typeof(PnnQuant.PnnQuantizer).Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
+            var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
             Stopwatch stopwatch = Stopwatch.StartNew();
-            if(algorithm == "OTSU")
+            if (algorithm == "OTSU")
             {
-                System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", typeof(OtsuThreshold.Otsu).Assembly.GetName().Version);
+                System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", Assembly.GetExecutingAssembly().GetName().Version);
                 System.Console.WriteLine(copyright.Copyright);
 
                 using (var bitmap = new Bitmap(sourcePath))
@@ -74,12 +74,12 @@ namespace nQuant
                         System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", bitmap.PixelFormat.ToString(), maxColors);
 #endif
                     }
-                }                
+                }
                 System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
                 return;
             }
 
-            System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", typeof(PnnQuant.PnnQuantizer).Assembly.GetName().Version);
+            System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
             System.Console.WriteLine(copyright.Copyright);
 
             var quantizer = (algorithm == "PNN") ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
@@ -88,16 +88,16 @@ namespace nQuant
                 try
                 {
                     using (var dest = quantizer.QuantizeImage(bitmap, PixelFormat.Undefined, maxColors, dither))
-                    {      
+                    {
                         dest.Save(targetPath, ImageFormat.Png);
                         System.Console.WriteLine("Converted image: " + targetPath);
                     }
                 }
                 catch (Exception q)
                 {
-                #if (DEBUG)
+#if (DEBUG)
                     System.Console.WriteLine(q.StackTrace);
-                #else
+#else
                     System.Console.WriteLine(q.Message);
                     System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", bitmap.PixelFormat.ToString(), maxColors);
 #endif
@@ -124,7 +124,7 @@ namespace nQuant
                         return null;
                     }
 
-                    currentArg = currentArg.Substring(1);                    
+                    currentArg = currentArg.Substring(1);
                     switch (currentArg)
                     {
                         case "M":
