@@ -66,7 +66,7 @@ namespace nQuant.Master
 			this.saliencies = saliencies;
 			errorq = new();
 			DITHER_MAX = (byte)(weight < .01 ? 25 : 9);
-			DIVISOR = Math.Min(3f, (float) weight);
+			DIVISOR = weight < .01 ? (float) weight : 3f;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
 		}
