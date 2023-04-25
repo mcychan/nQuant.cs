@@ -53,6 +53,7 @@ namespace nQuant.Master
 
 		private readonly byte DITHER_MAX;
 		private readonly float DIVISOR;
+		private bool hasAlpha = false;
 		private const float BLOCK_SIZE = 343f;
 
 		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
@@ -93,6 +94,7 @@ namespace nQuant.Master
 			int g_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[1], 0.0));
 			int b_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[2], 0.0));
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
+			hasAlpha |= a_pix < Byte.MaxValue;
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (palette.Length <= 32 && a_pix > 0xF0)
@@ -122,7 +124,7 @@ namespace nQuant.Master
 			error[2] = b_pix - c1.B;
 			error[3] = a_pix - c1.A;
 
-			var dither = (palette.Length < 3 || DIVISOR < 2) ? false : true;
+			var dither = (hasAlpha || palette.Length < 3 || DIVISOR < 2) ? false : true;
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
