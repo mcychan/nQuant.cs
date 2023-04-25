@@ -65,7 +65,7 @@ namespace nQuant.Master
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
 			errorq = new();
-			DITHER_MAX = (byte)(weight < .01 ? 25 : 9);
+			DITHER_MAX = (byte)(weight < .01 ? (weight > .002) ? 25 : 16 : 9);
 			hasAlpha = false;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
@@ -123,19 +123,21 @@ namespace nQuant.Master
 			error[2] = b_pix - c1.B;
 			error[3] = a_pix - c1.A;
 
-			var dither = (hasAlpha || palette.Length < 3) ? false : true;
+			var dither = palette.Length > 2;
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
-			var errLength = dither ? error.Length : 0;
-			for (int j = 0; j < errLength; ++j)
+			var errLength = dither ? error.Length - 1 : 0;
+			var ditherMax = (hasAlpha || DITHER_MAX > 9) ? 49 : DITHER_MAX;
+
+            for (int j = 0; j < errLength; ++j)
 			{
-				if (Math.Abs(error[j]) >= DITHER_MAX)
+				if (Math.Abs(error[j]) >= ditherMax)
 				{
 					if (diffuse)
-						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
+						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
 					else
-						error[j] = (float)(error[j] / maxErr * yDiff) * (DITHER_MAX - 1);
+						error[j] = (float)(error[j] / maxErr * yDiff) * (ditherMax - 1);
 				}
 			}
 			errorq.Enqueue(error);
