@@ -52,7 +52,6 @@ namespace nQuant.Master
 		private readonly int[] lookup;
 
 		private readonly byte DITHER_MAX;
-		private readonly float DIVISOR;
 		private bool hasAlpha = false;
 		private const float BLOCK_SIZE = 343f;
 
@@ -67,7 +66,6 @@ namespace nQuant.Master
 			this.saliencies = saliencies;
 			errorq = new();
 			DITHER_MAX = (byte)(weight < .01 ? 25 : 9);
-			DIVISOR = weight < .01 ? (float) weight : 3f;
 			hasAlpha = false;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
@@ -125,7 +123,7 @@ namespace nQuant.Master
 			error[2] = b_pix - c1.B;
 			error[3] = a_pix - c1.A;
 
-			var dither = (hasAlpha || palette.Length < 3 || DIVISOR < 2) ? false : true;
+			var dither = (hasAlpha || palette.Length < 3) ? false : true;
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
