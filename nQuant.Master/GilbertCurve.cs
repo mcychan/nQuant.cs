@@ -66,7 +66,7 @@ namespace nQuant.Master
 			this.saliencies = saliencies;
 			errorq = new();
 			DITHER_MAX = (byte)(weight < .01 ? 25 : 9);
-			DIVISOR = saliencies != null ? 3f : (float) weight;
+			DIVISOR = Math.Min(3f, (float) weight);
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
 		}
@@ -126,9 +126,10 @@ namespace nQuant.Master
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
-			for (int j = 0; j < error.Length; ++j)
+			var errLength = dither ? error.Length : 0;
+			for (int j = 0; j < errLength; ++j)
 			{
-				if (Math.Abs(error[j]) >= DITHER_MAX && dither)
+				if (Math.Abs(error[j]) >= DITHER_MAX)
 				{
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (DITHER_MAX - 1);
