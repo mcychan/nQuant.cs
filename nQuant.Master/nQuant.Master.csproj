@@ -19,7 +19,6 @@
       nQuant.cs is a C# color quantizer that can dramatically reduce the size of images with little to no perceptible quality loss.
     </Description>
     <AssemblyVersion>$(AssemblyVersion)</AssemblyVersion>
-	<Copyright>$(AssemblyCopyright)</Copyright>
     <FileVersion>$(AssemblyFileVersion)</FileVersion>
     <PackageVersion>$(AssemblyVersion)</PackageVersion>
   </PropertyGroup>
