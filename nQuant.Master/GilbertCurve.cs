@@ -68,6 +68,7 @@ namespace nQuant.Master
 			errorq = new();
 			DITHER_MAX = (byte)(weight < .01 ? 25 : 9);
 			DIVISOR = weight < .01 ? (float) weight : 3f;
+			hasAlpha = false;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
 		}
