@@ -128,7 +128,7 @@ namespace nQuant.Master
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
 			var errLength = denoise ? error.Length - 1 : 0;
-			var ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + 1) : DITHER_MAX;
+			var ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + 2) : DITHER_MAX;
 			for (int j = 0; j < errLength; ++j)
 			{
 				if (Math.Abs(error[j]) >= ditherMax)
