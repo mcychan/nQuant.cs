@@ -123,14 +123,13 @@ namespace nQuant.Master
 			error[2] = b_pix - c1.B;
 			error[3] = a_pix - c1.A;
 
-			var dither = palette.Length > 2;
+			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
-			var errLength = dither ? error.Length - 1 : 0;
-			var ditherMax = (hasAlpha || DITHER_MAX > 9) ? 49 : DITHER_MAX;
-
-            for (int j = 0; j < errLength; ++j)
+			var errLength = denoise ? error.Length - 1 : 0;
+			var ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + 1) : DITHER_MAX;
+			for (int j = 0; j < errLength; ++j)
 			{
 				if (Math.Abs(error[j]) >= ditherMax)
 				{
