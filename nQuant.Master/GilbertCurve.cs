@@ -65,7 +65,7 @@ namespace nQuant.Master
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
 			errorq = new();
-			DITHER_MAX = (byte)(weight < .01 ? (weight > .002) ? 25 : 16 : 9);
+			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			hasAlpha = false;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
