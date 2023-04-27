@@ -51,8 +51,7 @@ namespace nQuant.Master
 		private readonly float[] weights;
 		private readonly int[] lookup;
 
-		private readonly byte DITHER_MAX;
-		private bool hasAlpha = false;
+		private readonly byte DITHER_MAX, ditherMax;
 		private const float BLOCK_SIZE = 343f;
 
 		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
@@ -65,8 +64,10 @@ namespace nQuant.Master
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
 			errorq = new();
+			var hasAlpha = weight < 0;
+			weight = Math.Abs(weight);
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
-			hasAlpha = false;
+			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + 2) : DITHER_MAX;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
 		}
@@ -93,7 +94,6 @@ namespace nQuant.Master
 			int g_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[1], 0.0));
 			int b_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[2], 0.0));
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
-			hasAlpha |= a_pix < Byte.MaxValue;
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (palette.Length <= 32 && a_pix > 0xF0)
@@ -128,7 +128,6 @@ namespace nQuant.Master
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
 			var errLength = denoise ? error.Length - 1 : 0;
-			var ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + 2) : DITHER_MAX;
 			for (int j = 0; j < errLength; ++j)
 			{
 				if (Math.Abs(error[j]) >= ditherMax)

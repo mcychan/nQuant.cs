@@ -433,7 +433,7 @@ namespace PnnQuant
                 var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
                 {
-                    var c2 = palette[k];		    
+                    var c2 = palette[k];
                     var err = PR * (1 - ratio) * BitmapUtilities.Sqr(c.R - c2.R);
                     if (err >= closest[3])
                         continue;
@@ -486,12 +486,6 @@ namespace PnnQuant
             }
 
             var MAX_ERR = palette.Length;
-            if(hasSemiTransparency && MAX_ERR > 32) {
-                MAX_ERR <<= 1;
-                if (c.R > 0xF0 && c.G > 0xF0 && c.B > 0xF0)
-                    MAX_ERR >>= 1;
-            }
-
             if(PG < coeffs[0, 1] && BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
                 return NearestColorIndex(palette, pixel, pos);
 
@@ -509,11 +503,11 @@ namespace PnnQuant
             return ClosestColorIndex(palette, pixel, pos);
         }
 
-        protected override int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
+        protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, bool dither)
         {
             this.dither = dither;
-            if ((semiTransCount * 1.0 / pixels.Length) > .099)
-                weight *= .01;
+            if (hasSemiTransparency)
+                weight *= -1;
             var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight);
 
             if (!dither)

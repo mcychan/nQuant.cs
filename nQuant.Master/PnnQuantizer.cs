@@ -6,7 +6,7 @@ using System.Drawing.Imaging;
 
 /* Fast pairwise nearest neighbor based algorithm for multilevel thresholding
 Copyright (C) 2004-2016 Mark Tyler and Dmitry Groshev
-Copyright (c) 2018-2021 Miller Cy Chan
+Copyright (c) 2018-2023 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
 namespace PnnQuant
@@ -399,12 +399,11 @@ namespace PnnQuant
             return Math.Pow(2, bitDepth) >= nMaxColors;
         }
 
-        protected virtual int[] Dither(int[] pixels, Color[] palettes, int semiTransCount, int width, int height, bool dither)
+        protected virtual int[] Dither(int[] pixels, Color[] palettes, int width, int height, bool dither)
         {
             this.dither = dither;
-            var weight = 3.0;
-            if ((semiTransCount * 1.0 / pixels.Length) > .099)
-                weight *= .01;
+            if (hasSemiTransparency)
+                weight *= -1;
             var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, null, weight);
 
             if (!dither)
