@@ -457,7 +457,7 @@ namespace PnnQuant
                 }
             }
 
-            var qPixels = Dither(pixels, palettes, semiTransCount, bitmapWidth, bitmapHeight, dither);
+            var qPixels = Dither(pixels, palettes, bitmapWidth, bitmapHeight, dither);
 
             if (m_transparentPixelIndex >= 0 && nMaxColors <= 256)
             {
