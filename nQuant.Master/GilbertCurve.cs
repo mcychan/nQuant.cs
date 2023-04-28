@@ -50,8 +50,7 @@ namespace nQuant.Master
 		private readonly Queue<ErrorBox> errorq;
 		private readonly float[] weights;
 		private readonly int[] lookup;
-		private readonly bool hasAlpha;
-		private readonly byte DITHER_MAX;
+		private readonly byte DITHER_MAX, ditherMax;
 		private const float BLOCK_SIZE = 343f;
 
 		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
@@ -64,9 +63,11 @@ namespace nQuant.Master
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
 			errorq = new();
-			hasAlpha = weight < 0;
+			var hasAlpha = weight < 0;
 			weight = Math.Abs(weight);
-			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);			
+			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
+			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
+			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
 		}
@@ -126,9 +127,7 @@ namespace nQuant.Master
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
-			var errLength = denoise ? error.Length - 1 : 0;
-			var edge = hasAlpha ? 1 : 1.25;
-			var ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
+			var errLength = denoise ? error.Length - 1 : 0;			
 			for (int j = 0; j < errLength; ++j)
 			{
 				if (Math.Abs(error[j]) >= ditherMax)
