@@ -125,7 +125,6 @@ namespace nQuant.Master
 
 			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
-			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(c1, c2);
 
 			var errLength = denoise ? error.Length - 1 : 0;			
 			for (int j = 0; j < errLength; ++j)
@@ -135,7 +134,7 @@ namespace nQuant.Master
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
 					else
-						error[j] = (float)(error[j] / maxErr * yDiff) * (ditherMax - 1);
+						error[j] = (float)(error[j] / Math.Sqrt(ditherMax));
 				}
 			}
 			errorq.Enqueue(error);
