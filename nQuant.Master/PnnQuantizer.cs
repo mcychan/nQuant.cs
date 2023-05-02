@@ -282,17 +282,16 @@ namespace PnnQuant
             if (palette.Length > 2 && m_transparentPixelIndex > -1 && c.A > alphaThreshold)
                 k = 1;
 
-            double pr = PR, pg = PG, pb = PB;
-            if(palette.Length > 2 && BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88) {
-                pr = coeffs[0, 0]; pg = coeffs[0, 1]; pb = coeffs[0, 2];
-            }
+            double pr = PR, pg = PG, pb = PB, pa = PA;
+            if(palette.Length < 3 || BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
+                pr = pg = pb = pa = 1;
 
             double mindist = int.MaxValue;
             var nMaxColors = palette.Length;
             for (int i = k; i < nMaxColors; ++i)
             {
                 var c2 = palette[i];
-                var curdist = PA * BitmapUtilities.Sqr(c2.A - c.A);
+                var curdist = pa * BitmapUtilities.Sqr(c2.A - c.A);
                 if (curdist > mindist)
                     continue;
 
@@ -327,10 +326,9 @@ namespace PnnQuant
                 closest = new ushort[4];
                 closest[2] = closest[3] = ushort.MaxValue;
 
-                double pr = PR, pg = PG, pb = PB;
-                if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88) {
-                    pr = coeffs[0, 0]; pg = coeffs[0, 1]; pb = coeffs[0, 2];
-                }
+                double pr = PR, pg = PG, pb = PB, pa = PA;
+                if(palette.Length < 3 || BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
+                    pr = pg = pb = pa = 1;
 
                 var nMaxColors = palette.Length;
                 for (; k < nMaxColors; ++k)
@@ -349,7 +347,7 @@ namespace PnnQuant
                         break;
 
                     if (hasSemiTransparency)
-                        err += PA * BitmapUtilities.Sqr(c.A - c2.A);
+                        err += pa * BitmapUtilities.Sqr(c.A - c2.A);
 
                     if (err < closest[2])
                     {
