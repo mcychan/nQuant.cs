@@ -283,7 +283,7 @@ namespace PnnQuant
                 k = 1;
 
             double pr = PR, pg = PG, pb = PB, pa = PA;
-            if(palette.Length < 3 || BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
+            if(palette.Length < 3)
                 pr = pg = pb = pa = 1;
 
             double mindist = int.MaxValue;
@@ -327,7 +327,7 @@ namespace PnnQuant
                 closest[2] = closest[3] = ushort.MaxValue;
 
                 double pr = PR, pg = PG, pb = PB, pa = PA;
-                if(palette.Length < 3 || BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
+                if(palette.Length < 3)
                     pr = pg = pb = pa = 1;
 
                 var nMaxColors = palette.Length;
