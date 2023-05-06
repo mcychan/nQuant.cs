@@ -114,18 +114,19 @@ namespace nQuant.Master
 
 			if (errorq.Count > 0)
 				errorq.Dequeue();
-			var c1 = palette[qPixels[bidx]];
+			c2 = palette[qPixels[bidx]];
 			if (palette.Length > 256)
-				qPixels[bidx] = (short)ditherable.GetColorIndex(c1.ToArgb());
+				qPixels[bidx] = (short)ditherable.GetColorIndex(c2.ToArgb());
 
-			error[0] = r_pix - c1.R;
-			error[1] = g_pix - c1.G;
-			error[2] = b_pix - c1.B;
-			error[3] = a_pix - c1.A;
+			error[0] = r_pix - c2.R;
+			error[1] = g_pix - c2.G;
+			error[2] = b_pix - c2.B;
+			error[3] = a_pix - c2.A;
 
 			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
-			var yDiff = diffuse ? 0 : CIELABConvertor.Y_Diff(c1, c2);
+			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(pixel, c2);
+            var illusion = !diffuse && BlueNoise.RAW_BLUE_NOISE[(int)(yDiff * 4096)] > -88;
 
             var errLength = denoise ? error.Length - 1 : 0;			
 			for (int j = 0; j < errLength; ++j)
@@ -135,8 +136,7 @@ namespace nQuant.Master
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
 					else
-					{
-						var illusion = BlueNoise.RAW_BLUE_NOISE[(int)(yDiff * 4096)] > -88;
+					{						
                         if(illusion)
 							error[j] /= (float)(1 + Math.Sqrt(ditherMax));
 						else
