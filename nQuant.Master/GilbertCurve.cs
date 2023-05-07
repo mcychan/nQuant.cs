@@ -51,7 +51,8 @@ namespace nQuant.Master
 		private readonly float[] weights;
 		private readonly int[] lookup;
 		private readonly byte DITHER_MAX, ditherMax;
-		private const float BLOCK_SIZE = 343f;
+		private readonly int thresold;
+        private const float BLOCK_SIZE = 343f;
 
 		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
 		{
@@ -68,7 +69,8 @@ namespace nQuant.Master
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
-			weights = new float[DITHER_MAX];
+            thresold = DITHER_MAX > 9 ? -112 : -88;
+            weights = new float[DITHER_MAX];
 			lookup = new int[65536];
 		}
 
@@ -124,9 +126,9 @@ namespace nQuant.Master
 			error[3] = a_pix - c2.A;
 
 			var denoise = palette.Length > 2;
-			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > -88;
+			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > thresold;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(pixel, c2);
-            var illusion = !diffuse && BlueNoise.RAW_BLUE_NOISE[(int)(yDiff * 4096)] > -88;
+            var illusion = !diffuse && BlueNoise.RAW_BLUE_NOISE[(int)(yDiff * 4096)] > thresold;
 
             var errLength = denoise ? error.Length - 1 : 0;			
 			for (int j = 0; j < errLength; ++j)
