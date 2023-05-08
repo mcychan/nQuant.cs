@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 
 namespace nQuant.Master
@@ -215,11 +215,7 @@ namespace nQuant.Master
 		
 			var y = color2Y(c1);
 			var y2 = color2Y(c2);
-			var result = Math.Abs(y2 - y) / XYZ_WHITE_REFERENCE_Y;
-			var aDiff = Math.Abs(c1.A - c2.A);
-			if(aDiff < 16)
-				return result;
-			return result / 2 + aDiff / 510;
+			return Math.Abs(y2 - y) / XYZ_WHITE_REFERENCE_Y;
 		}
 	}
 }
