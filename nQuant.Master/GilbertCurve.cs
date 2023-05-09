@@ -71,7 +71,7 @@ namespace nQuant.Master
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
 			if (palette.Length / weight > 5000 && weight > .01 && palette.Length >= 64)
-				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
+				ditherMax = (byte) BitmapUtilities.Sqr(4.75);
 			thresold = DITHER_MAX > 9 ? -112 : -88;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
