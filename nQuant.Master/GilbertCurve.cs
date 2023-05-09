@@ -53,7 +53,7 @@ namespace nQuant.Master
 		private readonly int[] lookup;
 		private readonly byte DITHER_MAX;
 		private readonly int thresold;
-        private const float BLOCK_SIZE = 343f;
+		private const float BLOCK_SIZE = 343f;
 
 		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
 		{
@@ -70,7 +70,7 @@ namespace nQuant.Master
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
-			if(weight > .045 && palette.Length / weight > 5000)
+			if (palette.Length / weight > 5000 && weight > .01 && palette.Length >= 64)
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
 			thresold = DITHER_MAX > 9 ? -112 : -88;
 			weights = new float[DITHER_MAX];
