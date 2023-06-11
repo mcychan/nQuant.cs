@@ -2,6 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
+
+/* Fast pairwise nearest neighbor based algorithm with CIELAB color space advanced version
+Copyright (c) 2018-2023 Miller Cy Chan
+* error measure; time used is proportional to number of bins squared - WJ */
 
 namespace PnnQuant
 {
@@ -10,11 +15,9 @@ namespace PnnQuant
         protected float[] saliencies;
         private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
-        private static readonly float[,] coeffs = new float[,] {
-            {0.299f, 0.587f, 0.114f},
-            {-0.14713f, -0.28886f, 0.436f},
-            {0.615f, -0.51499f, -0.10001f}
-        };
+        private bool isGA;
+        private double proportional;
+
         private sealed class Pnnbin
         {
             internal float ac, Lc, Ac, Bc;
@@ -22,7 +25,7 @@ namespace PnnQuant
             internal int nn, fw, bk, tm, mtm;
             internal float err;
         }
-        private void GetLab(int argb, out CIELABConvertor.Lab lab1)
+        internal void GetLab(int argb, out CIELABConvertor.Lab lab1)
         {
             if (!pixelMap.TryGetValue(argb, out lab1))
             {
@@ -120,7 +123,7 @@ namespace PnnQuant
             return cnt => cnt;
         }
 
-        protected override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
+        internal override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
             short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
@@ -135,7 +138,7 @@ namespace PnnQuant
                 if (c.A <= alphaThreshold)
                     c = m_transparentColor;
 
-                int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, m_transparentPixelIndex > -1);
+                int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, HasAlpha);
                 GetLab(pixel, out var lab1);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
@@ -164,8 +167,8 @@ namespace PnnQuant
                 bins[maxbins++] = bins[i];
             }
 
-            var proportional = BitmapUtilities.Sqr(nMaxColors) / maxbins;
-            if ((m_transparentPixelIndex > -1 || hasSemiTransparency) && nMaxColors < 32)
+            proportional = BitmapUtilities.Sqr(nMaxColors) / maxbins;
+            if ((HasAlpha || hasSemiTransparency) && nMaxColors < 32)
                 quan_rt = -1;
             
             weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
@@ -211,33 +214,35 @@ namespace PnnQuant
 
             var texicab = proportional > .025;
 
-            int h, l, l2;
-            if(hasSemiTransparency)
-                ratio = .5;
-            else if (quan_rt != 0 && nMaxColors < 64)
-            {
-                if (proportional > .018 && proportional < .022)
-                    ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.872));
-                else if (proportional > .1)
-                    ratio = Math.Min(1.0, 1.0 - weight);
-                else if (proportional > .04)
-                    ratio = Math.Min(1.0, weight * Math.Exp(2.28));
-                else if (proportional > .03)
-                    ratio = Math.Min(1.0, weight * Math.Exp(3.275));
-                else
-                {
-                    var beta = (maxbins % 2 == 0) ? -1 : 1;
-                    ratio = Math.Min(1.0, proportional + beta * weight * Math.Exp(1.997));
-                }
+            if(!isGA) {
+				if(hasSemiTransparency)
+					ratio = .5;
+				else if (quan_rt != 0 && nMaxColors < 64)
+				{
+					if (proportional > .018 && proportional < .022)
+						ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.872));
+					else if (proportional > .1)
+						ratio = Math.Min(1.0, 1.0 - weight);
+					else if (proportional > .04)
+						ratio = Math.Min(1.0, weight * Math.Exp(2.28));
+					else if (proportional > .03)
+						ratio = Math.Min(1.0, weight * Math.Exp(3.275));
+					else
+					{
+						var beta = (maxbins % 2 == 0) ? -1 : 1;
+						ratio = Math.Min(1.0, proportional + beta * weight * Math.Exp(1.997));
+					}
+				}
+				else if (nMaxColors > 256)
+					ratio = Math.Min(1.0, 1 - 1.0 / proportional);
+				else
+					ratio = Math.Min(1.0, Math.Max(.98, 1 - weight * .7));
+
+				if (!hasSemiTransparency && quan_rt < 0)
+					ratio = Math.Min(1.0, weight * Math.Exp(1.997));
             }
-            else if (nMaxColors > 256)
-                ratio = Math.Min(1.0, 1 - 1.0 / proportional);
-            else
-                ratio = Math.Min(1.0, Math.Max(.98, 1 - weight * .7));
 
-            if (!hasSemiTransparency && quan_rt < 0)
-                ratio = Math.Min(1.0, weight * Math.Exp(1.997));
-
+            int h, l, l2;
             /* Initialize nearest neighbors and build heap of them */
             var heap = new int[bins.Length + 1];
             for (int i = 0; i < maxbins; ++i)
@@ -256,7 +261,7 @@ namespace PnnQuant
                 heap[l] = i;
             }
 
-            if (quan_rt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05) && proportional < .1)
+            if (!isGA && quan_rt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05) && proportional < .1)
                 ratio = Math.Min(1.0, proportional - weight * Math.Exp(2.347));
 
             /* Merge bins which increase error the least */
@@ -319,7 +324,7 @@ namespace PnnQuant
             {
                 var lab1 = new CIELABConvertor.Lab
                 {
-                    alpha = (hasSemiTransparency || m_transparentPixelIndex >= 0) ? Math.Round(bins[i].ac) : Byte.MaxValue,
+                    alpha = (hasSemiTransparency || HasAlpha) ? Math.Round(bins[i].ac) : Byte.MaxValue,
                     L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
                 };
                 palettes[k] = CIELABConvertor.LAB2RGB(lab1);
@@ -335,7 +340,7 @@ namespace PnnQuant
             }
         }
 
-        protected override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
+        internal override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
         {
             if (nearestMap.TryGetValue(pixel, out var k))
                 return k;
@@ -343,7 +348,7 @@ namespace PnnQuant
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
                 c = m_transparentColor;
-            if (palette.Length > 2 && m_transparentPixelIndex > -1 && c.A > alphaThreshold)
+            if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
                 k = 1;
 
             double mindist = int.MaxValue;
@@ -493,7 +498,7 @@ namespace PnnQuant
             if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
                 idx = 0;
 
-            if (closest[idx + 2] >= MAX_ERR || (m_transparentPixelIndex > -1 && closest[idx] == 0))
+            if (closest[idx + 2] >= MAX_ERR || (HasAlpha && closest[idx] == 0))
                 return NearestColorIndex(palette, pixel, pos);
             return closest[idx];
         }
@@ -501,6 +506,12 @@ namespace PnnQuant
         public override ushort DitherColorIndex(Color[] palette, int pixel, int pos)
         {
             return ClosestColorIndex(palette, pixel, pos);
+        }
+
+        private void Clear()
+        {
+			closestMap.Clear();
+			nearestMap.Clear();
         }
 
         protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, bool dither)
@@ -520,6 +531,80 @@ namespace PnnQuant
             pixelMap.Clear();
             return qPixels;
         }
+
+        internal Bitmap QuantizeImage(int[] pixels, int bitmapWidth, int nMaxColors, bool dither)
+        {
+            if (nMaxColors <= 32)
+                PR = PG = PB = PA = 1;
+            else
+            {
+                PR = coeffs[0, 0]; PG = coeffs[0, 1]; PB = coeffs[0, 2];
+            }
+
+            PixelFormat pixelFormat;
+            if (nMaxColors > 256)
+                pixelFormat = HasAlpha ? PixelFormat.Format16bppArgb1555 : PixelFormat.Format16bppRgb565;
+            else
+                pixelFormat = (nMaxColors > 16) ? PixelFormat.Format8bppIndexed : (nMaxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
+
+            var bitmapHeight = pixels.Length / bitmapWidth;
+
+            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
+            var palettes = dest.Palette.Entries;
+                if (palettes.Length != nMaxColors)
+                    palettes = new Color[nMaxColors];
+
+                if (nMaxColors > 2)
+                    Pnnquan(pixels, ref palettes, ref nMaxColors);
+                else
+                {
+                    if (HasAlpha)
+                    {
+                        palettes[0] = m_transparentColor;
+                        palettes[1] = Color.Black;
+                    }
+                    else
+                    {
+                        palettes[0] = Color.Black;
+                        palettes[1] = Color.White;
+                    }
+                }
+                m_palette = palettes;
+
+            var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
+
+            if (HasAlpha && nMaxColors <= 256)
+            {
+                var k = qPixels[m_transparentPixelIndex];
+                if (nMaxColors > 2)
+                    m_palette[k] = m_transparentColor;
+                else if (m_palette[k] != m_transparentColor)
+                    BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
+            }
+            Clear();
+
+            if (nMaxColors > 256)
+                return BitmapUtilities.ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
+
+            return BitmapUtilities.ProcessImagePixels(dest, m_palette, qPixels, HasAlpha);
+        }
+
+
+        internal double Ratio {
+			set {
+                isGA = true;
+                ratio = Math.Min(1.0, value);
+				Clear();
+			}
+		}
+		
+		internal Color[] Palette {
+			set => m_palette = value;
+		}
+		
+		internal Color TransparentColor {
+			get => m_transparentColor;
+		}
 
     }
 }

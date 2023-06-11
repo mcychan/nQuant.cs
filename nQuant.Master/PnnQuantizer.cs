@@ -17,6 +17,7 @@ namespace PnnQuant
         protected bool dither = true, hasSemiTransparency = false;
         protected int m_transparentPixelIndex = -1;
         protected Color m_transparentColor = Color.Transparent;
+        protected Color[] m_palette;
         protected readonly Random rand = new();
         protected readonly Dictionary<int, ushort[]> closestMap = new();
         protected readonly Dictionary<int, ushort> nearestMap = new();
@@ -24,7 +25,7 @@ namespace PnnQuant
         protected double PR = 0.299, PG = 0.587, PB = 0.114, PA = .3333;
         protected double ratio = .5, weight = 1;
 
-        private static readonly float[,] coeffs = new float[,] {
+        protected static readonly float[,] coeffs = new float[,] {
             {0.299f, 0.587f, 0.114f},
             {-0.14713f, -0.28886f, 0.436f},
             {0.615f, -0.51499f, -0.10001f}
@@ -35,11 +36,16 @@ namespace PnnQuant
             internal float cnt;
             internal int nn, fw, bk, tm, mtm;
             internal float err;
-        }        
+        }
+
+        internal bool HasAlpha
+        {
+            get => m_transparentPixelIndex >= 0;
+        }
 
         public int GetColorIndex(int argb)
         {
-            return BitmapUtilities.GetARGBIndex(argb, hasSemiTransparency, m_transparentPixelIndex > -1);
+            return BitmapUtilities.GetARGBIndex(argb, hasSemiTransparency, HasAlpha);
         }
 
         private void Find_nn(Pnnbin[] bins, int idx)
@@ -120,7 +126,7 @@ namespace PnnQuant
                 return cnt => (int) Math.Cbrt(cnt);
             return cnt => cnt;
         }
-        protected virtual void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
+        internal virtual void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
         {
             short quan_rt = 1;
             var bins = new Pnnbin[ushort.MaxValue + 1];
@@ -132,7 +138,7 @@ namespace PnnQuant
                 if (c.A <= alphaThreshold)
                     c = m_transparentColor;
 
-                int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, nMaxColors < 64 || m_transparentPixelIndex > -1);
+                int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, nMaxColors < 64 || HasAlpha);
                 if (bins[index] == null)
                     bins[index] = new Pnnbin();
                 bins[index].ac += c.A;
@@ -256,7 +262,7 @@ namespace PnnQuant
             int k = 0;
             for (int i = 0; ; ++k)
             {
-                var alpha = (hasSemiTransparency || m_transparentPixelIndex >= 0) ? Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue) : Byte.MaxValue;
+                var alpha = (hasSemiTransparency || HasAlpha) ? Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue) : Byte.MaxValue;
                 palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
 
                 if ((i = bins[i].fw) == 0)
@@ -269,7 +275,7 @@ namespace PnnQuant
                 Console.WriteLine("Maximum number of colors: " + palettes.Length);
             }
         }
-        protected virtual ushort NearestColorIndex(Color[] palette, int pixel, int pos)
+        internal virtual ushort NearestColorIndex(Color[] palette, int pixel, int pos)
         {
             if (nearestMap.TryGetValue(pixel, out var k))
                 return k;
@@ -277,7 +283,7 @@ namespace PnnQuant
             var c = Color.FromArgb(pixel);
             if (c.A <= alphaThreshold)
                 c = m_transparentColor;
-            if (palette.Length > 2 && m_transparentPixelIndex > -1 && c.A > alphaThreshold)
+            if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
                 k = 1;
 
             double pr = PR, pg = PG, pb = PB, pa = PA;
@@ -374,7 +380,7 @@ namespace PnnQuant
             else if (closest[0] > closest[1])
                 idx = pos % 2;
 
-            if (closest[idx + 2] >= MAX_ERR || (m_transparentPixelIndex > -1 && closest[idx] == 0))
+            if (closest[idx + 2] >= MAX_ERR || (HasAlpha && closest[idx] == 0))
                 return NearestColorIndex(palette, pixel, pos);
             return closest[idx];
         }
@@ -407,61 +413,71 @@ namespace PnnQuant
             return qPixels;
         }
 
+        internal int[] GrabPixels(Bitmap source, int nMaxColors, ref bool hasSemiTransparency)
+		{
+			var bitmapWidth = source.Width;
+			var bitmapHeight = source.Height;
+			var pixels = new int[bitmapWidth * bitmapHeight];
+			int semiTransCount = 0;
+			if (!BitmapUtilities.GrabPixels(source, pixels, ref semiTransCount, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold, nMaxColors))
+				return null;
+            this.hasSemiTransparency = hasSemiTransparency = semiTransCount > 0;
+			return pixels;
+		}
+
         public Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
         {
-            var bitmapWidth = source.Width;
-            var bitmapHeight = source.Height;
-
-            if (!IsValidFormat(pixelFormat, nMaxColors))
-            {
-                if (nMaxColors > 256)
-                    pixelFormat = m_transparentPixelIndex > -1 ? PixelFormat.Format16bppArgb1555 : PixelFormat.Format16bppRgb565;
-                else
-                    pixelFormat = (nMaxColors > 16) ? PixelFormat.Format8bppIndexed : (nMaxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
-            }
-
-            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
-            var pixels = new int[bitmapWidth * bitmapHeight];
-            int semiTransCount = 0;
-            if (!BitmapUtilities.GrabPixels(source, pixels, ref semiTransCount, ref m_transparentColor, ref m_transparentPixelIndex, alphaThreshold, nMaxColors))
-                return dest;
-            hasSemiTransparency = semiTransCount > 0;
-
-            var palettes = dest.Palette.Entries;
-            if (palettes.Length != nMaxColors)
-                palettes = new Color[nMaxColors];
-
             if (nMaxColors <= 32)
                 PR = PG = PB = PA = 1;
             else {
                 PR = coeffs[0, 0]; PG = coeffs[0, 1]; PB = coeffs[0, 2];
             }
 
-            if (nMaxColors > 2)
-                Pnnquan(pixels, ref palettes, ref nMaxColors);
-            else
-            {
-                if (m_transparentPixelIndex >= 0)
-                {
-                    palettes[0] = m_transparentColor;
-                    palettes[1] = Color.Black;
-                }
-                else
-                {
-                    palettes[0] = Color.Black;
-                    palettes[1] = Color.White;
-                }
-            }
+			if (!IsValidFormat(pixelFormat, nMaxColors))
+			{
+				if (nMaxColors > 256)
+					pixelFormat = HasAlpha ? PixelFormat.Format16bppArgb1555 : PixelFormat.Format16bppRgb565;
+				else
+					pixelFormat = (nMaxColors > 16) ? PixelFormat.Format8bppIndexed : (nMaxColors > 2) ? PixelFormat.Format4bppIndexed : PixelFormat.Format1bppIndexed;
+			}
 
-            var qPixels = Dither(pixels, palettes, bitmapWidth, bitmapHeight, dither);
+            var bitmapWidth = source.Width;
+            var bitmapHeight = source.Height;
 
-            if (m_transparentPixelIndex >= 0 && nMaxColors <= 256)
+            var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
+            var pixels = GrabPixels(source, nMaxColors, ref hasSemiTransparency);
+            if (pixels == null)
+                return dest;
+
+            var palettes = dest.Palette.Entries;
+			if (palettes.Length != nMaxColors)
+				palettes = new Color[nMaxColors];
+
+			if (nMaxColors > 2)
+				Pnnquan(pixels, ref palettes, ref nMaxColors);
+			else {
+				if (HasAlpha)
+				{
+					palettes[0] = m_transparentColor;
+					palettes[1] = Color.Black;
+				}
+				else
+				{
+					palettes[0] = Color.Black;
+					palettes[1] = Color.White;
+				}
+			}
+			m_palette = palettes;
+
+            var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
+
+            if (HasAlpha && nMaxColors <= 256)
             {
                 var k = qPixels[m_transparentPixelIndex];
                 if (nMaxColors > 2)
-                    palettes[k] = m_transparentColor;
-                else if (palettes[k] != m_transparentColor)
-                    BitmapUtilities.Swap(ref palettes[0], ref palettes[1]);
+                    m_palette[k] = m_transparentColor;
+                else if (m_palette[k] != m_transparentColor)
+                    BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
             }
             closestMap.Clear();
             nearestMap.Clear();
@@ -469,7 +485,7 @@ namespace PnnQuant
             if (nMaxColors > 256)
                 return BitmapUtilities.ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
             
-            return BitmapUtilities.ProcessImagePixels(dest, palettes, qPixels, m_transparentPixelIndex >= 0);
+            return BitmapUtilities.ProcessImagePixels(dest, m_palette, qPixels, HasAlpha);
         }
     }
 
