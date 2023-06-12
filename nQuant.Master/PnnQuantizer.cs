@@ -30,12 +30,24 @@ namespace PnnQuant
             {-0.14713f, -0.28886f, 0.436f},
             {0.615f, -0.51499f, -0.10001f}
         };
+		
         private sealed class Pnnbin
         {
             internal float ac, rc, gc, bc;
             internal float cnt;
             internal int nn, fw, bk, tm, mtm;
             internal float err;
+        }
+		
+		protected PnnQuantizer(PnnQuantizer quantizer) {
+			alphaThreshold = quantizer.alphaThreshold;
+			hasSemiTransparency = quantizer.hasSemiTransparency;
+			m_transparentPixelIndex = quantizer.m_transparentPixelIndex;
+			m_transparentColor = quantizer.m_transparentColor;
+		}
+
+        public PnnQuantizer()
+        {
         }
 
         internal bool HasAlpha

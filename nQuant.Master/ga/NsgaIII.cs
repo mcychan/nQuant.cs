@@ -510,11 +510,15 @@ namespace nQuant.Master.Ga
 			return offspring;
 		}
 		
-		protected virtual void Initialize(List<T> population)
+		protected virtual List<T> Initialize()
 		{
-			// initialize new population with chromosomes randomly built using prototype
-			for (int i = 0; i < _populationSize; ++i)
-				population.Add(_prototype.MakeNewFromPrototype());
+			T first = _prototype.MakeNewFromPrototype();
+            // initialize new population with chromosomes randomly built using prototype
+            var result = Enumerable.Range(1, _populationSize).AsParallel()
+				.Select(_ => _prototype.MakeNewFromPrototype()).AsSequential().ToList();
+			
+			result.Add(first);
+			return result;
 		}
 
 		protected void Reform()
@@ -540,8 +544,7 @@ namespace nQuant.Master.Ga
 				return;
 
 			var pop = new List<T>[2];
-			pop[0] = new List<T>();
-			Initialize(pop[0]);
+			pop[0] = Initialize();
 
 			// Current generation
 			int currentGeneration = 0;
@@ -579,8 +582,7 @@ namespace nQuant.Master.Ga
 				var offspring = Crossing(pop[cur]);
 
 				/******************* mutation *****************/
-				foreach (var child in offspring)
-					child.Mutation(_mutationSize, _mutationProbability);
+				offspring.AsParallel().ForAll(child => child.Mutation(_mutationSize, _mutationProbability));
 
 				pop[cur].AddRange(offspring);
 

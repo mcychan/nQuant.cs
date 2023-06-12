@@ -99,8 +99,7 @@ namespace nQuant.Master.Ga
 				return;
 
 			var pop = new List<T>[2];
-			pop[0] = new List<T>();
-			Initialize(pop[0]);
+			pop[0] = Initialize();
 			var nMax = (int) (1.5 * _populationSize);
 
 			// Current generation

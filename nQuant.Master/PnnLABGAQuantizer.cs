@@ -1,7 +1,7 @@
 using nQuant.Master;
 using nQuant.Master.Ga;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.Linq;
 
@@ -20,6 +20,7 @@ namespace PnnQuant
         private float _fitness = float.NegativeInfinity;
 		public double ratio = 0;
 		private double[] _objectives;
+		private PnnLABQuantizer m_pq;
         public double[] ConvertedObjectives { get; private set; }
 		public double[] Objectives { get => _objectives; }
 
@@ -29,10 +30,9 @@ namespace PnnQuant
 		private static double minRatio = 0, maxRatio = 1.0;
 		private static int[] m_pixels;
 		private static int _bitmapWidth;
-        private static PnnLABQuantizer m_pq;
 
-		private static readonly Dictionary<short, double[]> fitnessMap = new();
-		private static readonly Dictionary<short, Color[]> paletteMap = new();
+		private static readonly ConcurrentDictionary<short, double[]> fitnessMap = new();
+		private static readonly ConcurrentDictionary<short, Color[]> paletteMap = new();
 
 		public PnnLABGAQuantizer(PnnLABQuantizer pq, Bitmap source, int nMaxColors) {
 			// increment value when criteria violation occurs
@@ -40,7 +40,10 @@ namespace PnnQuant
             _bitmapWidth = source.Width;
             _random = new Random(_bitmapWidth * source.Height);
             
-            m_pq = pq;
+            m_pq = new PnnLABQuantizer(pq);
+			if(pq.IsGA)
+				return;
+
 			_nMaxColors = nMaxColors;
 
 			var hasSemiTransparency = false;

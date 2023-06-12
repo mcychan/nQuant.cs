@@ -13,9 +13,9 @@ namespace PnnQuant
     public class PnnLABQuantizer : PnnQuantizer
     {
         protected float[] saliencies;
-        private readonly Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
+        private Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
-        private bool isGA;
+        private readonly bool isGA;
         private double proportional;
 
         private sealed class Pnnbin
@@ -25,6 +25,18 @@ namespace PnnQuant
             internal int nn, fw, bk, tm, mtm;
             internal float err;
         }
+		
+		internal PnnLABQuantizer(PnnLABQuantizer quantizer) : base(quantizer) {
+			saliencies = quantizer.saliencies;
+			pixelMap = new(quantizer.pixelMap);
+			isGA = true;
+			proportional = quantizer.proportional;
+		}
+
+        public PnnLABQuantizer()
+        {
+        }
+
         internal void GetLab(int argb, out CIELABConvertor.Lab lab1)
         {
             if (!pixelMap.TryGetValue(argb, out lab1))
@@ -589,10 +601,12 @@ namespace PnnQuant
             return BitmapUtilities.ProcessImagePixels(dest, m_palette, qPixels, HasAlpha);
         }
 
+		internal bool IsGA {
+			get => isGA;
+		}
 
         internal double Ratio {
 			set {
-                isGA = true;
                 ratio = Math.Min(1.0, value);
 				Clear();
 			}
