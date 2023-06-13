@@ -11,17 +11,17 @@ Copyright (c) 2023 Miller Cy Chan
 
 namespace PnnQuant
 {
-    public class PnnLABGAQuantizer : Chromosome<PnnLABGAQuantizer>, IDisposable
-	{
-        // boolean variable to ensure dispose
-        // method executes only once
-        private bool disposedValue;
+        public class PnnLABGAQuantizer : Chromosome<PnnLABGAQuantizer>, IDisposable
+        {
+		// boolean variable to ensure dispose
+		// method executes only once
+		private bool disposedValue;
 
-        private float _fitness = float.NegativeInfinity;
+		private float _fitness = float.NegativeInfinity;
 		public double ratio = 0;
 		private double[] _objectives;
 		private PnnLABQuantizer m_pq;
-        public double[] ConvertedObjectives { get; private set; }
+		public double[] ConvertedObjectives { get; private set; }
 		public double[] Objectives { get => _objectives; }
 
 		private readonly Random _random;
@@ -37,10 +37,10 @@ namespace PnnQuant
 		public PnnLABGAQuantizer(PnnLABQuantizer pq, Bitmap source, int nMaxColors) {
 			// increment value when criteria violation occurs
 			_objectives = new double[4];
-            _bitmapWidth = source.Width;
-            _random = new Random(_bitmapWidth * source.Height);
+			_bitmapWidth = source.Width;
+			_random = new Random(_bitmapWidth * source.Height);
             
-            m_pq = new PnnLABQuantizer(pq);
+			m_pq = new PnnLABQuantizer(pq);
 			if(pq.IsGA)
 				return;
 
@@ -50,38 +50,40 @@ namespace PnnQuant
 			m_pixels = m_pq.GrabPixels(source, _nMaxColors, ref hasSemiTransparency);
 			minRatio = (hasSemiTransparency || nMaxColors < 64) ? 0 : .9;
 			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 500.0 : 50.0));
-            _dp = maxRatio < .1 ? 1000 : 10;
-        }
+			_dp = maxRatio < .1 ? 1000 : 10;
+			if(hasSemiTransparency)
+				_dp = 5;
+		}
 
 		private PnnLABGAQuantizer(PnnLABQuantizer pq, int[] pixels, int bitmapWidth, int nMaxColors)
 		{
-            m_pq = pq;
+			m_pq = pq;
 			m_pixels = pixels;
-            _bitmapWidth = bitmapWidth;
-            _random = new Random(pixels.Length);
-            _nMaxColors = nMaxColors;
-        }
+			_bitmapWidth = bitmapWidth;
+			_random = new Random(pixels.Length);
+			_nMaxColors = nMaxColors;
+		}
 
-        private short RatioKey
+		private short RatioKey
 		{
 			get
 			{
-                return (short)(ratio * _dp);
-            }
+				return (short)(ratio * _dp);
+			}
 		}
 
-        private void CalculateFitness() {
-            var ratioKey = RatioKey;
-            if (fitnessMap.TryGetValue(ratioKey, out _objectives)) {
+		private void CalculateFitness() {
+			var ratioKey = RatioKey;
+			if (fitnessMap.TryGetValue(ratioKey, out _objectives)) {
 				_fitness = -1f * (float) _objectives.Sum();
 				m_pq.Palette = paletteMap[ratioKey];
 				return;
 			}
 
-            _objectives = new double[4];
-            m_pq.Ratio = Ratio;
-            var palette = new Color[_nMaxColors];
-            m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
+			_objectives = new double[4];
+			m_pq.Ratio = Ratio;
+			var palette = new Color[_nMaxColors];
+			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
 
 			var errors = new double[_objectives.Length];
@@ -89,11 +91,11 @@ namespace PnnQuant
 				if(BlueNoise.RAW_BLUE_NOISE[i & 4095] > -112)
 					continue;
 
-                m_pq.GetLab(m_pixels[i], out CIELABConvertor.Lab lab1);
-                var qPixelIndex = m_pq.NearestColorIndex(palette, m_pixels[i], i);
-                m_pq.GetLab(palette[qPixelIndex].ToArgb(), out CIELABConvertor.Lab lab2);
+				m_pq.GetLab(m_pixels[i], out CIELABConvertor.Lab lab1);
+				var qPixelIndex = m_pq.NearestColorIndex(palette, m_pixels[i], i);
+				m_pq.GetLab(palette[qPixelIndex].ToArgb(), out CIELABConvertor.Lab lab2);
 
-                if (m_pq.HasAlpha) {
+				if (m_pq.HasAlpha) {
 					errors[0] += BitmapUtilities.Sqr(lab2.L - lab1.L);
 					errors[1] += BitmapUtilities.Sqr(lab2.A - lab1.A);
 					errors[2] += BitmapUtilities.Sqr(lab2.B - lab1.B);
@@ -111,45 +113,45 @@ namespace PnnQuant
 		}
 		
 		public Bitmap QuantizeImage(bool dither) {
-            var ratioKey = RatioKey;
-            m_pq.Ratio = ratio;
-            if (!paletteMap.TryGetValue(ratioKey, out Color[] palette))
-                m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
-            m_pq.Palette = palette;
+			var ratioKey = RatioKey;
+			m_pq.Ratio = ratio;
+			if (!paletteMap.TryGetValue(ratioKey, out Color[] palette))
+				m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
+			m_pq.Palette = palette;
 			return m_pq.QuantizeImage(m_pixels, _bitmapWidth, _nMaxColors, dither);
 		}
 
 		protected virtual void Dispose(bool disposing) {
-            // check if already disposed
-            if (!disposedValue) {
-                if (disposing) {
-                    // free managed objects here
-                    m_pixels = null;
-                    fitnessMap.Clear();
-                    paletteMap.Clear();
-                }
+			// check if already disposed
+			if (!disposedValue) {
+				if (disposing) {
+					// free managed objects here
+					m_pixels = null;
+					fitnessMap.Clear();
+					paletteMap.Clear();
+				}
 
-                // free unmanaged objects here
+				// free unmanaged objects here
 
-                // set the bool value to true
-                disposedValue = true;
-            }            
+				// set the bool value to true
+				disposedValue = true;
+			}            
 		}
 
-        // The consumer object can call
-        // the below dispose method
-        public void Dispose()
-        {
-            // Invoke the above virtual
-            // dispose(bool disposing) method
-            Dispose(disposing: true);
+		// The consumer object can call
+		// the below dispose method
+		public void Dispose()
+		{
+			// Invoke the above virtual
+			// dispose(bool disposing) method
+			Dispose(disposing: true);
 
-            // Notify the garbage collector
-            // about the cleaning event
-            GC.SuppressFinalize(this);
-        }
+			// Notify the garbage collector
+			// about the cleaning event
+			GC.SuppressFinalize(this);
+		}
 
-        private double Randrange(double min, double max)
+		private double Randrange(double min, double max)
 		{
 			return min + _random.NextDouble() * (max - min);
 		}
