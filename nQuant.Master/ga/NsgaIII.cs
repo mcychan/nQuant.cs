@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -513,12 +514,15 @@ namespace nQuant.Master.Ga
 		protected virtual List<T> Initialize()
 		{
 			T first = _prototype.MakeNewFromPrototype();
-            // initialize new population with chromosomes randomly built using prototype
-            var result = Enumerable.Range(1, _populationSize).AsParallel()
-				.Select(_ => _prototype.MakeNewFromPrototype()).AsSequential().ToList();
-			
-			result.Add(first);
-			return result;
+			// initialize new population with chromosomes randomly built using prototype
+			var result = Enumerable.Range(1, _populationSize).AsParallel()
+				.Select(_ => _prototype.MakeNewFromPrototype()).AsEnumerable();
+
+            var bag = new ConcurrentBag<T>(result)
+            {
+                first
+            };
+            return bag.ToList();
 		}
 
 		protected void Reform()

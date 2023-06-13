@@ -48,11 +48,9 @@ namespace PnnQuant
 
 			var hasSemiTransparency = false;
 			m_pixels = m_pq.GrabPixels(source, _nMaxColors, ref hasSemiTransparency);
-			minRatio = (hasSemiTransparency || nMaxColors < 64) ? 0 : .9;
+			minRatio = (hasSemiTransparency || nMaxColors < 64) ? 0 : .85;
 			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 500.0 : 50.0));
-			_dp = maxRatio < .1 ? 1000 : 10;
-			if(hasSemiTransparency)
-				maxRatio = .1;
+			_dp = maxRatio < .1 ? 100 : 10;
 		}
 
 		private PnnLABGAQuantizer(PnnLABQuantizer pq, int[] pixels, int bitmapWidth, int nMaxColors)
