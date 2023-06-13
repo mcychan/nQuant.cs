@@ -52,7 +52,7 @@ namespace PnnQuant
 			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 500.0 : 50.0));
 			_dp = maxRatio < .1 ? 1000 : 10;
 			if(hasSemiTransparency)
-				_dp = 1;
+				maxRatio = .1;
 		}
 
 		private PnnLABGAQuantizer(PnnLABQuantizer pq, int[] pixels, int bitmapWidth, int nMaxColors)
