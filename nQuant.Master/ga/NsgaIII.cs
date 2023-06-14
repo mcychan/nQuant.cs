@@ -521,7 +521,7 @@ namespace nQuant.Master.Ga
 
 			// initialize new population with chromosomes randomly built using prototype
 			Enumerable.Range(1, _populationSize).AsParallel().ForAll(_ =>
-				queue.Append(_prototype.MakeNewFromPrototype());
+				queue.Append(_prototype.MakeNewFromPrototype()));
 
 			return queue.ToList();
 		}
