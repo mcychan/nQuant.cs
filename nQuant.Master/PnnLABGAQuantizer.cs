@@ -169,7 +169,7 @@ namespace PnnQuant
 			if (_random.Next(100) <= crossoverProbability)
 				return child;
 			
-			double ratio = Math.Sqrt(Ratio + mother.Ratio);
+			var ratio = Math.Sqrt(Ratio * mother.Ratio);
 			child.Ratio = ratio;
 			child.CalculateFitness();
 			return child;
@@ -180,7 +180,7 @@ namespace PnnQuant
 			if (_random.Next(100) > mutationProbability)
 				return;
 			
-			ratio = Math.Sqrt(this.ratio * Randrange(minRatio, maxRatio));
+			Ratio = Math.Sqrt(Ratio * Randrange(minRatio, maxRatio));
 			CalculateFitness();
 		}
 
