@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 /*
  * Deb K , Jain H . An Evolutionary Many-Objective Optimization Algorithm Using Reference Point-Based Nondominated Sorting Approach,
@@ -513,15 +514,18 @@ namespace nQuant.Master.Ga
 		
 		protected virtual List<T> Initialize()
 		{
-			T first = _prototype.MakeNewFromPrototype();		
+			T first = _prototype.MakeNewFromPrototype();
+            var bag = new ConcurrentBag<T>
+            {
+                first
+            };
 
-			// initialize new population with chromosomes randomly built using prototype
-			var result = Enumerable.Range(1, _populationSize).Select(_ =>
-				_prototype.MakeNewFromPrototype());
+            // initialize new population with chromosomes randomly built using prototype
+            Parallel.ForEach(Enumerable.Range(1, _populationSize), new ParallelOptions { MaxDegreeOfParallelism = 4 }, _ =>
+                bag.Add(_prototype.MakeNewFromPrototype())
+			);
 
-            var queue = new ConcurrentQueue<T>(result);
-            queue.Append(first);
-            return queue.ToList();
+            return bag.ToList();
 		}
 
 		protected void Reform()
