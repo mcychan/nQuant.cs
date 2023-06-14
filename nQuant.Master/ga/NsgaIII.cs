@@ -500,14 +500,14 @@ namespace nQuant.Master.Ga
 
 		protected virtual List<T> Crossing(List<T> population)
 		{
-			var offspring = new ConcurrentBag<T>();
+			var offspring = new ConcurrentQueue<T>();
 			Enumerable.Range(1, _populationSize).AsParallel().ForAll(i => {
 				if(i % 2 == 0) {
 					int father = Rand(_populationSize), mother = Rand(_populationSize);
 					var child0 = population[father].Crossover(population[mother], _numberOfCrossoverPoints, _crossoverProbability);
 					var child1 = population[mother].Crossover(population[father], _numberOfCrossoverPoints, _crossoverProbability);
-					offspring.Add(child0);
-					offspring.Add(child1);
+					offspring.Append(child0);
+					offspring.Append(child1);
 				}
 			});
 			return offspring.ToList();
@@ -516,15 +516,14 @@ namespace nQuant.Master.Ga
 		protected virtual List<T> Initialize()
 		{
 			T first = _prototype.MakeNewFromPrototype();
-			// initialize new population with chromosomes randomly built using prototype
-			var result = Enumerable.Range(1, _populationSize).AsParallel()
-				.Select(_ => _prototype.MakeNewFromPrototype()).AsEnumerable();
+			var queue = new ConcurrentQueue<T>();
+			queue.Append(first);
 
-			var bag = new ConcurrentBag<T>(result)
-			{
-				first
-			};
-			return bag.ToList();
+			// initialize new population with chromosomes randomly built using prototype
+			Enumerable.Range(1, _populationSize).AsParallel().ForAll(_ =>
+				queue.Append(_prototype.MakeNewFromPrototype());
+
+			return queue.ToList();
 		}
 
 		protected void Reform()
