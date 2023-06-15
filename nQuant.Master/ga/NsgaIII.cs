@@ -37,11 +37,11 @@ namespace nQuant.Master.Ga
 		protected float _mutationProbability;
 
 		protected float _repeatRatio;
-		
+
 		private List<int> _objDivision;
-		
+
 		private int _criteriaLength;
-		
+
 		// Generate a random number  
 		private static Random _random;
 
@@ -64,11 +64,12 @@ namespace nQuant.Master.Ga
 			_numberOfCrossoverPoints = numberOfCrossoverPoints;
 			_crossoverProbability = crossoverProbability;
 			_mutationProbability = mutationProbability;
-			
+
 			_objDivision = new List<int>();
-			if(_criteriaLength < 8)
+			if (_criteriaLength < 8)
 				_objDivision.Add(6);
-			else {
+			else
+			{
 				_objDivision.Add(3);
 				_objDivision.Add(2);
 			}
@@ -76,24 +77,26 @@ namespace nQuant.Master.Ga
 
 		// Returns pointer to best chromosomes in population
 		public T Result => _best;
-		
+
 		private static int Rand(int size)
 		{
 			return _random.Next(size);
 		}
 
-		protected sealed class ReferencePoint {
+		protected sealed class ReferencePoint
+		{
 			public int MemberSize { get; private set; }
 			public double[] Position { get; private set; }
 
 			private readonly Dictionary<int, double> potentialMembers;
-			
-			ReferencePoint(int M) {
+
+			ReferencePoint(int M)
+			{
 				MemberSize = 0;
 				Position = new double[M];
 				potentialMembers = new Dictionary<int, double>();
 			}
-			
+
 			public void AddMember()
 			{
 				++MemberSize;
@@ -101,19 +104,19 @@ namespace nQuant.Master.Ga
 
 			public void AddPotentialMember(int memberInd, double distance)
 			{
-				if(potentialMembers.TryGetValue(memberInd, out var currDistance))
+				if (potentialMembers.TryGetValue(memberInd, out var currDistance))
 				{
 					if (distance >= currDistance)
 						return;
 				}
 				potentialMembers[memberInd] = distance;
 			}
-			
+
 			public int FindClosestMember()
 			{
 				return potentialMembers.Where(e => e.Value == potentialMembers.Min(e2 => e2.Value)).First().Key;
 			}
-			
+
 			public bool HasPotentialMember()
 			{
 				return potentialMembers.Any();
@@ -127,36 +130,43 @@ namespace nQuant.Master.Ga
 				var members = potentialMembers.Keys.ToArray();
 				return members[Rand(potentialMembers.Count)];
 			}
-			
+
 			public void RemovePotentialMember(int memberInd)
 			{
 				potentialMembers.Remove(memberInd);
 			}
 
-			public static void GenerateReferencePoints(List<ReferencePoint> rps, int M, List<int> p) {
-				static void GenerateRecursive(List<ReferencePoint> rps, ReferencePoint pt, int numObjs, int left, int total, int element) {
-					if (element == numObjs - 1) {
+			public static void GenerateReferencePoints(List<ReferencePoint> rps, int M, List<int> p)
+			{
+				static void GenerateRecursive(List<ReferencePoint> rps, ReferencePoint pt, int numObjs, int left, int total, int element)
+				{
+					if (element == numObjs - 1)
+					{
 						pt.Position[element] = left * 1.0 / total;
 						rps.Add(pt);
 					}
-					else {
-						for (int i = 0; i <= left; ++i) {
+					else
+					{
+						for (int i = 0; i <= left; ++i)
+						{
 							pt.Position[element] = i * 1.0 / total;
 							GenerateRecursive(rps, pt, numObjs, left - i, total, element + 1);
 						}
 					}
 				}
-				
+
 				var pt = new ReferencePoint(M);
 				GenerateRecursive(rps, pt, M, p[0], p[0], 0);
 
-				if (p.Count > 1) { // two layers of reference points (Check Fig. 4 in NSGA-III paper)
+				if (p.Count > 1)
+				{ // two layers of reference points (Check Fig. 4 in NSGA-III paper)
 					var insideRps = new List<ReferencePoint>();
 					GenerateRecursive(insideRps, pt, M, p[1], p[1], 0);
 
 					var center = 1.0 / M;
 
-					foreach (var insideRp in insideRps) {
+					foreach (var insideRp in insideRps)
+					{
 						for (int j = 0; j < insideRp.Position.Length; ++j)
 							insideRp.Position[j] = center + insideRp.Position[j] / 2; // (k=num_divisions/M, k, k, ..., k) is the center point
 
@@ -164,20 +174,21 @@ namespace nQuant.Master.Ga
 					}
 				}
 			}
-			
+
 		}
 
 		private static double PerpendicularDistance(double[] direction, double[] point)
 		{
 			double numerator = 0, denominator = 0;
-			for (int i = 0; i < direction.Length; ++i) {
+			for (int i = 0; i < direction.Length; ++i)
+			{
 				numerator += direction[i] * point[i];
 				denominator += Math.Pow(direction[i], 2);
 			}
-			
-			if(denominator <= 0)
+
+			if (denominator <= 0)
 				return Double.MaxValue;
-			
+
 			var k = numerator / denominator;
 			var d = 0.0;
 			for (int i = 0; i < direction.Length; ++i)
@@ -185,15 +196,20 @@ namespace nQuant.Master.Ga
 
 			return Math.Sqrt(d);
 		}
-	
-		private static void Associate(List<ReferencePoint> rps, List<T> pop, List<List<int> > fronts) {
-			for (int t = 0; t < fronts.Count; ++t) {
-				foreach (var memberInd in fronts[t]) {
+
+		private static void Associate(List<ReferencePoint> rps, List<T> pop, List<List<int>> fronts)
+		{
+			for (int t = 0; t < fronts.Count; ++t)
+			{
+				foreach (var memberInd in fronts[t])
+				{
 					var minRp = rps.Count - 1;
 					var minDist = Double.MaxValue;
-					for (int r = 0; r < rps.Count; ++r) {
+					for (int r = 0; r < rps.Count; ++r)
+					{
 						var d = PerpendicularDistance(rps[r].Position, pop[memberInd].ConvertedObjectives);
-						if (d < minDist) {
+						if (d < minDist)
+						{
 							minDist = d;
 							minRp = r;
 						}
@@ -207,7 +223,7 @@ namespace nQuant.Master.Ga
 				}// for - members in front
 			}// for - fronts
 		}
-	
+
 
 		private static double[] GuassianElimination(List<double>[] A, double[] b)
 		{
@@ -215,8 +231,10 @@ namespace nQuant.Master.Ga
 			for (int i = 0; i < N; ++i)
 				A[i].Add(b[i]);
 
-			for (int base_ = 0; base_ < N - 1; ++base_) {
-				for (int target = base_ + 1; target < N; ++target) {
+			for (int base_ = 0; base_ < N - 1; ++base_)
+			{
+				for (int target = base_ + 1; target < N; ++target)
+				{
 					var ratio = A[target][base_] / A[base_][base_];
 					for (int term = 0; term < A[base_].Count; ++term)
 						A[target][term] -= A[base_][term] * ratio;
@@ -224,7 +242,8 @@ namespace nQuant.Master.Ga
 			}
 
 			var x = new double[N];
-			for (int i = N - 1; i >= 0; --i) {
+			for (int i = N - 1; i >= 0; --i)
+			{
 				for (int known = i + 1; known < N; ++known)
 					A[i][N] -= A[i][known] * x[known];
 
@@ -232,36 +251,41 @@ namespace nQuant.Master.Ga
 			}
 			return x;
 		}
-	
+
 		// ----------------------------------------------------------------------
 		// ASF: Achivement Scalarization Function
 		// ----------------------------------------------------------------------
 		private static double ASF(double[] objs, double[] weight)
 		{
 			var maxRatio = -Double.MaxValue;
-			for (int f = 0; f < objs.Length; ++f) {
+			for (int f = 0; f < objs.Length; ++f)
+			{
 				var w = Math.Max(weight[f], 1e-6);
 				maxRatio = Math.Max(maxRatio, objs[f] / w);
 			}
 			return maxRatio;
 		}
-	
 
-		private static List<int> FindExtremePoints(List<T> pop, List<List<int> > fronts) {
+
+		private static List<int> FindExtremePoints(List<T> pop, List<List<int>> fronts)
+		{
 			int numObj = pop[0].Objectives.Length;
-			
+
 			var exp = new List<int>();
-			for (int f = 0; f < numObj; ++f) {
+			for (int f = 0; f < numObj; ++f)
+			{
 				var w = Enumerable.Repeat(1e-6, numObj).ToArray();
 				w[f] = 1.0;
 
 				var minASF = Double.MaxValue;
 				int minIndv = fronts[0].Count;
 
-				foreach (var frontIndv in fronts[0]) { // only consider the individuals in the first front
+				foreach (var frontIndv in fronts[0])
+				{ // only consider the individuals in the first front
 					var asf = ASF(pop[frontIndv].ConvertedObjectives, w);
 
-					if (asf < minASF) {
+					if (asf < minASF)
+					{
 						minASF = asf;
 						minIndv = frontIndv;
 					}
@@ -272,20 +296,21 @@ namespace nQuant.Master.Ga
 
 			return exp;
 		}
-	
+
 
 		private static double[] FindMaxObjectives(List<T> pop)
 		{
 			int numObj = pop[0].Objectives.Length;
 			var maxPoint = Enumerable.Repeat(-Double.MaxValue, numObj).ToArray();
-			for (int i = 0; i < pop.Count; ++i) {
+			for (int i = 0; i < pop.Count; ++i)
+			{
 				for (int f = 0; f < maxPoint.Length; ++f)
 					maxPoint[f] = Math.Max(maxPoint[f], pop[i].Objectives[f]);
 			}
 
 			return maxPoint;
 		}
-	
+
 
 		private static int FindNicheReferencePoint(List<ReferencePoint> rps)
 		{
@@ -296,7 +321,8 @@ namespace nQuant.Master.Ga
 
 			// find the reference points with the minimal cluster size Jmin
 			var minRps = new List<int>();
-			for (int r = 0; r < rps.Count; ++r) {
+			for (int r = 0; r < rps.Count; ++r)
+			{
 				if (rps[r].MemberSize == minSize)
 					minRps.Add(r);
 			}
@@ -304,7 +330,7 @@ namespace nQuant.Master.Ga
 			// return a random reference point (j-bar)
 			return minRps[Rand(minRps.Count)];
 		}
-	
+
 
 		private List<double> ConstructHyperplane(List<T> pop, List<int> extremePoints)
 		{
@@ -312,7 +338,8 @@ namespace nQuant.Master.Ga
 			// Check whether there are duplicate extreme points.
 			// This might happen but the original paper does not mention how to deal with it.
 			var duplicate = false;
-			for (int i = 0; !duplicate && i < extremePoints.Count; ++i) {
+			for (int i = 0; !duplicate && i < extremePoints.Count; ++i)
+			{
 				for (int j = i + 1; !duplicate && j < extremePoints.Count; ++j)
 					duplicate = (extremePoints[i] == extremePoints[j]);
 			}
@@ -320,19 +347,22 @@ namespace nQuant.Master.Ga
 			var intercepts = new List<double>();
 
 			var negativeIntercept = false;
-			if (!duplicate) {
+			if (!duplicate)
+			{
 				// Find the equation of the hyperplane
 				var b = Enumerable.Repeat(1.0, numObj).ToArray();
 				var A = new List<double>[extremePoints.Count];
 				for (int p = 0; p < extremePoints.Count; ++p)
-					A[p] = pop[ extremePoints[p] ].ConvertedObjectives.ToList();
-				
+					A[p] = pop[extremePoints[p]].ConvertedObjectives.ToList();
+
 				var x = GuassianElimination(A, b);
 				// Find intercepts
-				for (int f = 0; f < numObj; ++f) {
+				for (int f = 0; f < numObj; ++f)
+				{
 					intercepts.Add(1.0 / x[f]);
 
-					if(x[f] < 0) {
+					if (x[f] < 0)
+					{
 						negativeIntercept = true;
 						break;
 					}
@@ -341,17 +371,20 @@ namespace nQuant.Master.Ga
 
 			if (duplicate || negativeIntercept) // follow the method in Yuan et al. (GECCO 2015)
 				intercepts = FindMaxObjectives(pop).ToList();
-			
+
 			return intercepts;
 		}
-	
 
-		private static void NormalizeObjectives(List<T> pop, List<List<int> > fronts, List<double> intercepts, List<double> idealPoint)
-		{		
-			foreach (var front in fronts) {
-				foreach (int ind in front) {
+
+		private static void NormalizeObjectives(List<T> pop, List<List<int>> fronts, List<double> intercepts, List<double> idealPoint)
+		{
+			foreach (var front in fronts)
+			{
+				foreach (int ind in front)
+				{
 					var convObjs = pop[ind].ConvertedObjectives;
-					for (int f = 0; f < convObjs.Length; ++f) {
+					for (int f = 0; f < convObjs.Length; ++f)
+					{
 						if (Math.Abs(intercepts[f] - idealPoint[f]) > 10e-10) // avoid the divide-by-zero error
 							convObjs[f] /= intercepts[f] - idealPoint[f];
 						else
@@ -360,42 +393,49 @@ namespace nQuant.Master.Ga
 				}
 			}
 		}
-	
-		protected bool Dominate(T left, T right) {
+
+		protected bool Dominate(T left, T right)
+		{
 			var better = false;
-			for (int f = 0; f < left.Objectives.Length; ++f) {
+			for (int f = 0; f < left.Objectives.Length; ++f)
+			{
 				if (left.Objectives[f] > right.Objectives[f])
 					return false;
-				
+
 				if (left.Objectives[f] < right.Objectives[f])
 					better = true;
 			}
 			return better;
 		}
-	
-		protected List<List<int> > NondominatedSort(List<T> pop) {
-			var fronts = new List<List<int> >();
+
+		protected List<List<int>> NondominatedSort(List<T> pop)
+		{
+			var fronts = new List<List<int>>();
 			int numAssignedIndividuals = 0;
 			int rank = 1;
 			var indvRanks = new int[pop.Count];
 
-			while (numAssignedIndividuals < pop.Count) {
+			while (numAssignedIndividuals < pop.Count)
+			{
 				var curFront = new List<int>();
 
-				for (int i = 0; i < pop.Count; ++i) {
+				for (int i = 0; i < pop.Count; ++i)
+				{
 					if (indvRanks[i] > 0)
 						continue; // already assigned a rank
 
 					var beDominated = false;
-					for (int j = 0; j < curFront.Count; ++j) {
-						if (Dominate(pop[ curFront[j] ], pop[i]) ) { // i is dominated
+					for (int j = 0; j < curFront.Count; ++j)
+					{
+						if (Dominate(pop[curFront[j]], pop[i]))
+						{ // i is dominated
 							beDominated = true;
 							break;
 						}
-						else if ( Dominate(pop[i], pop[ curFront[j] ]) ) // i dominates a member in the current front
+						else if (Dominate(pop[i], pop[curFront[j]])) // i dominates a member in the current front
 							curFront.RemoveAt(j--);
 					}
-					
+
 					if (!beDominated)
 						curFront.Add(i);
 				}
@@ -405,16 +445,18 @@ namespace nQuant.Master.Ga
 
 				fronts.Add(curFront);
 				numAssignedIndividuals += curFront.Count;
-				
+
 				++rank;
 			}
 
 			return fronts;
 		}
-	
 
-		private static int SelectClusterMember(ReferencePoint rp) {
-			if (rp.HasPotentialMember()) {
+
+		private static int SelectClusterMember(ReferencePoint rp)
+		{
+			if (rp.HasPotentialMember())
+			{
 				if (rp.MemberSize == 0) // currently has no member
 					return rp.FindClosestMember();
 
@@ -422,46 +464,52 @@ namespace nQuant.Master.Ga
 			}
 			return -1;
 		}
-	
 
-		private static List<double> TranslateObjectives(List<T> pop, List<List<int> > fronts)
+
+		private static List<double> TranslateObjectives(List<T> pop, List<List<int>> fronts)
 		{
 			var idealPoint = new List<double>();
 			var numObj = pop[0].Objectives.Length;
-			for (int f = 0; f < numObj; ++f) {
+			for (int f = 0; f < numObj; ++f)
+			{
 				var minf = Double.MaxValue;
 				foreach (var frontIndv in fronts[0]) // min values must appear in the first front
 					minf = Math.Min(minf, pop[frontIndv].Objectives[f]);
-					
+
 				idealPoint.Add(minf);
 
-				foreach (var front in fronts) {
-					foreach (var ind in front) {				
+				foreach (var front in fronts)
+				{
+					foreach (var ind in front)
+					{
 						pop[ind].ResizeConvertedObjectives(numObj);
 						var convertedObjectives = pop[ind].ConvertedObjectives;
 						convertedObjectives[f] = pop[ind].Objectives[f] - minf;
 					}
 				}
 			}
-			
+
 			return idealPoint;
 		}
 
-		protected List<T> Selection(List<T> cur, List<ReferencePoint> rps) {
+		protected List<T> Selection(List<T> cur, List<ReferencePoint> rps)
+		{
 			var next = new List<T>();
-			
+
 			// ---------- Step 4 in Algorithm 1: non-dominated sorting ----------
 			var fronts = NondominatedSort(cur);
-			
+
 			// ---------- Steps 5-7 in Algorithm 1 ----------
 			int last = 0, next_size = 0;
-			while (next_size < _populationSize) {
+			while (next_size < _populationSize)
+			{
 				next_size += fronts[last++].Count;
 			}
-			
+
 			fronts = fronts.GetRange(0, last); // remove useless individuals
 
-			for (int t = 0; t < fronts.Count - 1; ++t) {
+			for (int t = 0; t < fronts.Count - 1; ++t)
+			{
 				foreach (var frontIndv in fronts[t])
 					next.Add(cur[frontIndv]);
 			}
@@ -472,7 +520,7 @@ namespace nQuant.Master.Ga
 
 			// ---------- Step 14 / Algorithm 2 ----------
 			var idealPoint = TranslateObjectives(cur, fronts);
-			
+
 			var extremePoints = FindExtremePoints(cur, fronts);
 
 			var intercepts = ConstructHyperplane(cur, extremePoints);
@@ -483,13 +531,15 @@ namespace nQuant.Master.Ga
 			Associate(rps, cur, fronts);
 
 			// ---------- Step 17 / Algorithm 4 ----------
-			while (next.Count < _populationSize) {
+			while (next.Count < _populationSize)
+			{
 				var minRp = FindNicheReferencePoint(rps);
 
 				var chosen = SelectClusterMember(rps[minRp]);
 				if (chosen < 0) // no potential member in Fl, disregard this reference point
 					rps.RemoveAt(minRp);
-				else {
+				else
+				{
 					rps[minRp].AddMember();
 					rps[minRp].RemovePotentialMember(chosen);
 					next.Add(cur[chosen]);
@@ -502,7 +552,8 @@ namespace nQuant.Master.Ga
 		protected virtual List<T> Crossing(List<T> population)
 		{
 			var offspring = new List<T>();
-			for(int i = 0; i < _populationSize; i += 2) {
+			for (int i = 0; i < _populationSize; i += 2)
+			{
 				int father = Rand(_populationSize), mother = Rand(_populationSize);
 				var child0 = population[father].Crossover(population[mother], _numberOfCrossoverPoints, _crossoverProbability);
 				var child1 = population[mother].Crossover(population[father], _numberOfCrossoverPoints, _crossoverProbability);
@@ -511,36 +562,37 @@ namespace nQuant.Master.Ga
 			}
 			return offspring;
 		}
-		
+
 		protected virtual List<T> Initialize()
 		{
 			T first = _prototype.MakeNewFromPrototype();
-            var bag = new ConcurrentBag<T>
-            {
-                first
-            };
+			var bag = new ConcurrentBag<T>
+			{
+				first
+			};
 
-            // initialize new population with chromosomes randomly built using prototype
-            Parallel.ForEach(Enumerable.Range(1, _populationSize), new ParallelOptions { MaxDegreeOfParallelism = 4 }, _ =>
-                bag.Add(_prototype.MakeNewFromPrototype())
+			int maxDegreeOfParallelism = Environment.ProcessorCount - 1;
+			// initialize new population with chromosomes randomly built using prototype
+			Parallel.ForEach(Enumerable.Range(1, _populationSize), new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, _ =>
+				bag.Add(_prototype.MakeNewFromPrototype())
 			);
 
-            return bag.ToList();
+			return bag.ToList();
 		}
 
 		protected void Reform()
 		{
 			_random = new Random(DateTime.Now.Millisecond);
 			if (_crossoverProbability < 95)
-			_crossoverProbability += 1.0f;
+				_crossoverProbability += 1.0f;
 			else if (_mutationProbability < 30)
-			_mutationProbability += 1.0f;
+				_mutationProbability += 1.0f;
 		}
-		
+
 		protected virtual List<T> Replacement(List<T> population)
 		{
 			var rps = new List<ReferencePoint>();
-			ReferencePoint.GenerateReferencePoints(rps, _criteriaLength, _objDivision);				
+			ReferencePoint.GenerateReferencePoints(rps, _criteriaLength, _objDivision);
 			return Selection(population, rps);
 		}
 
@@ -574,7 +626,8 @@ namespace nQuant.Master.Ga
 					var difference = Math.Abs(best.Fitness - lastBestFit);
 					if (difference <= 1e-6)
 						++bestNotEnhance;
-					else {
+					else
+					{
 						lastBestFit = best.Fitness;
 						bestNotEnhance = 0;
 					}
@@ -593,11 +646,11 @@ namespace nQuant.Master.Ga
 
 				pop[cur].AddRange(offspring);
 
-				/******************* replacement *****************/				
+				/******************* replacement *****************/
 				pop[next] = Replacement(pop[cur]);
 				_best = Dominate(pop[next][0], pop[cur][0]) ? pop[next][0] : pop[cur][0];
 
-				
+
 				(cur, next) = (next, cur);
 				++currentGeneration;
 			}
