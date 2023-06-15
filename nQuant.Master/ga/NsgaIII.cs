@@ -549,35 +549,40 @@ namespace nQuant.Master.Ga
 			return next;
 		}
 
-		protected virtual List<T> Crossing(List<T> population)
+        protected virtual List<T> Crossing(List<T> population)
+        {
+            var offspring = new List<T>();
+            for (int i = 0; i < _populationSize; i += 2)
+            {
+                int father = Rand(_populationSize), mother = Rand(_populationSize);
+                var child0 = population[father].Crossover(population[mother], _numberOfCrossoverPoints, _crossoverProbability);
+                var child1 = population[mother].Crossover(population[father], _numberOfCrossoverPoints, _crossoverProbability);
+                offspring.Append(child0);
+                offspring.Append(child1);
+            }
+            return offspring;
+        }
+
+        protected virtual List<T> Initialize()
 		{
-			var offspring = new List<T>();
-			for (int i = 0; i < _populationSize; i += 2)
+			try
 			{
-				int father = Rand(_populationSize), mother = Rand(_populationSize);
-				var child0 = population[father].Crossover(population[mother], _numberOfCrossoverPoints, _crossoverProbability);
-				var child1 = population[mother].Crossover(population[father], _numberOfCrossoverPoints, _crossoverProbability);
-				offspring.Append(child0);
-				offspring.Append(child1);
+				var queue = new ConcurrentQueue<T>();
+				queue.Enqueue(_prototype.MakeNewFromPrototype());
+
+				// initialize new population with chromosomes randomly built using prototype
+				Parallel.ForEach(Enumerable.Range(1, _populationSize), _ => {
+					var chromosome = _prototype.MakeNewFromPrototype();
+					queue.Enqueue(chromosome);
+				});
+
+				return queue.ToList();
 			}
-			return offspring;
-		}
-
-		protected virtual List<T> Initialize()
-		{
-			T first = _prototype.MakeNewFromPrototype();
-			var bag = new ConcurrentBag<T>
-			{
-				first
-			};
-
-			int maxDegreeOfParallelism = Environment.ProcessorCount - 1;
-			// initialize new population with chromosomes randomly built using prototype
-			Parallel.ForEach(Enumerable.Range(1, _populationSize), new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, _ =>
-				bag.Add(_prototype.MakeNewFromPrototype())
-			);
-
-			return bag.ToList();
+            catch (Exception ex)
+            {
+                // Console.WriteLine(ex.StackTrace);
+                return Initialize();
+            }
 		}
 
 		protected void Reform()
