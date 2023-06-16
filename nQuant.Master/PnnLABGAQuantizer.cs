@@ -55,8 +55,8 @@ namespace PnnQuant
 
 		private PnnLABGAQuantizer(PnnLABQuantizer pq, int[] pixels, int bitmapWidth, int nMaxColors)
 		{
-			m_pq = pq;
-			m_pixels = pixels;
+			m_pq = new PnnLABQuantizer(pq);
+            m_pixels = pixels;
 			_bitmapWidth = bitmapWidth;
 			_random = new Random(pixels.Length);
 			_nMaxColors = nMaxColors;

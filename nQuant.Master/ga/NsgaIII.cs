@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -551,38 +552,30 @@ namespace nQuant.Master.Ga
 
         protected virtual List<T> Crossing(List<T> population)
         {
-            var offspring = new List<T>();
-            for (int i = 0; i < _populationSize; i += 2)
-            {
-                int father = Rand(_populationSize), mother = Rand(_populationSize);
-                var child0 = population[father].Crossover(population[mother], _numberOfCrossoverPoints, _crossoverProbability);
-                var child1 = population[mother].Crossover(population[father], _numberOfCrossoverPoints, _crossoverProbability);
-                offspring.Append(child0);
-                offspring.Append(child1);
-            }
-            return offspring;
+            var offspring = new ConcurrentQueue<T>();
+            Parallel.ForEach(Enumerable.Range(0, _populationSize), i => {
+				if (i % 2 == 0) {
+                    int father = Rand(_populationSize), mother = Rand(_populationSize);
+                    var child0 = population[father].Crossover(population[mother], _numberOfCrossoverPoints, _crossoverProbability);
+                    var child1 = population[mother].Crossover(population[father], _numberOfCrossoverPoints, _crossoverProbability);
+                    offspring.Append(child0);
+                    offspring.Append(child1);
+                }
+			});
+            return offspring.ToList();
         }
 
         protected virtual List<T> Initialize()
 		{
-			try
-			{
-				var queue = new ConcurrentQueue<T>();
-				queue.Enqueue(_prototype.MakeNewFromPrototype());
+			var queue = new ConcurrentQueue<T>();
+			queue.Enqueue(_prototype.MakeNewFromPrototype());
 
-				// initialize new population with chromosomes randomly built using prototype
-				Parallel.ForEach(Enumerable.Range(1, _populationSize), _ => {
-					var chromosome = _prototype.MakeNewFromPrototype();
-					queue.Enqueue(chromosome);
-				});
+			// initialize new population with chromosomes randomly built using prototype
+			Parallel.ForEach(Enumerable.Range(1, _populationSize), _ =>
+				queue.Enqueue(_prototype.MakeNewFromPrototype())
+			);
 
-				return queue.ToList();
-			}
-            catch (Exception ex)
-            {
-                // Console.WriteLine(ex.StackTrace);
-                return Initialize();
-            }
+			return queue.ToList();			
 		}
 
 		protected void Reform()
