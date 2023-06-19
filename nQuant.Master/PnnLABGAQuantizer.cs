@@ -84,9 +84,10 @@ namespace PnnQuant
 			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
 
-			var errors = new double[_objectives.Length];
+            int threshold = maxRatio < .1 ? -64 : -112;
+            var errors = new double[_objectives.Length];
 			for (int i = 0; i < m_pixels.Length; ++i) {
-				if(BlueNoise.RAW_BLUE_NOISE[i & 4095] > -112)
+				if(BlueNoise.RAW_BLUE_NOISE[i & 4095] > threshold)
 					continue;
 
 				m_pq.GetLab(m_pixels[i], out CIELABConvertor.Lab lab1);
