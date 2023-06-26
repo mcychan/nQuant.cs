@@ -18,7 +18,7 @@ namespace PnnQuant
 		private bool disposedValue;
 
 		private float _fitness = float.NegativeInfinity;
-		public double ratio = 0;
+		public double ratioX = 0, ratioY = 0;
 		private double[] _objectives;
 		private PnnLABQuantizer m_pq;
 		public double[] ConvertedObjectives { get; private set; }
@@ -31,7 +31,7 @@ namespace PnnQuant
 		private static int[] m_pixels;
 		private static int _bitmapWidth;
 
-		private static readonly ConcurrentDictionary<short, double[]> fitnessMap = new();
+		private static readonly ConcurrentDictionary<short, ConcurrentDictionary<short, double[]> > _fitnessMap = new();
 
 		public PnnLABGAQuantizer(PnnLABQuantizer pq, Bitmap source, int nMaxColors) {
 			// increment value when criteria violation occurs
@@ -61,23 +61,25 @@ namespace PnnQuant
 			_nMaxColors = nMaxColors;
 		}
 
-		private short RatioKey
+		private short[] RatioKeys
 		{
 			get
 			{
-				return (short)(ratio * _dp);
+				return new short[] {(short) (ratioX * _dp), (short) (ratioY * _dp)};
 			}
 		}
 
 		private void CalculateFitness() {
-			var ratioKey = RatioKey;
-			if (fitnessMap.TryGetValue(ratioKey, out _objectives)) {
-				_fitness = -1f * (float) _objectives.Sum();
-				return;
+			var ratioKeys = RatioKeys;
+			if (_fitnessMap.TryGetValue(ratioKeys[0], out var fitnessMap)) {
+				if (fitnessMap.TryGetValue(ratioKeys[1], out _objectives)) {
+					_fitness = -1f * (float) _objectives.Sum();
+					return;
+				}
 			}
 
 			_objectives = new double[4];
-			m_pq.Ratio = Ratio;
+			m_pq.SetRatio(ratioX, ratioY);
 			var palette = new Color[_nMaxColors];
 			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
@@ -105,13 +107,14 @@ namespace PnnQuant
 			}
 			_objectives = errors;
 			_fitness = -1f * (float) _objectives.Sum();
-			fitnessMap[ratioKey] = _objectives;
+            fitnessMap = new();
+            fitnessMap[ratioKeys[1]] = _objectives;
+			_fitnessMap[ratioKeys[0]] = fitnessMap;
 		}
 		
 		public Bitmap QuantizeImage(bool dither) {
-			var ratioKey = RatioKey;
-			m_pq.Ratio = ratio;
-			var palette = new Color[_nMaxColors];
+			m_pq.SetRatio(ratioX, ratioY);
+            var palette = new Color[_nMaxColors];
 			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
 			return m_pq.QuantizeImage(m_pixels, _bitmapWidth, _nMaxColors, dither);
@@ -123,14 +126,14 @@ namespace PnnQuant
 				if (disposing) {
 					// free managed objects here
 					m_pixels = null;
-					fitnessMap.Clear();
+					_fitnessMap.Clear();
 				}
 
 				// free unmanaged objects here
 
 				// set the bool value to true
 				disposedValue = true;
-			}            
+			}
 		}
 
 		// The consumer object can call
@@ -151,10 +154,14 @@ namespace PnnQuant
 			return min + _random.NextDouble() * (max - min);
 		}
 
-		public double Ratio
+		public double[] Ratios
 		{
-			get => ratio;
-			set => ratio = Math.Min(Math.Max(value, minRatio), maxRatio);
+			get => new double[] {ratioX, ratioY};
+		}
+
+		public void SetRatio(double ratioX, double ratioY) {
+			this.ratioX = Math.Min(Math.Max(ratioX, minRatio), maxRatio);
+			this.ratioY = Math.Min(Math.Max(ratioY, minRatio), maxRatio);
 		}
 
 		public float Fitness {
@@ -166,8 +173,9 @@ namespace PnnQuant
 			if (_random.Next(100) <= crossoverProbability)
 				return child;
 			
-			var ratio = Math.Sqrt(Ratio * mother.Ratio);
-			child.Ratio = ratio;
+			var ratioX = Math.Sqrt(this.ratioX * mother.Ratios[1]);
+			var ratioY = Math.Sqrt(this.ratioY * mother.Ratios[0]);
+			child.SetRatio(ratioX, ratioY);
 			child.CalculateFitness();
 			return child;
 		}
@@ -176,8 +184,15 @@ namespace PnnQuant
 			// check probability of mutation operation
 			if (_random.Next(100) > mutationProbability)
 				return;
+
+			var ratioX = this.ratioX;
+			var ratioY = this.ratioY;
+			if(_random.NextDouble() > .5)
+				ratioX = .5 * (ratioX + Randrange(minRatio, maxRatio));
+			else
+				ratioY = .5 * (ratioY + Randrange(minRatio, maxRatio));
 			
-			Ratio = .5 * (Ratio + Randrange(minRatio, maxRatio));
+			SetRatio(ratioX, ratioY);
 			CalculateFitness();
 		}
 
@@ -187,13 +202,26 @@ namespace PnnQuant
 
 		public PnnLABGAQuantizer MakeNewFromPrototype() {
 			var child = new PnnLABGAQuantizer(m_pq, m_pixels, _bitmapWidth, _nMaxColors);
-			child.Ratio = Randrange(minRatio, maxRatio);
+			var ratioX = Randrange(minRatio, maxRatio);
+			var ratioY = ratioX < .02 ? Randrange(minRatio, maxRatio) : ratioX;
+			if(ratioY < .01)
+				ratioY = ratioX;
+			child.SetRatio(ratioX, ratioY);
 			child.CalculateFitness();
 			return child;
 		}
 
 		public Random Random {
 			get => _random;
+		}
+
+		public String Result {
+			get {
+				var difference = Math.Abs(ratioX - ratioY);
+				if (difference <= 0.0000001)
+					return ratioX.ToString("0.######");
+				return ratioX.ToString("0.######") + ", " + ratioY.ToString("0.######");
+			}
 		}
 
 		public static int MaxColors {
