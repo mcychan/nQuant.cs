@@ -11,8 +11,8 @@ Copyright (c) 2023 Miller Cy Chan
 
 namespace PnnQuant
 {
-        public class PnnLABGAQuantizer : Chromosome<PnnLABGAQuantizer>, IDisposable
-        {
+		public class PnnLABGAQuantizer : Chromosome<PnnLABGAQuantizer>, IDisposable
+		{
 		// boolean variable to ensure dispose
 		// method executes only once
 		private bool disposedValue;
@@ -32,14 +32,13 @@ namespace PnnQuant
 		private static int _bitmapWidth;
 
 		private static readonly ConcurrentDictionary<short, double[]> fitnessMap = new();
-		private static readonly ConcurrentDictionary<short, Color[]> paletteMap = new();
 
 		public PnnLABGAQuantizer(PnnLABQuantizer pq, Bitmap source, int nMaxColors) {
 			// increment value when criteria violation occurs
 			_objectives = new double[4];
 			_bitmapWidth = source.Width;
 			_random = new Random(_bitmapWidth * source.Height);
-            
+			
 			m_pq = new PnnLABQuantizer(pq);
 			if(pq.IsGA)
 				return;
@@ -56,7 +55,7 @@ namespace PnnQuant
 		private PnnLABGAQuantizer(PnnLABQuantizer pq, int[] pixels, int bitmapWidth, int nMaxColors)
 		{
 			m_pq = new PnnLABQuantizer(pq);
-            m_pixels = pixels;
+			m_pixels = pixels;
 			_bitmapWidth = bitmapWidth;
 			_random = new Random(pixels.Length);
 			_nMaxColors = nMaxColors;
@@ -74,7 +73,6 @@ namespace PnnQuant
 			var ratioKey = RatioKey;
 			if (fitnessMap.TryGetValue(ratioKey, out _objectives)) {
 				_fitness = -1f * (float) _objectives.Sum();
-				m_pq.Palette = paletteMap[ratioKey];
 				return;
 			}
 
@@ -84,8 +82,8 @@ namespace PnnQuant
 			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
 
-            int threshold = maxRatio < .1 ? -64 : -112;
-            var errors = new double[_objectives.Length];
+			int threshold = maxRatio < .1 ? -64 : -112;
+			var errors = new double[_objectives.Length];
 			for (int i = 0; i < m_pixels.Length; ++i) {
 				if(BlueNoise.RAW_BLUE_NOISE[i & 4095] > threshold)
 					continue;
@@ -108,14 +106,12 @@ namespace PnnQuant
 			_objectives = errors;
 			_fitness = -1f * (float) _objectives.Sum();
 			fitnessMap[ratioKey] = _objectives;
-			paletteMap[ratioKey] = palette;
 		}
 		
 		public Bitmap QuantizeImage(bool dither) {
 			var ratioKey = RatioKey;
 			m_pq.Ratio = ratio;
-			if (!paletteMap.TryGetValue(ratioKey, out Color[] palette))
-				m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
+			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
 			return m_pq.QuantizeImage(m_pixels, _bitmapWidth, _nMaxColors, dither);
 		}
@@ -127,7 +123,6 @@ namespace PnnQuant
 					// free managed objects here
 					m_pixels = null;
 					fitnessMap.Clear();
-					paletteMap.Clear();
 				}
 
 				// free unmanaged objects here
@@ -181,7 +176,7 @@ namespace PnnQuant
 			if (_random.Next(100) > mutationProbability)
 				return;
 			
-			Ratio = Math.Sqrt(Ratio * Randrange(minRatio, maxRatio));
+			Ratio = .5 * (Ratio + Randrange(minRatio, maxRatio));
 			CalculateFitness();
 		}
 
