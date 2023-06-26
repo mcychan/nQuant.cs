@@ -111,6 +111,7 @@ namespace PnnQuant
 		public Bitmap QuantizeImage(bool dither) {
 			var ratioKey = RatioKey;
 			m_pq.Ratio = ratio;
+			var palette = new Color[_nMaxColors];
 			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
 			return m_pq.QuantizeImage(m_pixels, _bitmapWidth, _nMaxColors, dither);
