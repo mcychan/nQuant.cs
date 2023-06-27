@@ -147,7 +147,7 @@ namespace PnnQuant
 			{
 				var pixel = pixels[i];
 				var c = Color.FromArgb(pixel);
-				if (c.A <= alphaThreshold)
+				if (c.A < alphaThreshold)
 					c = m_transparentColor;
 
 				int index = BitmapUtilities.GetARGBIndex(c.ToArgb(), hasSemiTransparency, HasAlpha);
