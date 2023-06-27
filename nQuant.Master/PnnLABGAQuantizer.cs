@@ -47,7 +47,7 @@ namespace PnnQuant
 
 			var hasSemiTransparency = false;
 			m_pixels = m_pq.GrabPixels(source, _nMaxColors, ref hasSemiTransparency);
-			minRatio = (hasSemiTransparency || nMaxColors < 64) ? 0 : .85;
+			minRatio = (hasSemiTransparency || nMaxColors < 64) ? .01 : .85;
 			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 500.0 : 50.0));
 			_dp = maxRatio < .1 ? 1000 : 10;
 		}
@@ -107,14 +107,14 @@ namespace PnnQuant
 			}
 			_objectives = errors;
 			_fitness = -1f * (float) _objectives.Sum();
-            fitnessMap = new();
-            fitnessMap[ratioKeys[1]] = _objectives;
+			fitnessMap = new();
+			fitnessMap[ratioKeys[1]] = _objectives;
 			_fitnessMap[ratioKeys[0]] = fitnessMap;
 		}
 		
 		public Bitmap QuantizeImage(bool dither) {
 			m_pq.SetRatio(ratioX, ratioY);
-            var palette = new Color[_nMaxColors];
+			var palette = new Color[_nMaxColors];
 			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
 			m_pq.Palette = palette;
 			return m_pq.QuantizeImage(m_pixels, _bitmapWidth, _nMaxColors, dither);
@@ -203,8 +203,8 @@ namespace PnnQuant
 		public PnnLABGAQuantizer MakeNewFromPrototype() {
 			var child = new PnnLABGAQuantizer(m_pq, m_pixels, _bitmapWidth, _nMaxColors);
 			var ratioX = Randrange(minRatio, maxRatio);
-			var ratioY = ratioX < .02 ? Randrange(minRatio, maxRatio) : ratioX;
-			if(ratioY < .01)
+			var ratioY = ratioX < (2 * minRatio) ? Randrange(minRatio, maxRatio) : ratioX;
+			if(ratioY < minRatio)
 				ratioY = ratioX;
 			child.SetRatio(ratioX, ratioY);
 			child.CalculateFitness();
