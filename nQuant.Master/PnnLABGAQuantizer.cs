@@ -204,8 +204,6 @@ namespace PnnQuant
 			var child = new PnnLABGAQuantizer(m_pq, m_pixels, _bitmapWidth, _nMaxColors);
 			var ratioX = Randrange(minRatio, maxRatio);
 			var ratioY = ratioX < (2 * minRatio) ? Randrange(minRatio, maxRatio) : ratioX;
-			if(ratioY < minRatio)
-				ratioY = ratioX;
 			child.SetRatio(ratioX, ratioY);
 			child.CalculateFitness();
 			return child;
