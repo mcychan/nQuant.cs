@@ -11,8 +11,8 @@ Copyright (c) 2023 Miller Cy Chan
 
 namespace PnnQuant
 {
-		public class PnnLABGAQuantizer : Chromosome<PnnLABGAQuantizer>, IDisposable
-		{
+	public class PnnLABGAQuantizer : Chromosome<PnnLABGAQuantizer>, IDisposable
+	{
 		// boolean variable to ensure dispose
 		// method executes only once
 		private bool disposedValue;
@@ -31,7 +31,7 @@ namespace PnnQuant
 		private static int[] m_pixels;
 		private static int _bitmapWidth;
 
-		private static readonly ConcurrentDictionary<short, ConcurrentDictionary<short, double[]> > _fitnessMap = new();
+		private static readonly ConcurrentDictionary<string, double[]> _fitnessMap = new();
 
 		public PnnLABGAQuantizer(PnnLABQuantizer pq, Bitmap source, int nMaxColors) {
 			// increment value when criteria violation occurs
@@ -61,21 +61,22 @@ namespace PnnQuant
 			_nMaxColors = nMaxColors;
 		}
 
-		private short[] RatioKeys
+		private string RatioKey
 		{
 			get
 			{
-				return new short[] {(short) (ratioX * _dp), (short) (ratioY * _dp)};
+				var sb = new StringBuffer();
+				sb.Append(ratioX * _dp).Append(";");
+				sb.Append(ratioY * _dp);
+				return sb.ToString();
 			}
 		}
 
 		private void CalculateFitness() {
-			var ratioKeys = RatioKeys;
-			if (_fitnessMap.TryGetValue(ratioKeys[0], out var fitnessMap)) {
-				if (fitnessMap.TryGetValue(ratioKeys[1], out _objectives)) {
-					_fitness = -1f * (float) _objectives.Sum();
-					return;
-				}
+			var ratioKey = RatioKey;
+			if (_fitnessMap.TryGetValue(ratioKey, out _objectives)) {
+				_fitness = -1f * (float) _objectives.Sum();
+				return;
 			}
 
 			_objectives = new double[4];
@@ -107,9 +108,7 @@ namespace PnnQuant
 			}
 			_objectives = errors;
 			_fitness = -1f * (float) _objectives.Sum();
-			fitnessMap = new();
-			fitnessMap[ratioKeys[1]] = _objectives;
-			_fitnessMap[ratioKeys[0]] = fitnessMap;
+			_fitnessMap[ratioKey] = _objectives;
 		}
 		
 		public Bitmap QuantizeImage(bool dither) {
