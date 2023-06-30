@@ -69,9 +69,9 @@ namespace PnnQuant
             {
                 var sb = new StringBuilder();
                 sb.Append((int) (ratioX * _dp));
-                var difference = Math.abs(ratioX - ratioY);
+                var difference = Math.Abs(ratioX - ratioY);
                 if (difference <= 0.0000001)
-                    return sb.toString();
+                    return sb.ToString();
 
                 sb.Append(";").Append(ratioY * _dp);
                 return sb.ToString();
