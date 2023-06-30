@@ -68,8 +68,8 @@ namespace PnnQuant
             get
             {
                 var sb = new StringBuilder();
-                sb.Append(ratioX * _dp).Append(";");
-                sb.Append(ratioY * _dp);
+                sb.Append((int) (ratioX * _dp)).Append(";");
+                sb.Append((int) (ratioY * _dp));
                 return sb.ToString();
             }
         }
