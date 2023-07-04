@@ -275,7 +275,7 @@ namespace PnnQuant
 
 			if (!isGA && quan_rt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05) && proportional < .1)
 				ratio = Math.Min(1.0, proportional - weight * Math.Exp(2.347));
-			else
+			else if (isGA)
 				ratio = ratioY;
 
 			/* Merge bins which increase error the least */
