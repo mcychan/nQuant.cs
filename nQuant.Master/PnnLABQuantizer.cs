@@ -608,8 +608,14 @@ namespace PnnQuant
 		}
 
 		internal void SetRatio(double ratioX, double ratioY) {
-			this.ratio = Math.Min(1.0, ratioX);
-			this.ratioY = Math.Min(1.0, ratioY);
+			if(ratioX < ratioY) {
+				this.ratio = Math.Min(1.0, ratioY);
+				this.ratioY = Math.Min(1.0, ratioX);
+			}
+			else {
+				this.ratio = Math.Min(1.0, ratioX);
+				this.ratioY = Math.Min(1.0, ratioY);
+			}
 			Clear();
 		}
 
