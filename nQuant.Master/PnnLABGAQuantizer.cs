@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-/* Fast pairwise nearest neighbor based genetic algorithm with CIELAB color space advanced version
+/* Fast pairwise nearest neighbor based genetic algorithm with CIELAB color space genetic algorithm
 Copyright (c) 2023 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
@@ -91,7 +91,6 @@ namespace PnnQuant
             m_pq.SetRatio(ratioX, ratioY);
             var palette = new Color[_nMaxColors];
             m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
-            m_pq.Palette = palette;
 
             int threshold = maxRatio < .1 ? -64 : -112;
             var errors = new double[_objectives.Length];
@@ -127,7 +126,6 @@ namespace PnnQuant
             m_pq.SetRatio(ratioX, ratioY);
             var palette = new Color[_nMaxColors];
             m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
-            m_pq.Palette = palette;
             return m_pq.QuantizeImage(m_pixels, _bitmapWidth, _nMaxColors, dither);
         }
 

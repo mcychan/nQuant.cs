@@ -612,11 +612,7 @@ namespace PnnQuant
 			this.ratioY = Math.Min(1.0, ratioY);
 			Clear();
 		}
-		
-		internal Color[] Palette {
-			set => m_palette = value;
-		}
-		
+
 		internal Color TransparentColor {
 			get => m_transparentColor;
 		}
