@@ -185,21 +185,21 @@ namespace PnnQuant
             get => _fitness;
         }
 		
-		private double RotateLeft(double u, double v) {
-			var theta = Math.PI * Randrange(minRatio, maxRatio);
-			var result = u * Math.Sin(theta) + v * Math.Cos(theta);
-			if(result <= minRatio || result >= maxRatio)
-				result = RotateRight(u, v);
-			return result;
-		}
+        private double RotateLeft(double u, double v) {
+            var theta = Math.PI * Randrange(minRatio, maxRatio);
+            var result = u * Math.Sin(theta) + v * Math.Cos(theta);
+            if(result <= minRatio || result >= maxRatio)
+                result = RotateRight(u, v);
+            return result;
+        }
 		
-		private double RotateRight(double u, double v) {
-			var theta = Math.PI * Randrange(minRatio, maxRatio);
-			var result = u * Math.Cos(theta) - v * Math.Sin(theta);
-			if(result <= minRatio || result >= maxRatio)
-				result = RotateLeft(u, v);
-			return result;
-		}
+        private double RotateRight(double u, double v) {
+            var theta = Math.PI * Randrange(minRatio, maxRatio);
+            var result = u * Math.Cos(theta) - v * Math.Sin(theta);
+            if(result <= minRatio || result >= maxRatio)
+                result = RotateLeft(u, v);
+            return result;
+        }
 
         public PnnLABGAQuantizer Crossover(PnnLABGAQuantizer mother, int numberOfCrossoverPoints, float crossoverProbability)
         {
@@ -214,11 +214,10 @@ namespace PnnQuant
             return child;
         }
 
-		private double BoxMuller() {
-			var r1 = Randrange(minRatio, maxRatio);
-			var r2 = Randrange(minRatio, maxRatio);
-			return Math.Sqrt(-2 * Math.Log(r1)) * Math.Cos(2 * Math.PI * r2);
-		}
+        private double BoxMuller(double value) {
+            var r1 = Randrange(minRatio, maxRatio);
+            return Math.Sqrt(-2 * Math.Log(value)) * Math.Cos(2 * Math.PI * r1);
+        }
 
         public void Mutation(int mutationSize, float mutationProbability)
         {
@@ -229,9 +228,9 @@ namespace PnnQuant
             var ratioX = this.ratioX;
             var ratioY = this.ratioY;
             if (_random.NextDouble() > .5)
-                ratioX = .5 * (ratioX + BoxMuller());
+                ratioX = BoxMuller(ratioX);
             else
-                ratioY = .5 * (ratioY + BoxMuller());
+                ratioY = BoxMuller(ratioY);
 
             SetRatio(ratioX, ratioY);
             CalculateFitness();
