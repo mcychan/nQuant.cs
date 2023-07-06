@@ -73,7 +73,7 @@ namespace PnnQuant
                 if (difference <= 0.0000001)
                     return sb.ToString();
 
-                sb.Append(";").Append((int) (ratioY * (_dp + 2)));
+                sb.Append(";").Append((int) (ratioY * _dp * 100));
                 return sb.ToString();
             }
         }
