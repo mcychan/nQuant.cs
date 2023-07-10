@@ -185,19 +185,19 @@ namespace PnnQuant
             get => _fitness;
         }
 		
-        private double RotateLeft(double u, double v) {
-            var theta = Math.PI * Randrange(minRatio, maxRatio);
+        private double RotateLeft(double u, double v, double delta) {
+            var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
             var result = u * Math.Sin(theta) + v * Math.Cos(theta);
             if(result <= minRatio || result >= maxRatio)
-                result = RotateRight(u, v);
+                result = RotateRight(u, v, delta);
             return result;
         }
 		
-        private double RotateRight(double u, double v) {
-            var theta = Math.PI * Randrange(minRatio, maxRatio);
+        private double RotateRight(double u, double v, double delta) {
+            var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
             var result = u * Math.Cos(theta) - v * Math.Sin(theta);
             if(result <= minRatio || result >= maxRatio)
-                result = RotateLeft(u, v);
+                result = RotateLeft(u, v, delta);
             return result;
         }
 
@@ -207,8 +207,8 @@ namespace PnnQuant
             if (_random.Next(100) <= crossoverProbability)
                 return child;
 
-            var ratioX = RotateRight(this.ratioX, mother.Ratios[1]);
-            var ratioY = RotateLeft(this.ratioY, mother.Ratios[0]);
+            var ratioX = RotateRight(this.ratioX, mother.Ratios[1], 0.0);
+            var ratioY = RotateLeft(this.ratioY, mother.Ratios[0], 0.0);
             child.SetRatio(ratioX, ratioY);
             child.CalculateFitness();
             return child;
