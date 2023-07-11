@@ -18,7 +18,7 @@ namespace PnnQuant
         // method executes only once
         private bool disposedValue;
 
-        private float _fitness = float.NegativeInfinity;
+        private double _fitness = double.NegativeInfinity;
         public double ratioX = 0, ratioY = 0;
         private double[] _objectives;
         private PnnLABQuantizer m_pq;
@@ -83,7 +83,9 @@ namespace PnnQuant
             var ratioKey = RatioKey;
             if (_fitnessMap.TryGetValue(ratioKey, out _objectives))
             {
-                _fitness = -1f * (float)_objectives.Sum();
+                _fitness = -1f * _objectives.Sum();
+                if (_fitness < -m_pixels.Length)
+                    _fitness *= Math.Log(-_fitness);
                 return;
             }
 
@@ -117,7 +119,9 @@ namespace PnnQuant
                 }
             }
             _objectives = errors;
-            _fitness = -1f * (float)_objectives.Sum();
+            _fitness = -1f * _objectives.Sum();
+            if (_fitness < -m_pixels.Length)
+                _fitness *= Math.Log(-_fitness);
             _fitnessMap[ratioKey] = _objectives;
         }
 
@@ -182,7 +186,7 @@ namespace PnnQuant
 
         public float Fitness
         {
-            get => _fitness;
+            get => (float) _fitness;
         }
 		
         private double RotateLeft(double u, double v, double delta) {

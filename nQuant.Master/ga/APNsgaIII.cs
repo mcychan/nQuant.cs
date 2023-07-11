@@ -113,9 +113,9 @@ namespace nQuant.Master.Ga
 				var best = Result;
 				if (currentGeneration > 0)
 				{
-					var status = string.Format("\rFitness: {0:F6}\t Generation: {1}    ", best.Fitness, currentGeneration);
+					var status = string.Format("\rFitness: {0:F6}\t Generation: {1}          ", best.Fitness, currentGeneration);
 					if(bestNotEnhance >= _maxRepeat)
-						status = string.Format("\rFitness: {0:F6}\t Generation: {1} ...", best.Fitness, currentGeneration);
+						status = string.Format("\rFitness: {0:F6}\t Generation: {1} ...      ", best.Fitness, currentGeneration);
 					Console.Write(status);
 
 					// algorithm has reached criteria?
