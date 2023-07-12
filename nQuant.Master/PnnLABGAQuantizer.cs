@@ -78,14 +78,31 @@ namespace PnnQuant
             }
         }
 
+        private void CalculateError(double[] errors)
+        {
+            var maxError = maxRatio < .1 ? 1.0 : .125;
+            double fitness = 0;
+            for (int i = 0; i < errors.Length; ++i)
+            {
+                errors[i] /= m_pixels.Length;
+                if (i == 0 && errors[i] > maxError)
+                    errors[i] *= errors[i];
+                else if (errors[i] > 2 * maxError)
+                    errors[i] *= errors[i];
+                fitness -= errors[i];
+            }
+
+            _objectives = errors;
+            _fitness = fitness;
+        }
+
+
         private void CalculateFitness()
         {
             var ratioKey = RatioKey;
             if (_fitnessMap.TryGetValue(ratioKey, out _objectives))
             {
                 _fitness = -1f * _objectives.Sum();
-                if (_fitness < -m_pixels.Length)
-                    _fitness *= Math.Log(-_fitness);
                 return;
             }
 
@@ -118,10 +135,7 @@ namespace PnnQuant
                     errors[1] += Math.Sqrt(BitmapUtilities.Sqr(lab2.A - lab1.A) + BitmapUtilities.Sqr(lab2.B - lab1.B));
                 }
             }
-            _objectives = errors;
-            _fitness = -1f * _objectives.Sum();
-            if (_fitness < -m_pixels.Length)
-                _fitness *= Math.Log(-_fitness);
+            CalculateError(errors);
             _fitnessMap[ratioKey] = _objectives;
         }
 
@@ -193,7 +207,7 @@ namespace PnnQuant
             var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
             var result = u * Math.Sin(theta) + v * Math.Cos(theta);
             if(result <= minRatio || result >= maxRatio)
-                result = RotateRight(u, v, delta + .5);
+                result = RotateLeft(u, v, delta + .5);
             return result;
         }
 		
@@ -201,7 +215,7 @@ namespace PnnQuant
             var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
             var result = u * Math.Cos(theta) - v * Math.Sin(theta);
             if(result <= minRatio || result >= maxRatio)
-                result = RotateLeft(u, v, delta + .5);
+                result = RotateRight(u, v, delta + .5);
             return result;
         }
 
