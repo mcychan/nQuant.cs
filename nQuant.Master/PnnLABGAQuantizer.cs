@@ -84,7 +84,7 @@ namespace PnnQuant
             double fitness = 0;
             for (int i = 0; i < errors.Length; ++i)
             {
-                errors[i] /= m_pixels.Length;
+                errors[i] /= maxError * m_pixels.Length;
                 if (i == 0 && errors[i] > maxError)
                     errors[i] *= errors[i];
                 else if (errors[i] > 2 * maxError)
