@@ -551,12 +551,13 @@ namespace nQuant.Master.Ga
 
 		protected virtual List<T> Crossing(List<T> population)
 		{
-			var offspring = new List<T>(_populationSize);
-			Parallel.ForEach(Enumerable.Range(0, _populationSize), i => {
+            var populationSize = population.Count;
+            var offspring = new List<T>(populationSize);
+			Parallel.ForEach(Enumerable.Range(0, populationSize), i => {
 				if (i % 2 == 0) {
-					int father = Rand(_populationSize), mother = Rand(_populationSize);
+					int father = Rand(populationSize), mother = Rand(populationSize);
 					offspring.Add(population[father].Crossover(population[mother], _numberOfCrossoverPoints, _crossoverProbability));
-					if((i + 1) < _populationSize)
+					if((i + 1) < populationSize)
 						offspring.Add(population[mother].Crossover(population[father], _numberOfCrossoverPoints, _crossoverProbability));
 				}
 			});

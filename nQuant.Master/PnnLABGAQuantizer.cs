@@ -82,8 +82,8 @@ namespace PnnQuant
 		private AmplifyFn GetAmplifyFn(bool tooSmall)
 		{
 			if (tooSmall)
-				return val => Math.Exp(val);
-			return val => Math.Log(val);
+                return val => Math.PI * val;
+            return val => .5 * Math.PI * val;
 		}
 
 		private void CalculateError(double[] errors)
