@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-/* Fast pairwise nearest neighbor based genetic algorithm with CIELAB color space genetic algorithm
+/* Fast pairwise nearest neighbor based genetic algorithm with CIELAB color space
 Copyright (c) 2023 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
@@ -50,7 +50,7 @@ namespace PnnQuant
 			var hasSemiTransparency = false;
 			m_pixels = m_pq.GrabPixels(source, _nMaxColors, ref hasSemiTransparency);
 			minRatio = (hasSemiTransparency || nMaxColors < 64) ? .0111 : .85;
-			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 500.0 : 50.0));
+			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 400.0 : 50.0));
 			_dp = maxRatio < .1 ? 10000 : 100;
 		}
 
@@ -73,13 +73,13 @@ namespace PnnQuant
 				if (difference <= 0.0000001)
 					return sb.ToString();
 
-				sb.Append(";").Append((int) (ratioY * _dp * 100));
+				sb.Append(';').Append((int) (ratioY * _dp * 100));
 				return sb.ToString();
 			}
 		}
-		
-		protected delegate double AmplifyFn(double val);
-		private AmplifyFn GetAmplifyFn(bool tooSmall)
+
+        protected delegate double AmplifyFn(double val);
+        private static AmplifyFn GetAmplifyFn(bool tooSmall)
 		{
 			if (tooSmall)
                 return val => Math.PI * val;
@@ -101,7 +101,7 @@ namespace PnnQuant
 					tooSmall = true;
 			}
 
-			var amplifyFn = GetAmplifyFn(tooSmall);
+			var amplifyFn = PnnLABGAQuantizer.GetAmplifyFn(tooSmall);
 			for (int i = 0; i < errors.Length; ++i)
 			{
 				if (i == 0 && errors[i] > maxError)
@@ -222,7 +222,7 @@ namespace PnnQuant
 			get => (float) _fitness;
 		}
 		
-		private double RotateLeft(double u, double v, double delta) {
+		private double RotateLeft(double u, double v, double delta = 0.0) {
 			var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
 			var result = u * Math.Sin(theta) + v * Math.Cos(theta);
 			if(result <= minRatio || result >= maxRatio)
@@ -230,7 +230,7 @@ namespace PnnQuant
 			return result;
 		}
 		
-		private double RotateRight(double u, double v, double delta) {
+		private double RotateRight(double u, double v, double delta = 0.0) {
 			var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
 			var result = u * Math.Cos(theta) - v * Math.Sin(theta);
 			if(result <= minRatio || result >= maxRatio)
@@ -244,8 +244,8 @@ namespace PnnQuant
 			if (_random.Next(100) <= crossoverProbability)
 				return child;
 
-			var ratioX = RotateRight(this.ratioX, mother.Ratios[1], 0.0);
-			var ratioY = RotateLeft(this.ratioY, mother.Ratios[0], 0.0);
+			var ratioX = RotateRight(this.ratioX, mother.Ratios[1]);
+			var ratioY = RotateLeft(this.ratioY, mother.Ratios[0]);
 			child.SetRatio(ratioX, ratioY);
 			child.CalculateFitness();
 			return child;

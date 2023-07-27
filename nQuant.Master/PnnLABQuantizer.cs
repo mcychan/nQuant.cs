@@ -524,7 +524,8 @@ namespace PnnQuant
 
 		private void Clear()
 		{
-			closestMap.Clear();
+			saliencies = null;
+            closestMap.Clear();
 			nearestMap.Clear();
 		}
 
@@ -543,7 +544,8 @@ namespace PnnQuant
 			}
 
 			pixelMap.Clear();
-			return qPixels;
+            Clear();
+            return qPixels;
 		}
 
 		internal Bitmap QuantizeImage(int[] pixels, int bitmapWidth, int nMaxColors, bool dither)
@@ -595,7 +597,6 @@ namespace PnnQuant
 				else if (m_palette[k] != m_transparentColor)
 					BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
 			}
-			Clear();
 
 			if (nMaxColors > 256)
 				return BitmapUtilities.ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
