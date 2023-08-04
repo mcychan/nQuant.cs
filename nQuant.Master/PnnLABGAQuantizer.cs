@@ -78,12 +78,12 @@ namespace PnnQuant
 			}
 		}
 
-        protected delegate double AmplifyFn(double val);
-        private static AmplifyFn GetAmplifyFn(bool tooSmall)
+		protected delegate double AmplifyFn(double val);
+		private static AmplifyFn GetAmplifyFn(bool tooSmall)
 		{
 			if (tooSmall)
-                return val => Math.PI * val;
-            return val => .5 * Math.PI * val;
+				return val => Math.PI * val;
+			return val => .5 * Math.PI * val;
 		}
 
 		private void CalculateError(double[] errors)
@@ -310,6 +310,20 @@ namespace PnnQuant
 		public static int MaxColors
 		{
 			get => _nMaxColors;
+		}
+
+		public bool Dominates(PnnLABGAQuantizer other)
+		{
+			var better = false;
+			for (int f = 0; f < Objectives.Length; ++f)
+			{
+				if (Objectives[f] > other.Objectives[f])
+					return false;
+
+				if (Objectives[f] < other.Objectives[f])
+					better = true;
+			}
+			return better;
 		}
 
 	}

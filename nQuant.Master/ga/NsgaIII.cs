@@ -394,48 +394,29 @@ namespace nQuant.Master.Ga
 			}
 		}
 
-		protected bool Dominate(T left, T right)
-		{
-			var better = false;
-			for (int f = 0; f < left.Objectives.Length; ++f)
-			{
-				if (left.Objectives[f] > right.Objectives[f])
-					return false;
-
-				if (left.Objectives[f] < right.Objectives[f])
-					better = true;
-			}
-			return better;
-		}
-
-		protected List<List<int>> NondominatedSort(List<T> pop)
-		{
-			var fronts = new List<List<int>>();
+		protected List<List<int> > NondominatedSort(List<T> pop) {
+			var fronts = new List<List<int> >();
 			int numAssignedIndividuals = 0;
 			int rank = 1;
 			var indvRanks = new int[pop.Count];
 
-			while (numAssignedIndividuals < pop.Count)
-			{
+			while (numAssignedIndividuals < pop.Count) {
 				var curFront = new List<int>();
 
-				for (int i = 0; i < pop.Count; ++i)
-				{
+				for (int i = 0; i < pop.Count; ++i) {
 					if (indvRanks[i] > 0)
 						continue; // already assigned a rank
 
 					var beDominated = false;
-					for (int j = 0; j < curFront.Count; ++j)
-					{
-						if (Dominate(pop[curFront[j]], pop[i]))
-						{ // i is dominated
+					for (int j = 0; j < curFront.Count; ++j) {
+						if (pop[curFront[j]].Dominates( pop[i]) ) { // i is dominated
 							beDominated = true;
 							break;
 						}
-						else if (Dominate(pop[i], pop[curFront[j]])) // i dominates a member in the current front
+						else if (pop[i].Dominates( pop[ curFront[j] ]) ) // i dominates a member in the current front
 							curFront.RemoveAt(j--);
 					}
-
+					
 					if (!beDominated)
 						curFront.Add(i);
 				}
@@ -445,7 +426,7 @@ namespace nQuant.Master.Ga
 
 				fronts.Add(curFront);
 				numAssignedIndividuals += curFront.Count;
-
+				
 				++rank;
 			}
 
@@ -645,7 +626,7 @@ namespace nQuant.Master.Ga
 
 				/******************* replacement *****************/
 				pop[next] = Replacement(pop[cur]);
-				_best = Dominate(pop[next][0], pop[cur][0]) ? pop[next][0] : pop[cur][0];
+				_best = pop[next][0].Dominates(pop[cur][0]) ? pop[next][0] : pop[cur][0];
 
 
 				(cur, next) = (next, cur);

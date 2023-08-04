@@ -24,8 +24,8 @@ namespace nQuant.Master.Ga
 		// Initializes Adaptive Population NSGA-III with Dual Control Strategy
 		public APNsgaIII(T prototype, int numberOfCrossoverPoints = 2, int mutationSize = 2, float crossoverProbability = 80, float mutationProbability = 3) : base(prototype, numberOfCrossoverPoints, mutationSize, crossoverProbability, mutationProbability)
 		{
-            _maxRepeat = Math.Min(15, _max_iterations / 2);
-        }
+			_maxRepeat = Math.Min(15, _max_iterations / 2);
+		}
 
 		private double Ex(T chromosome)
 		{
@@ -147,7 +147,7 @@ namespace nQuant.Master.Ga
 
 				/******************* replacement *****************/
 				pop[next] = Replacement(pop[cur]);
-				_best = Dominate(pop[next][0], pop[cur][0]) ? pop[next][0] : pop[cur][0];
+				_best = pop[next][0].Dominates(pop[cur][0]) ? pop[next][0] : pop[cur][0];
 
 				DualCtrlStrategy(pop[next], bestNotEnhance, nMax);
 				
