@@ -63,19 +63,19 @@ namespace nQuant.Master.Ga
 			int nTmp = N;
 			for(int i = 0; i < nTmp; ++i) {
 				var chromosome = population[i];
-				var tumor = chromosome.MakeNewFromPrototype();
+				var tumor = chromosome.Clone();
 				tumor.Mutation(_mutationSize, _mutationProbability);
 				
 				_worst = population[population.Count - 1];
-				if(Dominate(tumor, chromosome)) {
+				if(tumor.Dominates(chromosome)) {
 					population[i] = tumor;
-					if(Dominate(tumor, _best))
+					if(tumor.Dominates(_best))
 						_best = tumor;
 				}
 				else {
 					if(bestNotEnhance >= _maxRepeat && N < nMax) {
 						++N;
-						if(Dominate(_worst, tumor)) {
+						if(_worst.Dominates(tumor)) {
 							population.Add(tumor);
 							_worst = tumor;
 						}
