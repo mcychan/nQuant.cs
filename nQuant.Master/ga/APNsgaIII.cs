@@ -63,7 +63,7 @@ namespace nQuant.Master.Ga
 			int nTmp = N;
 			for(int i = 0; i < nTmp; ++i) {
 				var chromosome = population[i];
-				var tumor = chromosome.Clone();
+				var tumor = chromosome.MakeNewFromPrototype();
 				tumor.Mutation(_mutationSize, _mutationProbability);
 				
 				_worst = population[population.Count - 1];
@@ -82,11 +82,11 @@ namespace nQuant.Master.Ga
 						else
 							population.Insert(population.Count - 1, tumor);
 					}
-				}				
+				}
 			}
 			PopDec(population);
 		}
-		
+
 		protected override List<T> Replacement(List<T> population)
 		{
 			return base.Replacement(population).OrderByDescending(chromosome => chromosome.Fitness).ToList();
