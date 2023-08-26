@@ -2,7 +2,9 @@ using nQuant.Master;
 using nQuant.Master.Ga;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -29,37 +31,40 @@ namespace PnnQuant
 
 		private static int _dp = 1, _nMaxColors = 256;
 		private static double minRatio = 0, maxRatio = 1.0;
-		private static int[] m_pixels;
-		private static int _bitmapWidth;
+		private static List<int[]> m_pixelsList;
+		private static List<int> _bitmapWidths;
 
 		private static readonly ConcurrentDictionary<string, double[]> _fitnessMap = new();
 
-		public PnnLABGAQuantizer(PnnLABQuantizer pq, Bitmap source, int nMaxColors)
+		public PnnLABGAQuantizer(PnnLABQuantizer pq, List<Bitmap> sources, int nMaxColors)
 		{
 			// increment value when criteria violation occurs
 			_objectives = new double[4];
-			_bitmapWidth = source.Width;
-			_random = new Random(_bitmapWidth * source.Height);
-
+			_random = new Random(sources[0].Width * sources[0].Height);
 			m_pq = new PnnLABQuantizer(pq);
 			if (pq.IsGA)
 				return;
 
 			_nMaxColors = nMaxColors;
-
+			_bitmapWidths = new List<int>();
+			m_pixelsList = new List<int[]>();
+			
 			var hasSemiTransparency = false;
-			m_pixels = m_pq.GrabPixels(source, _nMaxColors, ref hasSemiTransparency);
+			foreach(var source in sources) {
+				_bitmapWidths.Add(source.Width);
+				m_pixelsList.Add(m_pq.GrabPixels(source, _nMaxColors, ref hasSemiTransparency));
+			}
 			minRatio = (hasSemiTransparency || nMaxColors < 64) ? .0111 : .85;
 			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 400.0 : 50.0));
 			_dp = maxRatio < .1 ? 10000 : 100;
 		}
 
-		private PnnLABGAQuantizer(PnnLABQuantizer pq, int[] pixels, int bitmapWidth, int nMaxColors)
+		private PnnLABGAQuantizer(PnnLABQuantizer pq, List<int[]> pixelsList, List<int> bitmapWidths, int nMaxColors)
 		{
 			m_pq = new PnnLABQuantizer(pq);
-			m_pixels = pixels;
-			_bitmapWidth = bitmapWidth;
-			_random = new Random(pixels.Length);
+			m_pixelsList = pixelsList;
+			_bitmapWidths = bitmapWidths;
+			_random = new Random(m_pixelsList[0].Length);
 			_nMaxColors = nMaxColors;
 		}
 
@@ -78,14 +83,6 @@ namespace PnnQuant
 			}
 		}
 
-		protected delegate double AmplifyFn(double val);
-		private static AmplifyFn GetAmplifyFn(bool tooSmall)
-		{
-			if (tooSmall)
-				return val => Math.PI * val;
-			return val => .5 * Math.PI * val;
-		}
-
 		private void CalculateError(double[] errors)
 		{
 			var maxError = maxRatio < .1 ? .5 : .0625;
@@ -93,21 +90,16 @@ namespace PnnQuant
 				maxError = 1;
 
 			double fitness = 0;
-			bool tooSmall = false; // any error < exp(1.0) concluded as too small
+			int length = m_pixelsList.Select(pixels => pixels.Length).Sum();
 			for (int i = 0; i < errors.Length; ++i)
-			{
-				errors[i] /= maxError * m_pixels.Length;
-				if(errors[i] < 3)
-					tooSmall = true;
-			}
+				errors[i] /= maxError * length;
 
-			var amplifyFn = PnnLABGAQuantizer.GetAmplifyFn(tooSmall);
 			for (int i = 0; i < errors.Length; ++i)
 			{
-				if (i == 0 && errors[i] > maxError)
-					errors[i] *= amplifyFn(errors[i]);
-				else if (errors[i] > 2 * maxError)
-					errors[i] *= amplifyFn(errors[i]);
+				if (i < 1)
+					errors[i] /= 100.0;
+				else
+					errors[i] /= 255.0;
 				fitness -= errors[i];
 			}
 
@@ -128,42 +120,47 @@ namespace PnnQuant
 			_objectives = new double[4];
 			m_pq.SetRatio(ratioX, ratioY);
 			var palette = new Color[_nMaxColors];
-			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
+			m_pq.Pnnquan(m_pixelsList[0], ref palette, ref _nMaxColors);
 
 			int threshold = maxRatio < .1 ? -64 : -112;
 			var errors = new double[_objectives.Length];
-			for (int i = 0; i < m_pixels.Length; ++i)
-			{
-				if (BlueNoise.RAW_BLUE_NOISE[i & 4095] > threshold)
-					continue;
-
-				m_pq.GetLab(m_pixels[i], out CIELABConvertor.Lab lab1);
-				var qPixelIndex = m_pq.NearestColorIndex(palette, m_pixels[i], i);
-				m_pq.GetLab(palette[qPixelIndex].ToArgb(), out CIELABConvertor.Lab lab2);
-
-				if (m_pq.HasAlpha)
+			m_pixelsList.ForEach(pixels => {
+				for (int i = 0; i < pixels.Length; ++i)
 				{
-					errors[0] += BitmapUtilities.Sqr(lab2.L - lab1.L);
-					errors[1] += BitmapUtilities.Sqr(lab2.A - lab1.A);
-					errors[2] += BitmapUtilities.Sqr(lab2.B - lab1.B);
-					errors[3] += BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.5);
+					if (BlueNoise.RAW_BLUE_NOISE[i & 4095] > threshold)
+						continue;
+
+					m_pq.GetLab(pixels[i], out CIELABConvertor.Lab lab1);
+					var qPixelIndex = m_pq.NearestColorIndex(palette, pixels[i], i);
+					m_pq.GetLab(palette[qPixelIndex].ToArgb(), out CIELABConvertor.Lab lab2);
+
+					if (m_pq.HasAlpha)
+					{
+						errors[0] += BitmapUtilities.Sqr(lab2.L - lab1.L);
+						errors[1] += BitmapUtilities.Sqr(lab2.A - lab1.A);
+						errors[2] += BitmapUtilities.Sqr(lab2.B - lab1.B);
+						errors[3] += BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.5);
+					}
+					else
+					{
+						errors[0] += Math.Abs(lab2.L - lab1.L);
+						errors[1] += Math.Sqrt(BitmapUtilities.Sqr(lab2.A - lab1.A) + BitmapUtilities.Sqr(lab2.B - lab1.B));
+					}
 				}
-				else
-				{
-					errors[0] += Math.Abs(lab2.L - lab1.L);
-					errors[1] += Math.Sqrt(BitmapUtilities.Sqr(lab2.A - lab1.A) + BitmapUtilities.Sqr(lab2.B - lab1.B));
-				}
-			}
+			});
 			CalculateError(errors);
 			_fitnessMap[ratioKey] = _objectives;
 		}
 
-		public Bitmap QuantizeImage(bool dither)
+		public List<Bitmap> QuantizeImage(bool dither)
 		{
 			m_pq.SetRatio(ratioX, ratioY);
 			var palette = new Color[_nMaxColors];
-			m_pq.Pnnquan(m_pixels, ref palette, ref _nMaxColors);
-			return m_pq.QuantizeImage(m_pixels, _bitmapWidth, _nMaxColors, dither);
+			m_pq.Pnnquan(m_pixelsList[0], ref palette, ref _nMaxColors);
+
+			var bitmaps = m_pixelsList.Select((pixels, i) => m_pq.QuantizeImage(pixels, _bitmapWidths[i], _nMaxColors, dither));
+			m_pq.Clear();
+			return bitmaps.ToList();
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -174,7 +171,7 @@ namespace PnnQuant
 				if (disposing)
 				{
 					// free managed objects here
-					m_pixels = null;
+					m_pixelsList = null;
 					_fitnessMap.Clear();
 				}
 
@@ -280,7 +277,7 @@ namespace PnnQuant
 
 		public PnnLABGAQuantizer MakeNewFromPrototype()
 		{
-			var child = new PnnLABGAQuantizer(m_pq, m_pixels, _bitmapWidth, _nMaxColors);
+			var child = new PnnLABGAQuantizer(m_pq, m_pixelsList, _bitmapWidths, _nMaxColors);
 			var minRatio2 = 2 * minRatio;
 			if (minRatio2 > 1)
 				minRatio2 = 0;

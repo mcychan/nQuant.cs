@@ -522,10 +522,11 @@ namespace PnnQuant
 			return ClosestColorIndex(palette, pixel, pos);
 		}
 
-		private void Clear()
+		internal void Clear()
 		{
+			m_palette = null;
 			saliencies = null;
-            closestMap.Clear();
+			closestMap.Clear();
 			nearestMap.Clear();
 		}
 
@@ -543,9 +544,7 @@ namespace PnnQuant
 				BlueNoise.Dither(width, height, pixels, palettes, this, qPixels, weight);
 			}
 
-			pixelMap.Clear();
-            Clear();
-            return qPixels;
+			return qPixels;
 		}
 
 		internal Bitmap QuantizeImage(int[] pixels, int bitmapWidth, int nMaxColors, bool dither)
@@ -566,7 +565,8 @@ namespace PnnQuant
 			var bitmapHeight = pixels.Length / bitmapWidth;
 
 			var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
-			var palettes = dest.Palette.Entries;
+			if(m_palette == null) {
+				var palettes = dest.Palette.Entries;
 				if (palettes.Length != nMaxColors)
 					palettes = new Color[nMaxColors];
 
@@ -586,6 +586,7 @@ namespace PnnQuant
 					}
 				}
 				m_palette = palettes;
+			}
 
 			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
 

@@ -3,16 +3,19 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
 using nQuant.Master.Ga;
+using System.Collections.Generic;
 
 namespace nQuant
 {
 	public class ConsoleApp
 	{
 		private static int maxColors = 256;
+		private static int delay = 850;
 		private static bool dither = true;
 		private static string targetPath = string.Empty;
 
@@ -102,7 +105,7 @@ namespace nQuant
 			System.Console.WriteLine("  /o : Output image file path. The default is <source image path directory>\\<source image file name without extension>-quant<Max colors>.png");
 		}
 
-		
+
 		private static void DoProcess(Bitmap source, string algorithm)
 		{
 			var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
@@ -115,20 +118,20 @@ namespace nQuant
 					using (var dest = quantizer.QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
 					{
 						dest.Save(targetPath, ImageFormat.Png);
-						System.Console.WriteLine("Converted image: " + targetPath);
+						System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
 					}
 				break;
 				case "PNNLAB+":
-					System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based genetic algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
+					System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based parallel genetic algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
 					System.Console.WriteLine(copyright.Copyright);
-					var alg = new APNsgaIII<PnnQuant.PnnLABGAQuantizer>(new PnnQuant.PnnLABGAQuantizer(new PnnQuant.PnnLABQuantizer(), source, maxColors));
+					var alg = new APNsgaIII<PnnQuant.PnnLABGAQuantizer>(new PnnQuant.PnnLABGAQuantizer(new PnnQuant.PnnLABQuantizer(), new List<Bitmap> { source }, maxColors));
 					alg.Run(999, -Double.Epsilon);
 					using (var pGAq = alg.Result) {
 						System.Console.WriteLine("\n" + pGAq.Result);
-						using (var dest = pGAq.QuantizeImage(dither))
+						using (var dest = pGAq.QuantizeImage(dither)[0])
 						{
 							dest.Save(targetPath, ImageFormat.Png);
-							System.Console.WriteLine("Converted image: " + targetPath);
+							System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
 						}
 					}
 				break;
@@ -138,49 +141,31 @@ namespace nQuant
 					using (var dest = new OtsuThreshold.Otsu().ConvertGrayScaleToBinary(source))
 					{
 						dest.Save(targetPath, ImageFormat.Png);
-						System.Console.WriteLine("Converted black and white image: " + targetPath);
+						System.Console.WriteLine("Converted black and white image: " + Path.GetFullPath(targetPath));
 					}
 				break;
 				default:
 					System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
-					System.Console.WriteLine(copyright.Copyright);					
+					System.Console.WriteLine(copyright.Copyright);
 					using (var dest = quantizer.QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
 					{
 						dest.Save(targetPath, ImageFormat.Png);
-						System.Console.WriteLine("Converted image: " + targetPath);
+						System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
 					}
 				break;
 			}
 		}
-		
-		public static void Main(string[] args)
+
+		private static void DoProcess(string sourcePath, string algorithm)
 		{
-			string algorithm = "PNNLAB";
-#if DEBUG
-			var sourcePath = @"samples\SE5x9.jpg";
-			maxColors = 256;
-#else
-			if (args.Length < 1)
-			{
-				PrintUsage();
-				Environment.Exit(1);
-			}
-			var sourcePath = args[0];
-			algorithm = ProcessArgs(args);
-#endif
 			if (!File.Exists(sourcePath))
 			{
-				System.Console.WriteLine("The source file you specified does not exist.");
-				Environment.Exit(1);
+				System.Console.WriteLine("The source file {0} you specified does not exist.", sourcePath);
+				return;
 			}
 
 			if (string.IsNullOrEmpty(targetPath))
-			{
-				var lastDot = sourcePath.LastIndexOf('.');
-				if (lastDot == -1)
-					lastDot = sourcePath.Length;
-				targetPath = sourcePath.Substring(0, lastDot) + "-" + algorithm + "quant" + maxColors + ".png";
-			}
+				targetPath = Path.GetFileNameWithoutExtension(sourcePath) + "-" + algorithm + "quant" + maxColors + ".png";
 
 			Console.OutputEncoding = Encoding.UTF8;
 			Stopwatch stopwatch = Stopwatch.StartNew();
@@ -202,6 +187,77 @@ namespace nQuant
 				}
 			}
 			System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
+		}
+
+
+		private static void CreateImages(string sourceDir)
+		{
+			Console.OutputEncoding = Encoding.UTF8;
+			var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
+			Stopwatch stopwatch = Stopwatch.StartNew();
+
+			try {
+				System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based parallel genetic algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
+				System.Console.WriteLine(copyright.Copyright);
+
+				if (string.IsNullOrEmpty(targetPath))
+				{
+					targetPath = sourceDir;
+				}
+				else if (!Directory.Exists(targetPath))
+					Directory.CreateDirectory(targetPath);
+
+                var paths = Directory.GetFiles(sourceDir).OrderBy(p => p).ToList();
+                var bitmaps = paths.Select(p => {
+					try
+					{
+						var path = Path.GetFullPath(p);
+						return new Bitmap(path);
+                    }
+					catch {
+						return null;
+					}
+				}).Where(bitmap => bitmap != null).ToList();				
+
+				var alg = new APNsgaIII<PnnQuant.PnnLABGAQuantizer>(new PnnQuant.PnnLABGAQuantizer(new PnnQuant.PnnLABQuantizer(), bitmaps, maxColors));
+				alg.Run(999, -Double.Epsilon);
+				using (var pGAq = alg.Result) {
+					System.Console.WriteLine("\n" + pGAq.Result);
+					var imgs = pGAq.QuantizeImage(dither);
+					for (int i = 0; i < imgs.Count; ++i) {
+						var path = Path.GetFileNameWithoutExtension(paths[i]);                       
+                        var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
+                        imgs[i].Save(destPath, ImageFormat.Png);
+                        System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
+                    }					
+				}
+			}
+			catch (Exception q)
+			{
+				System.Console.WriteLine(q.StackTrace);
+			}
+			System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
+		}
+		
+		public static void Main(string[] args)
+		{
+			string algorithm = "PNNLAB";
+#if DEBUG
+			var sourcePath = @"samples\SE5x9.jpg";
+			maxColors = 256;
+#else
+			if (args.Length < 1)
+			{
+				PrintUsage();
+				Environment.Exit(1);
+			}
+			var sourcePath = args[0];
+			algorithm = ProcessArgs(args);
+#endif
+			if (Directory.Exists(sourcePath))
+				CreateImages(sourcePath);
+			else
+				DoProcess(sourcePath, algorithm);
 		}
 
 	}
