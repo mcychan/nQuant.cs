@@ -31,17 +31,17 @@ If you are using C#, you would call nQuant as follows:
 
 More importantly, a parallel genetic algorithm called PNNLAB+ is proposed for converting a sequence of similar images under the same palette.<br />
 ```cs
-    var alg = new APNsgaIII<PnnQuant.PnnLABGAQuantizer>(new PnnQuant.PnnLABGAQuantizer(new PnnQuant.PnnLABQuantizer(), bitmaps, maxColors));
+    var alg = new APNsgaIII<PnnLABGAQuantizer>(new PnnLABGAQuantizer(new PnnLABQuantizer(), bitmaps, maxColors));
     alg.Run(999, -Double.Epsilon);
     using (var pGAq = alg.Result) {
-    				System.Console.WriteLine("\n" + pGAq.Result);
-    				var imgs = pGAq.QuantizeImage(dither);
-    				for (int i = 0; i < imgs.Count; ++i) {
-    					var path = Path.GetFileNameWithoutExtension(paths[i]);                       
-    					var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
-    					imgs[i].Save(destPath, ImageFormat.Png);
-    					System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
-    				}					
+        System.Console.WriteLine("\n" + pGAq.Result);
+        var imgs = pGAq.QuantizeImage(dither);
+        for (int i = 0; i < imgs.Count; ++i) {
+            var path = Path.GetFileNameWithoutExtension(paths[i]);                       
+            var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
+            imgs[i].Save(destPath, ImageFormat.Png);
+            System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
+        }					
     }
 ```
 
