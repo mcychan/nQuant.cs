@@ -3,9 +3,9 @@ Fast pairwise nearest neighbor based algorithm with C# console
 
 nQuant.cs is a C# color quantizer producing high quality 256 color 8 bit PNG images using an algorithm optimized for the highest quality possible.
 
-Another advantage of nQuant is that it is a .net library that you can integrate nicely with your own C# code while many of the popular quantizers only provide command line implementations. nQuant.cs also provides a command line wrapper in case you want to use it from the command line.
+Another advantage of nQuant.cs is that it is a .net library that you can integrate nicely with your own C# code while many of the popular quantizers only provide command line implementations. nQuant.cs also provides a command line wrapper in case you want to use it from the command line.
 
-Less artifacts by using advanced dithering techniques such as Generalized Hilbert ("gilbert") space-filling curve and partial Blue noise distribution to diffuse the minimized errors.
+Less artifacts by using advanced dithering techniques such as Generalized Hilbert ("gilbert") space-filling curve and partial Blue noise distribution to diffuse the minimized quantization errors.
 
 If you are using C#, you would call nQuant as follows:
 
