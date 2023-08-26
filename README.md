@@ -19,7 +19,7 @@ If you are using C#, you would call nQuant as follows:
             using (var dest = quantizer.QuantizeImage(bitmap, pixelFormat, maxColors, dither))
             {
                 dest.Save(targetPath, ImageFormat.Png);
-                System.Console.WriteLine("Converted image: " + targetPath);
+                System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
             }
         }
         catch (Exception q)
@@ -37,8 +37,8 @@ More importantly, a parallel genetic algorithm called PNNLAB+ is proposed for co
         System.Console.WriteLine("\n" + pGAq.Result);
         var imgs = pGAq.QuantizeImage(dither);
         for (int i = 0; i < imgs.Count; ++i) {
-            var path = Path.GetFileNameWithoutExtension(paths[i]);                       
-            var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
+            var fname = Path.GetFileNameWithoutExtension(paths[i]);                       
+            var destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".png";
             imgs[i].Save(destPath, ImageFormat.Png);
             System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
         }					
@@ -55,7 +55,7 @@ OTSU method (OTSU) is a global adaptive binarization threshold image segmentatio
             using (var dest = quantizer.ConvertGrayScaleToBinary(bitmap))
             {
                 dest.Save(targetPath, ImageFormat.Png);
-                System.Console.WriteLine("Converted black and white image: " + targetPath);
+                System.Console.WriteLine("Converted black and white image: " + Path.GetFullPath(targetPath));
             }
         }
         catch (Exception q)
