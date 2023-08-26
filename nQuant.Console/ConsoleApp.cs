@@ -15,7 +15,6 @@ namespace nQuant
 	public class ConsoleApp
 	{
 		private static int maxColors = 256;
-		private static int delay = 850;
 		private static bool dither = true;
 		private static string targetPath = string.Empty;
 
@@ -207,13 +206,13 @@ namespace nQuant
 				else if (!Directory.Exists(targetPath))
 					Directory.CreateDirectory(targetPath);
 
-                var paths = Directory.GetFiles(sourceDir).OrderBy(p => p).ToList();
-                var bitmaps = paths.Select(p => {
+				var paths = Directory.GetFiles(sourceDir).OrderBy(p => p).ToList();
+				var bitmaps = paths.Select(p => {
 					try
 					{
 						var path = Path.GetFullPath(p);
 						return new Bitmap(path);
-                    }
+					}
 					catch {
 						return null;
 					}
@@ -226,10 +225,10 @@ namespace nQuant
 					var imgs = pGAq.QuantizeImage(dither);
 					for (int i = 0; i < imgs.Count; ++i) {
 						var path = Path.GetFileNameWithoutExtension(paths[i]);                       
-                        var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
-                        imgs[i].Save(destPath, ImageFormat.Png);
-                        System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
-                    }					
+						var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
+						imgs[i].Save(destPath, ImageFormat.Png);
+						System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
+					}					
 				}
 			}
 			catch (Exception q)
