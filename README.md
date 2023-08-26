@@ -3,7 +3,10 @@ Fast pairwise nearest neighbor based algorithm with C# console
 
 nQuant.cs is a C# color quantizer producing high quality 256 color 8 bit PNG images using an algorithm optimized for the highest quality possible.
 
-Another advantage of nQuant is that it is a .net library that you can integrate nicely with your own C# code while many of the popular quantizers only provide command line implementations. nQuant.cs also provides a command line wrapper in case you want to use it from the command line. Less artifacts by using advanced dithering techniques such as Generalized Hilbert ("gilbert") space-filling curve and partial Blue noise distribution to diffuse the minimized errors. More importantly, a parallel genetic algorithm called PNNLAB+ is proposed for converting a sequence of similar images under the same palette.
+Another advantage of nQuant is that it is a .net library that you can integrate nicely with your own C# code while many of the popular quantizers only provide command line implementations. nQuant.cs also provides a command line wrapper in case you want to use it from the command line.
+
+Less artifacts by using advanced dithering techniques such as Generalized Hilbert ("gilbert") space-filling curve and partial Blue noise distribution to diffuse the minimized errors.
+
 If you are using C#, you would call nQuant as follows:
 
 ```cs
@@ -23,6 +26,22 @@ If you are using C#, you would call nQuant as follows:
         {
             System.Console.WriteLine(q.StackTrace);
         }
+    }
+```
+
+More importantly, a parallel genetic algorithm called PNNLAB+ is proposed for converting a sequence of similar images under the same palette.<br />
+```cs
+    var alg = new APNsgaIII<PnnQuant.PnnLABGAQuantizer>(new PnnQuant.PnnLABGAQuantizer(new PnnQuant.PnnLABQuantizer(), bitmaps, maxColors));
+    alg.Run(999, -Double.Epsilon);
+    using (var pGAq = alg.Result) {
+    				System.Console.WriteLine("\n" + pGAq.Result);
+    				var imgs = pGAq.QuantizeImage(dither);
+    				for (int i = 0; i < imgs.Count; ++i) {
+    					var path = Path.GetFileNameWithoutExtension(paths[i]);                       
+    					var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
+    					imgs[i].Save(destPath, ImageFormat.Png);
+    					System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
+    				}					
     }
 ```
 
