@@ -9,6 +9,7 @@ using System.Text;
 
 using nQuant.Master.Ga;
 using System.Collections.Generic;
+using PnnQuant;
 
 namespace nQuant
 {
@@ -189,7 +190,7 @@ namespace nQuant
 		}
 
 
-		private static void CreateImages(string sourceDir)
+		private static void OutputImages(string sourceDir)
 		{
 			Console.OutputEncoding = Encoding.UTF8;
 			var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
@@ -218,14 +219,14 @@ namespace nQuant
 					}
 				}).Where(bitmap => bitmap != null).ToList();				
 
-				var alg = new APNsgaIII<PnnQuant.PnnLABGAQuantizer>(new PnnQuant.PnnLABGAQuantizer(new PnnQuant.PnnLABQuantizer(), bitmaps, maxColors));
+				var alg = new APNsgaIII<PnnLABGAQuantizer>(new PnnLABGAQuantizer(new PnnLABQuantizer(), bitmaps, maxColors));
 				alg.Run(999, -Double.Epsilon);
 				using (var pGAq = alg.Result) {
 					System.Console.WriteLine("\n" + pGAq.Result);
 					var imgs = pGAq.QuantizeImage(dither);
 					for (int i = 0; i < imgs.Count; ++i) {
-						var path = Path.GetFileNameWithoutExtension(paths[i]);                       
-						var destPath = Path.Combine(targetPath, path) + " - PNNLAB+quant" + maxColors + ".png";
+						var fname = Path.GetFileNameWithoutExtension(paths[i]);                       
+						var destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".png";
 						imgs[i].Save(destPath, ImageFormat.Png);
 						System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
 					}					
@@ -254,7 +255,7 @@ namespace nQuant
 			algorithm = ProcessArgs(args);
 #endif
 			if (Directory.Exists(sourcePath))
-				CreateImages(sourcePath);
+				OutputImages(sourcePath);
 			else
 				DoProcess(sourcePath, algorithm);
 		}
