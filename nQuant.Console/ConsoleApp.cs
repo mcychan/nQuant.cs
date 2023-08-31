@@ -217,19 +217,33 @@ namespace nQuant
 					catch {
 						return null;
 					}
-				}).Where(bitmap => bitmap != null).ToList();				
+				}).Where(bitmap => bitmap != null).ToList();
 
 				var alg = new APNsgaIII<PnnLABGAQuantizer>(new PnnLABGAQuantizer(new PnnLABQuantizer(), bitmaps, maxColors));
 				alg.Run(999, -Double.Epsilon);
 				using (var pGAq = alg.Result) {
 					System.Console.WriteLine("\n" + pGAq.Result);
+					var destPath = string.Empty;
 					var imgs = pGAq.QuantizeImage(dither);
-					for (int i = 0; i < imgs.Count; ++i) {
-						var fname = Path.GetFileNameWithoutExtension(paths[i]);                       
-						var destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".png";
-						imgs[i].Save(destPath, ImageFormat.Png);
-						System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
-					}					
+					if (maxColors > 256)
+					{
+						for (int i = 0; i < imgs.Count; ++i)
+						{
+							var fname = Path.GetFileNameWithoutExtension(paths[i]);
+							destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".png";
+							imgs[i].Save(destPath, ImageFormat.Png);
+							System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
+						}
+					}
+					else
+					{
+						var fname = Path.GetFileNameWithoutExtension(paths[0]);
+						destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".gif";
+						var gifWriter = new GifWriter(destPath, pGAq.HasAlpha, imgs.Count, 850);
+						gifWriter.AddImages(imgs);
+					}
+
+					System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
 				}
 			}
 			catch (Exception q)
