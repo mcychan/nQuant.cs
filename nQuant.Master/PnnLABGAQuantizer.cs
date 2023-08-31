@@ -96,10 +96,8 @@ namespace PnnQuant
 
 			for (int i = 0; i < errors.Length; ++i)
 			{
-				if (i < 1)
-					errors[i] /= 100.0;
-				else
-					errors[i] /= 255.0;
+				if (i > 0)
+					errors[i] /= 2.55;
 				fitness -= errors[i];
 			}
 
@@ -302,6 +300,11 @@ namespace PnnQuant
 					return ratioX.ToString("0.######");
 				return ratioX.ToString("0.######") + ", " + ratioY.ToString("0.######");
 			}
+		}
+
+		public bool HasAlpha
+		{
+            get => m_pq.HasAlpha;
 		}
 
 		public static int MaxColors
