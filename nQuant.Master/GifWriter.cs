@@ -62,30 +62,25 @@ namespace nQuant
 		public void AddImages(List<Bitmap> bitmaps)
 		{
 			using var fs = new FileStream(_destPath, FileMode.Create);
-			var firstBitmap = bitmaps[0];            
+			var firstBitmap = bitmaps[0];
 			var gifEncoder = GetEncoder(ImageFormat.Gif);
 
 			// Params of the first frame.
-			var encoderParams1 = new EncoderParameters(1);
-			encoderParams1.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.MultiFrame);
+			var encoderParams = new EncoderParameters(1);
+			encoderParams.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.MultiFrame);
 			firstBitmap.SetPropertyItem(_frameDelay);
 			if (_loop)
 				firstBitmap.SetPropertyItem(_loopPropertyItem);
-			firstBitmap.Save(fs, gifEncoder, encoderParams1);
+			firstBitmap.Save(fs, gifEncoder, encoderParams);
 
+			// Params of other frames.
+			encoderParams.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.FrameDimensionTime);
 			for (int i = 1; i < bitmaps.Count; ++i)
-			{
-				var bitmap = bitmaps[i];
-				// Params of other frames.
-				var encoderParamsN = new EncoderParameters(1);
-				encoderParamsN.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.FrameDimensionTime);
-				firstBitmap.SaveAdd(bitmap, encoderParamsN);
-			}
+				firstBitmap.SaveAdd(bitmaps[i], encoderParams);
 
 			// Params for the finalizing call.
-			var encoderParamsFlush = new EncoderParameters(1);
-			encoderParamsFlush.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.Flush);
-			firstBitmap.SaveAdd(encoderParamsFlush);            
+            encoderParams.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.Flush);
+			firstBitmap.SaveAdd(encoderParams);
 		}
 
 	}
