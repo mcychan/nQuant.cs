@@ -129,9 +129,9 @@ namespace nQuant.Master
 			error[3] = a_pix - c2.A;
 
 			var denoise = palette.Length > 2;
-			var diffuse = BlueNoise.RAW_BLUE_NOISE[bidx & 4095] > thresold;
+			var diffuse = BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > thresold;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(pixel, c2);
-            var illusion = !diffuse && BlueNoise.RAW_BLUE_NOISE[(int)(yDiff * 4096)] > thresold;
+            var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(yDiff * 4096)] > thresold;
 
             var errLength = denoise ? error.Length - 1 : 0;
 			for (int j = 0; j < errLength; ++j)

@@ -125,7 +125,7 @@ namespace PnnQuant
 			m_pixelsList.ForEach(pixels => {
 				for (int i = 0; i < pixels.Length; ++i)
 				{
-					if (BlueNoise.RAW_BLUE_NOISE[i & 4095] > threshold)
+					if (BlueNoise.TELL_BLUE_NOISE[i & 4095] > threshold)
 						continue;
 
 					m_pq.GetLab(pixels[i], out CIELABConvertor.Lab lab1);

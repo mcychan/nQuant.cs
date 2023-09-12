@@ -446,7 +446,7 @@ namespace PnnQuant
 				closest[2] = closest[3] = ushort.MaxValue;
 
 				int start = 0;
-				if(BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
+				if(BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
 					start = 1;
 
 				var nMaxColors = palette.Length;
@@ -505,7 +505,7 @@ namespace PnnQuant
 			}
 
 			var MAX_ERR = palette.Length;
-			if(PG < coeffs[0, 1] && BlueNoise.RAW_BLUE_NOISE[pos & 4095] > -88)
+			if(PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
 				return NearestColorIndex(palette, pixel, pos);
 
 			int idx = 1;
