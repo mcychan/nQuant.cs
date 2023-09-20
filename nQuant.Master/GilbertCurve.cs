@@ -72,7 +72,7 @@ namespace nQuant.Master
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
 			if (palette.Length / weight > 5000 && (weight > .045 || (weight > .01 && palette.Length <= 64)))
 				ditherMax = (byte) BitmapUtilities.Sqr(4.75);
-			thresold = DITHER_MAX > 9 ? -112 : -88;
+			thresold = DITHER_MAX > 9 ? -112 : -64;
 			weights = new float[DITHER_MAX];
 			lookup = new int[65536];
 		}
@@ -131,7 +131,7 @@ namespace nQuant.Master
 			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > thresold;
 			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(pixel, c2);
-            var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(yDiff * 4096)] > thresold;
+            var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(yDiff * 4096) & 4095] > thresold;
 
             var errLength = denoise ? error.Length - 1 : 0;
 			for (int j = 0; j < errLength; ++j)
@@ -143,9 +143,9 @@ namespace nQuant.Master
 					else
 					{
 						if(illusion)
-							error[j] /= (float)(1 + Math.Sqrt(ditherMax));
-						else
-							error[j] = (float)(error[j] / maxErr * yDiff) * (ditherMax - 1);
+                            error[j] = (float)(error[j] / maxErr * yDiff) * (ditherMax - 1);
+                        else
+                            error[j] /= (float)(1 + Math.Sqrt(ditherMax)); 
 					}
 				}
 			}
