@@ -15,7 +15,7 @@ namespace nQuant.Master
 		{
 			internal double yDiff { get; set; }
 
-            private readonly float[] p;
+			private readonly float[] p;
 			internal ErrorBox()
 			{
 				p = new float[4];
@@ -143,7 +143,7 @@ namespace nQuant.Master
 
 			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > thresold;
-            error.yDiff = sortedByYDiff ? CIELABConvertor.Y_Diff(pixel, c2) : 1;
+			error.yDiff = sortedByYDiff ? CIELABConvertor.Y_Diff(pixel, c2) : 1;
 			var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(error.yDiff * 4096) & 4095] > thresold;
 
 			var errLength = denoise ? error.Length - 1 : 0;
@@ -162,8 +162,8 @@ namespace nQuant.Master
 
 			errorq.Add(error);
 			if (sortedByYDiff)
-                errorq.Sort((o1, o2) => o2.yDiff.CompareTo(o1.yDiff));
-        }
+				errorq.Sort((o1, o2) => o2.yDiff.CompareTo(o1.yDiff));
+		}
 
 		private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {
 			int w = Math.Abs(ax + ay);
