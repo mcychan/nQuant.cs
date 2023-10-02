@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 /* Generalized Hilbert ("gilbert") space-filling curve for rectangular domains of arbitrary (non-power of two) sizes.
 Copyright (c) 2021 - 2023 Miller Cy Chan
@@ -12,7 +13,9 @@ namespace nQuant.Master
 	{
 		internal sealed class ErrorBox
 		{
-			private readonly float[] p;
+			internal double yDiff { get; set; }
+
+            private readonly float[] p;
 			internal ErrorBox()
 			{
 				p = new float[4];
@@ -40,7 +43,9 @@ namespace nQuant.Master
 			}
 		}
 
-		private byte ditherMax;
+		private byte ditherMax, DITHER_MAX;
+		private float[] weights;
+		private readonly bool sortedByYDiff;
 		private readonly int width;
 		private readonly int height;
 		private readonly int[] pixels;
@@ -48,10 +53,9 @@ namespace nQuant.Master
 		private readonly int[] qPixels;
 		private readonly Ditherable ditherable;
 		private readonly float[] saliencies;
-		private readonly Queue<ErrorBox> errorq;
-		private readonly float[] weights;
+		private List<ErrorBox> errorq;
 		private readonly int[] lookup;
-		private readonly byte DITHER_MAX;
+
 		private readonly int thresold;
 		private const float BLOCK_SIZE = 343f;
 
@@ -64,8 +68,9 @@ namespace nQuant.Master
 			this.qPixels = qPixels;
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
-			errorq = new();
 			var hasAlpha = weight < 0;
+			sortedByYDiff = !hasAlpha && palette.Length >= 128;
+			errorq = new();
 			weight = Math.Abs(weight);
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
@@ -75,7 +80,7 @@ namespace nQuant.Master
 			else if (palette.Length / weight < 3200 && palette.Length > 16 && palette.Length < 256)
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
 			thresold = DITHER_MAX > 9 ? -112 : -64;
-			weights = new float[DITHER_MAX];
+			weights = new float[0];
 			lookup = new int[65536];
 		}
 
@@ -84,17 +89,20 @@ namespace nQuant.Master
 			int bidx = x + y * width;
 			Color pixel = Color.FromArgb(pixels[bidx]);
 			var error = new ErrorBox(pixel);
-			int i = 0;
+			int i = sortedByYDiff ? weights.Length - 1 : 0;
 			float maxErr = DITHER_MAX - 1;
 			foreach (var eb in errorq)
 			{
+				if(i < 0 || i >= weights.Length)
+					break;
+
 				for (int j = 0; j < eb.Length; ++j)
 				{
 					error[j] += eb[j] * weights[i];
 					if(error[j] > maxErr)
 						maxErr = error[j];
 				}
-				++i;
+				i += sortedByYDiff ? -1 : 1;
 			}
 
 			int r_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[0], 0.0));
@@ -119,8 +127,11 @@ namespace nQuant.Master
 			else
 				qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 
-			if (errorq.Count > 0)
-				errorq.Dequeue();
+			if(errorq.Count >= DITHER_MAX)
+				errorq.RemoveAt(0);
+			else if (errorq.Count > 0)
+				InitWeights(errorq.Count);
+
 			c2 = palette[qPixels[bidx]];
 			if (palette.Length > 256)
 				qPixels[bidx] = (short)ditherable.GetColorIndex(c2.ToArgb());
@@ -132,29 +143,29 @@ namespace nQuant.Master
 
 			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > thresold;
-			var yDiff = diffuse ? 1 : CIELABConvertor.Y_Diff(pixel, c2);
-            var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(yDiff * 4096) & 4095] > thresold;
+            error.yDiff = sortedByYDiff ? CIELABConvertor.Y_Diff(pixel, c2) : 1;
+			var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(error.yDiff * 4096) & 4095] > thresold;
 
-            var errLength = denoise ? error.Length - 1 : 0;
+			var errLength = denoise ? error.Length - 1 : 0;
 			for (int j = 0; j < errLength; ++j)
 			{
 				if (Math.Abs(error[j]) >= ditherMax)
 				{
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
+					else if(illusion)
+						error[j] = (float)(error[j] / maxErr * error.yDiff) * (ditherMax - 1);
 					else
-					{
-						if(illusion)
-                            error[j] = (float)(error[j] / maxErr * yDiff) * (ditherMax - 1);
-                        else
-                            error[j] /= (float)(1 + Math.Sqrt(ditherMax)); 
-					}
+						error[j] /= (float)(1 + Math.Sqrt(ditherMax));
 				}
 			}
-			errorq.Enqueue(error);
-		}
 
-		private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {    	
+			errorq.Add(error);
+			if (sortedByYDiff)
+                errorq.Sort((o1, o2) => o2.yDiff.CompareTo(o1.yDiff));
+        }
+
+		private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {
 			int w = Math.Abs(ax + ay);
 			int h = Math.Abs(bx + by);
 			int dax = Math.Sign(ax);
@@ -192,7 +203,7 @@ namespace nQuant.Master
 				if ((w2 % 2) != 0 && w > 2) {
 					ax2 += dax;
 					ay2 += day;
-				}    		
+				}
 				Generate2d(x, y, ax2, ay2, bx, by);
 				Generate2d(x + ax2, y + ay2, ax - ax2, ay - ay2, bx, by);
 				return;
@@ -208,25 +219,30 @@ namespace nQuant.Master
 			Generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));
 		}
 
-		private void Run()
-		{
+		private void InitWeights(int size) {
 			/* Dithers all pixels of the image in sequence using
 			 * the Gilbert path, and distributes the error in
-			 * a sequence of DITHER_MAX pixels.
+			 * a sequence of pixels size.
 			 */
-			float weightRatio = (float)Math.Pow(BLOCK_SIZE + 1f, 1f / (DITHER_MAX - 1f));
+			float weightRatio = (float) Math.Pow(BLOCK_SIZE + 1f, 1f / (size - 1f));
 			float weight = 1f, sumweight = 0f;
-			for (int c = 0; c < DITHER_MAX; ++c)
+			weights = new float[size];
+			for (int c = 0; c < size; ++c)
 			{
-				errorq.Enqueue(new ErrorBox());
-				sumweight += (weights[DITHER_MAX - c - 1] = 1.0f / weight);
+				errorq.Add(new ErrorBox());
+				sumweight += (weights[size - c - 1] = 1.0f / weight);
 				weight *= weightRatio;
 			}
 
 			weight = 0f; /* Normalize */
-			for (int c = 0; c < DITHER_MAX; ++c)
+			for (int c = 0; c < size; ++c)
 				weight += (weights[c] /= sumweight);
 			weights[0] += 1f - weight;
+		}
+
+		private void Run()
+		{
+			InitWeights(sortedByYDiff ? 1 : DITHER_MAX);
 			
 			if (width >= height)
 				Generate2d(0, 0, width, 0, 0, height);
