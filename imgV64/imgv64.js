@@ -1,13 +1,13 @@
 <!--
 function init()
 {
-	cellsPerRow = 5;	
+	cellsPerRow = 5;
 }
 function formatDate(pDate)
 {
-	var months = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	var dates = pDate.split("/");
-	return months[parseInt(dates[1], 10)] + " " + dates[2] + ", " + dates[0];
+	var date = new Date(dates[0], dates[1], dates[2]);
+	return date.toLocaleDateString('en-US', {month: "short"});
 }
 
 function get_bits_system_architecture()
