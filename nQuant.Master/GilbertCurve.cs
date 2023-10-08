@@ -69,10 +69,11 @@ namespace nQuant.Master
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
 			var hasAlpha = weight < 0;
-			sortedByYDiff = !hasAlpha && palette.Length >= 128;
+
 			errorq = new();
 			weight = Math.Abs(weight);
-			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
+            sortedByYDiff = !hasAlpha && palette.Length >= 128 && weight >= .04;
+            DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
 			if (palette.Length / weight > 5000 && (weight > .045 || (weight > .01 && palette.Length <= 64)))
@@ -242,7 +243,8 @@ namespace nQuant.Master
 
 		private void Run()
 		{
-			InitWeights(sortedByYDiff ? 1 : DITHER_MAX);
+			if(!sortedByYDiff)
+				InitWeights(DITHER_MAX);
 			
 			if (width >= height)
 				Generate2d(0, 0, width, 0, 0, height);
