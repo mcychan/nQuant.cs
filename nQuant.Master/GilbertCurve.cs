@@ -119,7 +119,7 @@ namespace nQuant.Master
 					lookup[offset] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
 				qPixels[bidx] = lookup[offset] - 1;
 				
-				if(saliencies != null && CIELABConvertor.Y_Diff(pixel, c2) > palette.Length - 10) {
+				if(saliencies != null && CIELABConvertor.Y_Diff(pixel, c2) > palette.Length - 7) {
 					var strength = 1 / 3f;
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
 					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
