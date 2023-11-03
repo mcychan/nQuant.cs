@@ -56,7 +56,7 @@ namespace nQuant.Master
 		private List<ErrorBox> errorq;
 		private readonly int[] lookup;
 
-		private readonly int margin, thresold;
+		private readonly int thresold;
 		private const float BLOCK_SIZE = 343f;
 
 		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
@@ -72,28 +72,17 @@ namespace nQuant.Master
 
 			errorq = new();
 			weight = Math.Abs(weight);
-			sortedByYDiff = !hasAlpha && palette.Length >= 128 && weight >= .04;
-			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
+            sortedByYDiff = !hasAlpha && palette.Length >= 128 && weight >= .04;
+            DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
 			if (palette.Length / weight > 5000 && (weight > .045 || (weight > .01 && palette.Length <= 64)))
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
 			else if (palette.Length / weight < 3200 && palette.Length > 16 && palette.Length < 256)
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
-			margin = (int) BitmapUtilities.Sqr(Log2(palette.Length) - 1);
 			thresold = DITHER_MAX > 9 ? -112 : -64;
 			weights = new float[0];
 			lookup = new int[65536];
-		}
-
-		private int Log2(int v) {
-			int p = 0;
-			int v2 = v >> 1;
-			while (v2 > 0) {
-				v2 >>= 1;
-				++p;
-			}		
-			return p;
 		}
 
 		private void DitherPixel(int x, int y)
@@ -130,7 +119,7 @@ namespace nQuant.Master
 					lookup[offset] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
 				qPixels[bidx] = lookup[offset] - 1;
 				
-				if(saliencies != null && CIELABConvertor.Y_Diff(pixel, c2) > margin) {
+				if(saliencies != null && CIELABConvertor.Y_Diff(pixel, c2) > palette.Length - 7) {
 					var strength = 1 / 3f;
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
 					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
