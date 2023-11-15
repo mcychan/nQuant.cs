@@ -72,14 +72,15 @@ namespace nQuant.Master
 
 			errorq = new();
 			weight = Math.Abs(weight);
-			margin = weight < .003 ? 12 : 6;
+			margin = weight < .0025 ? 12 : 6;
 			sortedByYDiff = !hasAlpha && palette.Length >= 128 && weight >= .04;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge) : DITHER_MAX;
+			int density = palette.Length > 16 ? 3200 : 1500;
 			if (palette.Length / weight > 5000 && (weight > .045 || (weight > .01 && palette.Length <= 64)))
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
-			else if (palette.Length / weight < 3200 && palette.Length >= 16 && palette.Length < 256)
+			else if (palette.Length / weight < density && palette.Length >= 16 && palette.Length < 256)
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
 			thresold = DITHER_MAX > 9 ? -112 : -64;
 			weights = new float[0];
