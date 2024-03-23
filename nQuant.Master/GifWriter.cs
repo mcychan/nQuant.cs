@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 
 namespace nQuant
@@ -16,37 +15,15 @@ namespace nQuant
 
 		private const int UintBytes = 4;
 
-		private bool _hasAlpha, _loop;
-		private string _destPath;
-		private PropertyItem _frameDelay, _loopPropertyItem;
+		private readonly bool _loop;
+		private readonly string _destPath;
+		private readonly uint _delay;
 
-		public GifWriter(String destPath, bool hasAlpha, int count = 1, uint delay = 850, bool loop = true)
+		public GifWriter(String destPath, uint delay = 850, bool loop = true)
 		{
 			_destPath = destPath;
-			_hasAlpha = hasAlpha;
 			_loop = loop;
-
-			// PropertyItem for the frame delay (apparently, no other way to create a fresh instance).
-			_frameDelay = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
-			_frameDelay.Id = PropertyTagFrameDelay;
-			_frameDelay.Type = PropertyTagTypeLong;
-			// Length of the value in bytes.
-			_frameDelay.Len = count * UintBytes;
-			// The value is an array of 4-byte entries: one per frame.
-			// Every entry is the frame delay in 1/100-s of a second, in little endian.
-			_frameDelay.Value = new byte[count * UintBytes];
-			// E.g., here, we're setting the delay of every frame to 1 second.
-			var frameDelayBytes = BitConverter.GetBytes(delay / 10);
-			for (int j = 0; j < count; ++j)
-				Array.Copy(frameDelayBytes, 0, _frameDelay.Value, j * UintBytes, UintBytes);
-
-			// PropertyItem for the number of animation loops.
-			_loopPropertyItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
-			_loopPropertyItem.Id = PropertyTagLoopCount;
-			_loopPropertyItem.Type = PropertyTagTypeShort;
-			_loopPropertyItem.Len = 2;
-			// 0 means to animate forever.
-			_loopPropertyItem.Value = BitConverter.GetBytes((ushort)0);
+            _delay = delay;			
 		}
 
 		private ImageCodecInfo GetEncoder(ImageFormat format)
@@ -59,7 +36,40 @@ namespace nQuant
 			return null;
 		}
 
-		public void AddImages(List<Bitmap> bitmaps)
+		private static void SetFrameDelay(Bitmap firstBitmap, uint delay, int count)
+		{
+            // PropertyItem for the frame delay (apparently, no other way to create a fresh instance).
+            var frameDelay = (PropertyItem) FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+            frameDelay.Id = PropertyTagFrameDelay;
+            frameDelay.Type = PropertyTagTypeLong;
+            // Length of the value in bytes.
+            frameDelay.Len = count * UintBytes;
+            // The value is an array of 4-byte entries: one per frame.
+            // Every entry is the frame delay in 1/100-s of a second, in little endian.
+            frameDelay.Value = new byte[count * UintBytes];
+            // E.g., here, we're setting the delay of every frame to 1 second.
+            var frameDelayBytes = BitConverter.GetBytes(delay / 10);
+            for (int j = 0; j < count; ++j)
+                Array.Copy(frameDelayBytes, 0, frameDelay.Value, j * UintBytes, UintBytes);
+            firstBitmap.SetPropertyItem(frameDelay);
+        }
+
+		private static void SetLoop(Bitmap firstBitmap, bool loop)
+		{
+			if (!loop)
+				return;
+
+            // PropertyItem for the number of animation loops.
+            var loopPropertyItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+            loopPropertyItem.Id = PropertyTagLoopCount;
+            loopPropertyItem.Type = PropertyTagTypeShort;
+            loopPropertyItem.Len = 2;
+            // 0 means to animate forever.
+            loopPropertyItem.Value = BitConverter.GetBytes((ushort)0);
+            firstBitmap.SetPropertyItem(loopPropertyItem);
+        }
+
+        public void AddImages(List<Bitmap> bitmaps)
 		{
 			using var fs = new FileStream(_destPath, FileMode.Create);
 			var firstBitmap = bitmaps[0];
@@ -68,9 +78,8 @@ namespace nQuant
 			// Params of the first frame.
 			var encoderParams = new EncoderParameters(1);
 			encoderParams.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.MultiFrame);
-			firstBitmap.SetPropertyItem(_frameDelay);
-			if (_loop)
-				firstBitmap.SetPropertyItem(_loopPropertyItem);
+            SetFrameDelay(firstBitmap, _delay, bitmaps.Count);
+            SetLoop(firstBitmap, _loop);
 			firstBitmap.Save(fs, gifEncoder, encoderParams);
 
 			// Params of other frames.
