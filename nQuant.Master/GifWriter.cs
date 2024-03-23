@@ -23,7 +23,7 @@ namespace nQuant
 		{
 			_destPath = destPath;
 			_loop = loop;
-            _delay = delay;			
+			_delay = delay;
 		}
 
 		private ImageCodecInfo GetEncoder(ImageFormat format)
@@ -38,38 +38,38 @@ namespace nQuant
 
 		private static void SetFrameDelay(Bitmap firstBitmap, uint delay, int count)
 		{
-            // PropertyItem for the frame delay (apparently, no other way to create a fresh instance).
-            var frameDelay = (PropertyItem) FormatterServices.GetUninitializedObject(typeof(PropertyItem));
-            frameDelay.Id = PropertyTagFrameDelay;
-            frameDelay.Type = PropertyTagTypeLong;
-            // Length of the value in bytes.
-            frameDelay.Len = count * UintBytes;
-            // The value is an array of 4-byte entries: one per frame.
-            // Every entry is the frame delay in 1/100-s of a second, in little endian.
-            frameDelay.Value = new byte[count * UintBytes];
-            // E.g., here, we're setting the delay of every frame to 1 second.
-            var frameDelayBytes = BitConverter.GetBytes(delay / 10);
-            for (int j = 0; j < count; ++j)
-                Array.Copy(frameDelayBytes, 0, frameDelay.Value, j * UintBytes, UintBytes);
-            firstBitmap.SetPropertyItem(frameDelay);
-        }
+			// PropertyItem for the frame delay (apparently, no other way to create a fresh instance).
+			var frameDelay = (PropertyItem) FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+			frameDelay.Id = PropertyTagFrameDelay;
+			frameDelay.Type = PropertyTagTypeLong;
+			// Length of the value in bytes.
+			frameDelay.Len = count * UintBytes;
+			// The value is an array of 4-byte entries: one per frame.
+			// Every entry is the frame delay in 1/100-s of a second, in little endian.
+			frameDelay.Value = new byte[count * UintBytes];
+			// E.g., here, we're setting the delay of every frame to 1 second.
+			var frameDelayBytes = BitConverter.GetBytes(delay / 10);
+			for (int j = 0; j < count; ++j)
+				Array.Copy(frameDelayBytes, 0, frameDelay.Value, j * UintBytes, UintBytes);
+			firstBitmap.SetPropertyItem(frameDelay);
+		}
 
 		private static void SetLoop(Bitmap firstBitmap, bool loop)
 		{
 			if (!loop)
 				return;
 
-            // PropertyItem for the number of animation loops.
-            var loopPropertyItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
-            loopPropertyItem.Id = PropertyTagLoopCount;
-            loopPropertyItem.Type = PropertyTagTypeShort;
-            loopPropertyItem.Len = 2;
-            // 0 means to animate forever.
-            loopPropertyItem.Value = BitConverter.GetBytes((ushort)0);
-            firstBitmap.SetPropertyItem(loopPropertyItem);
-        }
+			// PropertyItem for the number of animation loops.
+			var loopPropertyItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+			loopPropertyItem.Id = PropertyTagLoopCount;
+			loopPropertyItem.Type = PropertyTagTypeShort;
+			loopPropertyItem.Len = 2;
+			// 0 means to animate forever.
+			loopPropertyItem.Value = BitConverter.GetBytes((ushort)0);
+			firstBitmap.SetPropertyItem(loopPropertyItem);
+		}
 
-        public void AddImages(List<Bitmap> bitmaps)
+		public void AddImages(List<Bitmap> bitmaps)
 		{
 			using var fs = new FileStream(_destPath, FileMode.Create);
 			var firstBitmap = bitmaps[0];
@@ -78,8 +78,8 @@ namespace nQuant
 			// Params of the first frame.
 			var encoderParams = new EncoderParameters(1);
 			encoderParams.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.MultiFrame);
-            SetFrameDelay(firstBitmap, _delay, bitmaps.Count);
-            SetLoop(firstBitmap, _loop);
+			SetFrameDelay(firstBitmap, _delay, bitmaps.Count);
+			SetLoop(firstBitmap, _loop);
 			firstBitmap.Save(fs, gifEncoder, encoderParams);
 
 			// Params of other frames.
@@ -88,7 +88,7 @@ namespace nQuant
 				firstBitmap.SaveAdd(bitmaps[i], encoderParams);
 
 			// Params for the finalizing call.
-            encoderParams.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.Flush);
+			encoderParams.Param[0] = new EncoderParameter(Encoder.SaveFlag, (long)EncoderValue.Flush);
 			firstBitmap.SaveAdd(encoderParams);
 		}
 
