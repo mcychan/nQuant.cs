@@ -72,7 +72,7 @@ namespace nQuant.Master
 			errorq = new();
 			weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : 6;
-			sortedByYDiff = !hasAlpha && palette.Length >= 128 && weight >= .04;
+			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = weight > .002 ? .25 : 1;
