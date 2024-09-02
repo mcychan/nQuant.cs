@@ -538,7 +538,7 @@ namespace PnnQuant
 		protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, bool dither)
 		{
 			this.dither = dither;
-			if (hasSemiTransparency)
+			if (hasSemiTransparency || isGA)
 				weight *= -1;
 			var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight);
 
