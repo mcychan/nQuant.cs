@@ -220,7 +220,7 @@ namespace PnnQuant
 		private double RotateLeft(double u, double v, double delta = 0.0) {
 			var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
 			var result = u * Math.Sin(theta) + v * Math.Cos(theta);
-			if(result <= minRatio || result >= maxRatio)
+            if (delta < 50 && (result <= minRatio || result >= maxRatio))
 				result = RotateLeft(u, v, delta + .5);
 			return result;
 		}
@@ -228,7 +228,7 @@ namespace PnnQuant
 		private double RotateRight(double u, double v, double delta = 0.0) {
 			var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
 			var result = u * Math.Cos(theta) - v * Math.Sin(theta);
-			if(result <= minRatio || result >= maxRatio)
+            if (delta < 50 && (result <= minRatio || result >= maxRatio))
 				result = RotateRight(u, v, delta + .5);
 			return result;
 		}
