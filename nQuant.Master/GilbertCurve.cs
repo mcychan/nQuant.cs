@@ -121,7 +121,7 @@ namespace nQuant.Master
 					lookup[offset] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
 				qPixels[bidx] = lookup[offset] - 1;
 
-				int acceptedDiff = Math.Max(1, palette.Length - margin);
+				int acceptedDiff = Math.Max(2, palette.Length - margin);
 				if (saliencies != null && (CIELABConvertor.Y_Diff(pixel, c2) > acceptedDiff || CIELABConvertor.U_Diff(pixel, c2) > (2 * acceptedDiff)))
 				{
 					var strength = 1 / 3f;
