@@ -35,7 +35,7 @@ function is_32bits_architecture() { return get_bits_system_architecture() == 32 
 function renderVersion(doc)
 {
 	var current = getNodeNS("", "current", doc, 0);
-	var previous = getNodeNS("", "previous", doc, 0);	
+	var previous = getNodeNS("", "previous", doc, 0);
 	var d1 = current.getAttribute("date");
 	var d2 = previous.getAttribute("date");
 
@@ -64,7 +64,7 @@ class Header extends preact.Component {
 		return preact.createElement("div", {className: "container", style: {textAlign: "center"} },
 			[
 				preact.createElement("h2", {style: {paddingBottom: "1em"}}, preact.createElement("a", {key: "hDownload", name: "download", href: "#", onClick: this.props.onClick}, "ImgV64")),
-				preact.createElement("a", {href: "copyright.htm", style: {paddingBottom: "1em"}}, "Copyright \u00a9 2016-2022,"),
+				preact.createElement("a", {href: "copyright.htm", style: {paddingBottom: "1em"}}, "Copyright \u00a9 2016-2024,"),
 				preact.createElement("div", {style: {paddingBottom: "1em"}}, "Miller Cy Chan,"),
 				preact.createElement("div", {style: {paddingBottom: "1em"}}, "All rights reserved")
 			]
@@ -144,14 +144,14 @@ class Download extends preact.Component {
 	constructor(props) {
 		super(props);
 		this.state = { d1: '2021/03/20', v1: 1.77, d2: '2020/02/08', v2: 1.76, 
-			url: 'ImgV64_17.msi', url2: 'ImgV64_17.msi', url64: 'ImgV64_17_x64.msi'};	
+			url: 'ImgV64_17.msi', url2: 'ImgV64_17.msi', url64: 'ImgV64_17_x64.msi'};
 		fetch('history.xml') 
 		.then(response => response.text()) 
 		.then(responseText => new DOMParser().parseFromString(responseText, "text/xml"))
 		.then(xmlDoc => {
 			const result = renderVersion(xmlDoc);
 			this.setState(result); 
-		});					
+		});
 	}	
 	
 	render() {	
@@ -186,7 +186,7 @@ class Download extends preact.Component {
 					preact.createElement("div", {style: {float: "left", width: "40%", textAlign: "right"}}, 
 						preact.createElement("span", {key: "wi"}, "Without installer:" )),
 					preact.createElement("div", {style: {float: "right", paddingLeft: "2em", width: "50%"}}, 
-						preact.createElement("a", {href: "https://github.com/mcychan/nQuant.cs/releases/download/1.82/imgV64_18.zip"}, "portable x86 64 bit version Download"))
+						preact.createElement("a", {href: "https://github.com/mcychan/nQuant.cs/releases/download/1.88/imgV64_18.zip"}, "portable x86 64 bit version Download"))
 				])
 			],
 			preact.createElement(Promotors, {key: "supporters"})
@@ -285,7 +285,7 @@ class App extends preact.Component {
 		let displayState = {};
 		const showThis = this.state[tagId] ? "none" : "block";
 		Object.keys(this.state).map(key => 
-			displayState[key] = (key == tagId) ? showThis : this.state[tagId]				
+			displayState[key] = (key == tagId) ? showThis : this.state[tagId]
 		);
 	    this.setState(displayState);
 	}
