@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XML_DIZ_INFO>
+  <MASTER_PAD_VERSION_INFO>
+    <MASTER_PAD_VERSION>4.0</MASTER_PAD_VERSION>
+    <MASTER_PAD_EDITOR>AppVisor 1.0.43</MASTER_PAD_EDITOR>
+    <MASTER_PAD_EDITOR_URL>https://publisher.appvisor.com</MASTER_PAD_EDITOR_URL>
+    <MASTER_PAD_INFO>Portable Application Description, or PAD(TM) 2004 Association of Software Professionals (ASP)http://www.asp-shareware.org/pad is a data set standard and specification that is commercialsoftware publishers to disseminate certified information about their software application. The PAD format is copyright of the ASP and cannot be used without the formal licensing and permission of both the Association of Software Professionals and its agent AppVisor.com.</MASTER_PAD_INFO>
+    <CERTIFIED>N</CERTIFIED>
+    <CERTIFICATE_ID></CERTIFICATE_ID>
+    <CERTIFICATE_LICENSE></CERTIFICATE_LICENSE>
+  </MASTER_PAD_VERSION_INFO>
+  <RoboSoft>
+    <Company_UIN>CMP-A100D84CEEB6</Company_UIN>
+    <Product_UIN>APP-5200C534E624</Product_UIN>
+    <Publish_on_CD>FALSE</Publish_on_CD>
+    <NewsFeed_Search_String></NewsFeed_Search_String>
+    <Search_String>ImgV64</Search_String>
+    <Press_Release_Search_String></Press_Release_Search_String>
+    <Backlink></Backlink>
+    <Comments_For_Reviewer></Comments_For_Reviewer>
+    <Search_String_Unique>ImgV64</Search_String_Unique>
+    <Search_Engine_Search_String></Search_Engine_Search_String>
+    <Web_Directories_Search_String></Web_Directories_Search_String>
+    <Company_Description></Company_Description>
+  </RoboSoft>
+  <Company_Info>
+    <PublisherID>pid-9100c39dceb6</PublisherID>
+    <BrandID>bid-a100d84ceeb6</BrandID>
+    <Company_Name>Miller Cy Chan</Company_Name>
+    <Country>Hong Kong</Country>
+    <State_Province>Hong Kong</State_Province>
+    <City_Town>Sheung Wan</City_Town>
+    <Zip_Postal_Code>852</Zip_Postal_Code>
+    <Address_1>Room 1705, Tung Ning Building</Address_1>
+    <Address_2>2 Hillier Street</Address_2>
+    <Company_WebSite_URL>https://github.com/mcychan</Company_WebSite_URL>
+    <Contact_Info>
+      <Contact_First_Name>miller</Contact_First_Name>
+      <Contact_Last_Name>chan</Contact_Last_Name>
+      <Contact_Email>wincln@usa.com</Contact_Email>
+      <Author_First_Name>miller</Author_First_Name>
+      <Author_Last_Name>chan</Author_Last_Name>
+      <Author_Email>wincln@usa.com</Author_Email>
+      <Contact_Phone></Contact_Phone>
+    </Contact_Info>
+    <Support_Info>
+      <Sales_Email>wincln@usa.com</Sales_Email>
+      <Support_Email>wincln@usa.com</Support_Email>
+      <General_Email>wincln@usa.com</General_Email>
+      <Sales_Phone></Sales_Phone>
+      <Support_Phone></Support_Phone>
+      <General_Phone></General_Phone>
+      <Fax_Phone></Fax_Phone>
+    </Support_Info>
+    <LinkedinPage>https://hk.linkedin.com/in/miller-cy-chan-wincln</LinkedinPage>
+    <TwitterCompanyPage></TwitterCompanyPage>
+    <FacebookCompanyPage></FacebookCompanyPage>
+  </Company_Info>
+  <Program_Info>
+    <AppID>app-5200c534e624</AppID>
+    <Program_Name>ImgV64</Program_Name>
+    <Program_Version>1.88</Program_Version>
+    <Program_Release_Month>11</Program_Release_Month>
+    <Program_Release_Day>11</Program_Release_Day>
+    <Program_Release_Year>2024</Program_Release_Year>
+    <Program_Cost_Dollars>0</Program_Cost_Dollars>
+    <Program_Type>Freeware</Program_Type>
+    <Program_Category_Class>Graphic Apps::Editors</Program_Category_Class>
+    <Program_Specific_Category></Program_Specific_Category>
+    <Program_Categories>Multimedia and Design :: Image Viewers,Multimedia and Design :: Image Editing,Multimedia and Design :: Presentations</Program_Categories>
+    <Program_Release_Status>Major Update</Program_Release_Status>
+    <Program_Install_Support>Install and Uninstall</Program_Install_Support>
+    <Program_Target_Platform>Windows</Program_Target_Platform>
+    <Program_OS_Support>Windows 10,Windows 11,WinServer,WinOther,WinVista,WinVista x64</Program_OS_Support>
+    <Program_Language>English,Chinese,ChineseSimplified,ChineseTraditional,German,Japanese,Spanish</Program_Language>
+    <Program_Change_Info>Upgraded HEIC, AVIF libraries</Program_Change_Info>
+    <Program_System_Requirements>Windows 10 or above</Program_System_Requirements>
+    <Limitations>No limitations in downloadable version</Limitations>
+    <Awards>https://www.download3k.com/Antivirus-Report-ImgV64.html</Awards>
+    <File_Info>
+      <File_Size_Bytes>5880886</File_Size_Bytes>
+      <File_Size_K>5744</File_Size_K>
+      <File_Size_MB>5.60</File_Size_MB>
+    </File_Info>
+    <Expire_Info>
+      <Has_Expire_Info>N</Has_Expire_Info>
+      <Expire_Count></Expire_Count>
+      <Expire_Based_On></Expire_Based_On>
+      <Expire_Year></Expire_Year>
+      <Expire_Other_Info></Expire_Other_Info>
+      <Expire_Month></Expire_Month>
+      <Expire_Day></Expire_Day>
+    </Expire_Info>
+    <Includes_JAVA_VM></Includes_JAVA_VM>
+    <Includes_DirectX></Includes_DirectX>
+    <Includes_VB_Runtime></Includes_VB_Runtime>
+  </Program_Info>
+  <Web_Info>
+    <Application_URLs>
+      <Application_Info_URL>https://mcychan.github.io/nQuant.cs/imgV64/</Application_Info_URL>
+      <Application_Order_URL></Application_Order_URL>
+      <Application_Screenshot_URL>https://raw.githubusercontent.com/mcychan/nQuantCpp/master/ImgV64.gif</Application_Screenshot_URL>
+      <Application_Icon_URL>https://mcychan.github.io/nQuant.cs/imgV64/images/ImgV64.png</Application_Icon_URL>
+      <Application_XML_File_URL>https://mcychan.github.io/nQuant.cs/imgV64/ImgV64_18.xml</Application_XML_File_URL>
+    </Application_URLs>
+    <Download_URLs>
+      <Primary_Download_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</Primary_Download_URL>
+      <Secondary_Download_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/imgV64_18.zip</Secondary_Download_URL>
+      <Additional_Download_URL_1>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18.exe</Additional_Download_URL_1>
+      <Additional_Download_URL_2></Additional_Download_URL_2>
+    </Download_URLs>
+  </Web_Info>
+  <Program_Descriptions>
+    <English>
+      <Keywords>Freeware, Graphics, Windows, Win7, Win8, Win10, Wallpaper, Images, Viewers, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, WEBP, HEIC, ImgV64, ImageViewer, Editors, File, Format, Conversion, Color, Adustment,Gamma, Con</Keywords>
+      <Char_Desc_45>Graphics Viewer for Windows Vista or above.</Char_Desc_45>
+      <Char_Desc_80>ImgV64 is a straightforward graphics viewer for GIF, JPG, PNG, WEBP, HEIC</Char_Desc_80>
+      <Char_Desc_250>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. ImgV64 has many powerful features available. Free of any malware, spyware, and viruses. It is a 100% clean and safe tool for you to use.</Char_Desc_250>
+      <Char_Desc_450>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program. ImgV64 has many powerful features available. You can add text to an image with the text tool. This is quite versatile, with font, size and color selection, transparent.</Char_Desc_450>
+      <Char_Desc_2000>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program. &#13;
+ImgV64 has many powerful features available, but they won't get in your way if you just want to use it as a simple viewer.&#13;
+Among the features: You can load an image from a folder and then 'slide show' through the rest of the images in the folder using the keyboard left and right arrow keys.&#13;
+This works in window or full screen modes.&#13;
+Free of any malware, spyware, and viruses. It is a 100% clean and safe tool for you to use.&#13;
+You can add text to an image with the text tool. This is quite versatile, with font, size and color selection, transparent, and 90/180/270 degree rotation of image available.&#13;
+&#13;
+As you can see above, many tools, including Undo/Redo, are available on the toolbar. If you want more screen space, you can hide the toolbar and just use menus.&#13;
+You can choose to open an image at 100% of its original size, or at a size that is adjusted to fill available space on the screen (while maintaining proportions). &#13;
+You can choose to have up to 4 recently-loaded images in the file menu, for quick re-display. &#13;
+If you really want to simply view or edit your photo albums, this is your choice.&#13;
+Brightness, Contrast, and Gamma adjustments are selectable by slider bar. Other Tune Dialogs include Sharpen, Blur, and color adjustments on the Red/Green/Blue scale.&#13;
+The Undo of editing also has a Redo option. Both are on the toolbar for easy scrolling through changes.&#13;
+&#13;
+There is a Set as Wallpaper function in the Image menu to make the current image your desktop wallpaper.</Char_Desc_2000>
+    </English>
+  </Program_Descriptions>
+  <Permissions>
+    <Distribution_Permissions>This work (and included software, documentation such as READMEs, or other related items) is being provided by the copyright holders under the following license. By obtaining, using and/or copying this work, you (the licensee) agree that you have read, understood, and will comply with the following terms and conditions.&#13;
+&#13;
+Permission to copy, modify, and distribute this software and its documentation, with or without modification, for any purpose and without fee or royalty is hereby granted, provided that you include the following on ALL copies of the software and documentation or portions thereof, including modifications:&#13;
+&#13;
+The full text of this NOTICE in a location viewable to users of the redistributed or derivative work.&#13;
+Any pre-existing intellectual property disclaimers, notices, or terms and conditions. If none exist, the Miller Cy Chan Software Short Notice should be included (hypertext is preferred, text is permitted) within the body of any redistributed or derivative code.&#13;
+Notice of any changes or modifications to the files, including the date changes were made. (We recommend you provide URIs to the location from which the code is derived.)&#13;
+THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.&#13;
+&#13;
+COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR DOCUMENTATION.&#13;
+&#13;
+The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders.</Distribution_Permissions>
+    <EULA>http://imgv64.rf.gd/copyright.htm</EULA>
+  </Permissions>
+  <Affiliates>
+    <Affiliates_Regsoft_Order_Page></Affiliates_Regsoft_Order_Page>
+    <Affiliates_Regsoft_Vendor_ID></Affiliates_Regsoft_Vendor_ID>
+    <Affiliates_Regsoft_Product_ID></Affiliates_Regsoft_Product_ID>
+    <Affiliates_FORM></Affiliates_FORM>
+    <Affiliates_FORM_VER></Affiliates_FORM_VER>
+    <Affiliates_VERSION></Affiliates_VERSION>
+    <Affiliates_URL></Affiliates_URL>
+    <Affiliates_Information_Page></Affiliates_Information_Page>
+    <Affiliates_Avangate_Order_Page></Affiliates_Avangate_Order_Page>
+    <Affiliates_Avangate_Vendor_ID></Affiliates_Avangate_Vendor_ID>
+    <Affiliates_Avangate_Product_ID></Affiliates_Avangate_Product_ID>
+    <Affiliates_Avangate_Maximum_Commission_Rate></Affiliates_Avangate_Maximum_Commission_Rate>
+    <Affiliates_BlueSnap_Order_Page></Affiliates_BlueSnap_Order_Page>
+    <Affiliates_BlueSnap_Vendor_ID></Affiliates_BlueSnap_Vendor_ID>
+    <Affiliates_BlueSnap_Product_ID></Affiliates_BlueSnap_Product_ID>
+    <Affiliates_BlueSnap_Maximum_Commission_Rate></Affiliates_BlueSnap_Maximum_Commission_Rate>
+    <Affiliates_BMTMicro_Order_Page></Affiliates_BMTMicro_Order_Page>
+    <Affiliates_BMTMicro_Vendor_ID></Affiliates_BMTMicro_Vendor_ID>
+    <Affiliates_BMTMicro_Product_ID></Affiliates_BMTMicro_Product_ID>
+    <Affiliates_BMTMicro_Maximum_Commission_Rate></Affiliates_BMTMicro_Maximum_Commission_Rate>
+    <Affiliates_eSellerate_Order_Page></Affiliates_eSellerate_Order_Page>
+    <Affiliates_eSellerate_Vendor_ID></Affiliates_eSellerate_Vendor_ID>
+    <Affiliates_eSellerate_Product_ID></Affiliates_eSellerate_Product_ID>
+    <Affiliates_eSellerate_Maximum_Commission_Rate></Affiliates_eSellerate_Maximum_Commission_Rate>
+    <Affiliates_Regnet_Order_Page></Affiliates_Regnet_Order_Page>
+    <Affiliates_Regnet_Vendor_ID></Affiliates_Regnet_Vendor_ID>
+    <Affiliates_Regnet_Product_ID></Affiliates_Regnet_Product_ID>
+    <Affiliates_Regnet_Maximum_Commission_Rate></Affiliates_Regnet_Maximum_Commission_Rate>
+    <Affiliates_Regsoft_Maximum_Commission_Rate></Affiliates_Regsoft_Maximum_Commission_Rate>
+    <Affiliates_ShareIt_Order_Page></Affiliates_ShareIt_Order_Page>
+    <Affiliates_ShareIt_Vendor_ID></Affiliates_ShareIt_Vendor_ID>
+    <Affiliates_ShareIt_Product_ID></Affiliates_ShareIt_Product_ID>
+    <Affiliates_ShareIt_Maximum_Commission_Rate></Affiliates_ShareIt_Maximum_Commission_Rate>
+  </Affiliates>
+  <NewsFeed>
+    <NewsFeed_FORM></NewsFeed_FORM>
+    <NewsFeed_VERSION></NewsFeed_VERSION>
+    <NewsFeed_URL></NewsFeed_URL>
+    <NewsFeed_DESCRIPTION></NewsFeed_DESCRIPTION>
+    <NewsFeed_Feed_URL></NewsFeed_Feed_URL>
+    <NewsFeed_Type></NewsFeed_Type>
+    <NewsFeed_Site_URL></NewsFeed_Site_URL>
+    <NewsFeed_Author_First_Name>miller</NewsFeed_Author_First_Name>
+    <NewsFeed_Author_Last_Name>chan</NewsFeed_Author_Last_Name>
+    <NewsFeed_Author_Email>wincln@usa.com</NewsFeed_Author_Email>
+    <NewsFeed_Language></NewsFeed_Language>
+    <NewsFeed_Title></NewsFeed_Title>
+    <NewsFeed_Description_70></NewsFeed_Description_70>
+    <NewsFeed_Description_250></NewsFeed_Description_250>
+    <NewsFeed_Purpose></NewsFeed_Purpose>
+    <NewsFeed_Site_Name></NewsFeed_Site_Name>
+  </NewsFeed>
+  <Press_Release>
+    <Press_Release></Press_Release>
+    <Keywords>Freeware, Graphics, Windows, Win7, Win8, Win10, Wallpaper, Images, Viewers, Image,Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, ImgV64,ImageViewer,Editors, File, Format, Conversion, Color, Adustment,Gamma, Contrast, Slide</Keywords>
+    <Headline></Headline>
+    <Summary></Summary>
+    <Press_Release_Plain></Press_Release_Plain>
+  </Press_Release>
+  <Site>
+    <Site_FORM></Site_FORM>
+    <Site_VERSION></Site_VERSION>
+    <Site_DESCRIPTION></Site_DESCRIPTION>
+    <Site_Site_Title>ImgV64</Site_Site_Title>
+    <Site_Site_URL>https://mcychan.github.io/nQuant.cs/imgV64/</Site_Site_URL>
+    <Site_Keywords>Graphics, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, WEBP, HEIC, ImgV64, ImageViewer, Editors, File, Format</Site_Keywords>
+    <Site_Description_100>ImgV64 is a straightforward graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats.</Site_Description_100>
+    <Site_Description_250>ImgV64 is a Windows Vista/Win7/Win8/Win10 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features.</Site_Description_250>
+    <Site_Description_450>ImgV64 is a Windows Vista/Win7/Win8/Win10 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program.</Site_Description_450>
+    <Site_Contact_First_Name>miller</Site_Contact_First_Name>
+    <Site_Contact_Last_Name>chan</Site_Contact_Last_Name>
+    <Site_Contact_Email>wincln@usa.com</Site_Contact_Email>
+  </Site>
+  <Download_Link_Points_To_Non_Binary_File>TRUE</Download_Link_Points_To_Non_Binary_File>
+  <Dynamic_PAD>
+    <Dynamic_Distributive>N</Dynamic_Distributive>
+    <General>
+      <DP_Pad_Enabled>TRUE</DP_Pad_Enabled>
+      <DP_AtFormFill_Enabled>TRUE</DP_AtFormFill_Enabled>
+      <DP_Distributive_Enabled>FALSE</DP_Distributive_Enabled>
+      <DP_Script_Base_URL>https://mcychan.github.io/nQuant.cs/imgV64/</DP_Script_Base_URL>
+      <DP_Pad_Mask>ImgV64_18.xml</DP_Pad_Mask>
+      <DP_Distributive_Primary_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</DP_Distributive_Primary_URL>
+      <DP_Distributive_Mask>ImgV64_18_x64.exe</DP_Distributive_Mask>
+    </General>
+  </Dynamic_PAD>
+</XML_DIZ_INFO>
