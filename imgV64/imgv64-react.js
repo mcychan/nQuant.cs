@@ -213,7 +213,8 @@ class ProductInfo extends preact.Component {
 				'<p>You can choose to have up to 4 recently-loaded images in the file menu, for quick re-display. <br />' +
 				'If you really want to simply view or edit your photo albums, this is your choice.</p>',
 				'<p>Brightness, Contrast, and Gamma adjustments are selectable by slider bar. Other Tune Dialogs include Sharpen, Blur, and color adjustments on the Red/Green/Blue scale.</p>' +
-				'<img src="images/ImgV64.jpg" alt="Imgv64 screenshot" class="responsive" />'
+				'<picture><source srcset="images/ImgV64.gif" media="(prefers-color-scheme: light)" class="responsive" />' +
+				'<source srcset="images/ImgV64_1.gif"  media="(prefers-color-scheme: dark)" class="responsive" /><img src="images/ImgV64.jpg" alt="Imgv64 screenshot" class="responsive" /></picture>'
 			],
 			[
 				'<p>The Undo of editing also has a Redo option. Both are on the toolbar for easy scrolling through changes.</p>',
@@ -238,7 +239,7 @@ class ProductInfo extends preact.Component {
 	}
 }
 
-class Support extends preact.Component {  	
+class Support extends preact.Component {
 	render() {
 		const childrenData = [
 			[
@@ -247,7 +248,7 @@ class Support extends preact.Component {
 				'<p>Currently supported Language: English, traditional' +
 				'Chinese, Simplified Chinese, Japanese<br />Thanks for support:',
 				'<a title="Japanese.lng" href="mailto:ckh3111@gmail.com">Ricky Chow</a><br />Would you please help to ' +
-				'<a href="http://imgv64.rf.gd/english.lng">translate ImgV64</a> by using notepad (Save target as .lng)!<br />',
+				'<a href="https://raw.githubusercontent.com/mcychan/nQuant.cs/refs/heads/core/imgV64/english.lng">translate ImgV64</a> by using notepad (Save target as .lng)!<br />',
 				'Then <a href="mailto:wincln@usa.com">Email</a> your translation! ' +
 				'In return, Imgv64 will link back to your site by the Help -> Online Help menu if user was in your language.</p>'
 			]
