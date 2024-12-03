@@ -2,30 +2,10 @@
 <XML_DIZ_INFO>
   <MASTER_PAD_VERSION_INFO>
     <MASTER_PAD_VERSION>4.0</MASTER_PAD_VERSION>
-    <MASTER_PAD_EDITOR>AppVisor 1.0.43</MASTER_PAD_EDITOR>
-    <MASTER_PAD_EDITOR_URL>https://publisher.appvisor.com</MASTER_PAD_EDITOR_URL>
-    <MASTER_PAD_INFO>Portable Application Description, or PAD(TM) 2004 Association of Software Professionals (ASP)http://www.asp-shareware.org/pad is a data set standard and specification that is commercialsoftware publishers to disseminate certified information about their software application. The PAD format is copyright of the ASP and cannot be used without the formal licensing and permission of both the Association of Software Professionals and its agent AppVisor.com.</MASTER_PAD_INFO>
-    <CERTIFIED>N</CERTIFIED>
-    <CERTIFICATE_ID></CERTIFICATE_ID>
-    <CERTIFICATE_LICENSE></CERTIFICATE_LICENSE>
+    <MASTER_PAD_EDITOR>nQuantCpp</MASTER_PAD_EDITOR>
+    <MASTER_PAD_INFO>Portable Application Description, or PAD for short, is a data set that is used by shareware authors to disseminate information to anyone interested in their software products.</MASTER_PAD_INFO>
   </MASTER_PAD_VERSION_INFO>
-  <RoboSoft>
-    <Company_UIN>CMP-A100D84CEEB6</Company_UIN>
-    <Product_UIN>APP-5200C534E624</Product_UIN>
-    <Publish_on_CD>FALSE</Publish_on_CD>
-    <NewsFeed_Search_String></NewsFeed_Search_String>
-    <Search_String>ImgV64</Search_String>
-    <Press_Release_Search_String></Press_Release_Search_String>
-    <Backlink></Backlink>
-    <Comments_For_Reviewer></Comments_For_Reviewer>
-    <Search_String_Unique>ImgV64</Search_String_Unique>
-    <Search_Engine_Search_String></Search_Engine_Search_String>
-    <Web_Directories_Search_String></Web_Directories_Search_String>
-    <Company_Description></Company_Description>
-  </RoboSoft>
   <Company_Info>
-    <PublisherID>pid-9100c39dceb6</PublisherID>
-    <BrandID>bid-a100d84ceeb6</BrandID>
     <Company_Name>Miller Cy Chan</Company_Name>
     <Country>Hong Kong</Country>
     <State_Province>Hong Kong</State_Province>
@@ -71,11 +51,12 @@
     <Program_Release_Status>Major Update</Program_Release_Status>
     <Program_Install_Support>Install and Uninstall</Program_Install_Support>
     <Program_Target_Platform>Windows</Program_Target_Platform>
-    <Program_OS_Support>Windows 10,Windows 11,WinServer,WinOther,WinVista,WinVista x64</Program_OS_Support>
+    <Program_OS_Support>Windows 10,Windows 11,WinServer,WinOther</Program_OS_Support>
     <Program_Language>English,Chinese,ChineseSimplified,ChineseTraditional,German,Japanese,Spanish</Program_Language>
     <Program_Change_Info>Upgraded HEIC, AVIF libraries</Program_Change_Info>
     <Program_System_Requirements>Windows 10 or above</Program_System_Requirements>
-    <Limitations>No limitations in downloadable version</Limitations>
+    <Program_Category_Class>Graphics Applications</Program_Category_Class>
+    <Program_Specific_Category>Graphic Viewers</Program_Specific_Category>
     <Awards>https://www.download3k.com/Antivirus-Report-ImgV64.html</Awards>
     <File_Info>
       <File_Size_Bytes>5880886</File_Size_Bytes>
@@ -91,9 +72,6 @@
       <Expire_Month></Expire_Month>
       <Expire_Day></Expire_Day>
     </Expire_Info>
-    <Includes_JAVA_VM></Includes_JAVA_VM>
-    <Includes_DirectX></Includes_DirectX>
-    <Includes_VB_Runtime></Includes_VB_Runtime>
   </Program_Info>
   <Web_Info>
     <Application_URLs>
@@ -147,68 +125,8 @@ THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE 
 COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR DOCUMENTATION.&#13;
 &#13;
 The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders.</Distribution_Permissions>
-    <EULA>http://imgv64.rf.gd/copyright.htm</EULA>
+    <EULA>Please go to https://mcychan.github.io/nQuant.cs/imgV64/copyright.htm to download and review a full copy of the End-User Software License Agreement.</EULA>
   </Permissions>
-  <Affiliates>
-    <Affiliates_Regsoft_Order_Page></Affiliates_Regsoft_Order_Page>
-    <Affiliates_Regsoft_Vendor_ID></Affiliates_Regsoft_Vendor_ID>
-    <Affiliates_Regsoft_Product_ID></Affiliates_Regsoft_Product_ID>
-    <Affiliates_FORM></Affiliates_FORM>
-    <Affiliates_FORM_VER></Affiliates_FORM_VER>
-    <Affiliates_VERSION></Affiliates_VERSION>
-    <Affiliates_URL></Affiliates_URL>
-    <Affiliates_Information_Page></Affiliates_Information_Page>
-    <Affiliates_Avangate_Order_Page></Affiliates_Avangate_Order_Page>
-    <Affiliates_Avangate_Vendor_ID></Affiliates_Avangate_Vendor_ID>
-    <Affiliates_Avangate_Product_ID></Affiliates_Avangate_Product_ID>
-    <Affiliates_Avangate_Maximum_Commission_Rate></Affiliates_Avangate_Maximum_Commission_Rate>
-    <Affiliates_BlueSnap_Order_Page></Affiliates_BlueSnap_Order_Page>
-    <Affiliates_BlueSnap_Vendor_ID></Affiliates_BlueSnap_Vendor_ID>
-    <Affiliates_BlueSnap_Product_ID></Affiliates_BlueSnap_Product_ID>
-    <Affiliates_BlueSnap_Maximum_Commission_Rate></Affiliates_BlueSnap_Maximum_Commission_Rate>
-    <Affiliates_BMTMicro_Order_Page></Affiliates_BMTMicro_Order_Page>
-    <Affiliates_BMTMicro_Vendor_ID></Affiliates_BMTMicro_Vendor_ID>
-    <Affiliates_BMTMicro_Product_ID></Affiliates_BMTMicro_Product_ID>
-    <Affiliates_BMTMicro_Maximum_Commission_Rate></Affiliates_BMTMicro_Maximum_Commission_Rate>
-    <Affiliates_eSellerate_Order_Page></Affiliates_eSellerate_Order_Page>
-    <Affiliates_eSellerate_Vendor_ID></Affiliates_eSellerate_Vendor_ID>
-    <Affiliates_eSellerate_Product_ID></Affiliates_eSellerate_Product_ID>
-    <Affiliates_eSellerate_Maximum_Commission_Rate></Affiliates_eSellerate_Maximum_Commission_Rate>
-    <Affiliates_Regnet_Order_Page></Affiliates_Regnet_Order_Page>
-    <Affiliates_Regnet_Vendor_ID></Affiliates_Regnet_Vendor_ID>
-    <Affiliates_Regnet_Product_ID></Affiliates_Regnet_Product_ID>
-    <Affiliates_Regnet_Maximum_Commission_Rate></Affiliates_Regnet_Maximum_Commission_Rate>
-    <Affiliates_Regsoft_Maximum_Commission_Rate></Affiliates_Regsoft_Maximum_Commission_Rate>
-    <Affiliates_ShareIt_Order_Page></Affiliates_ShareIt_Order_Page>
-    <Affiliates_ShareIt_Vendor_ID></Affiliates_ShareIt_Vendor_ID>
-    <Affiliates_ShareIt_Product_ID></Affiliates_ShareIt_Product_ID>
-    <Affiliates_ShareIt_Maximum_Commission_Rate></Affiliates_ShareIt_Maximum_Commission_Rate>
-  </Affiliates>
-  <NewsFeed>
-    <NewsFeed_FORM></NewsFeed_FORM>
-    <NewsFeed_VERSION></NewsFeed_VERSION>
-    <NewsFeed_URL></NewsFeed_URL>
-    <NewsFeed_DESCRIPTION></NewsFeed_DESCRIPTION>
-    <NewsFeed_Feed_URL></NewsFeed_Feed_URL>
-    <NewsFeed_Type></NewsFeed_Type>
-    <NewsFeed_Site_URL></NewsFeed_Site_URL>
-    <NewsFeed_Author_First_Name>miller</NewsFeed_Author_First_Name>
-    <NewsFeed_Author_Last_Name>chan</NewsFeed_Author_Last_Name>
-    <NewsFeed_Author_Email>wincln@usa.com</NewsFeed_Author_Email>
-    <NewsFeed_Language></NewsFeed_Language>
-    <NewsFeed_Title></NewsFeed_Title>
-    <NewsFeed_Description_70></NewsFeed_Description_70>
-    <NewsFeed_Description_250></NewsFeed_Description_250>
-    <NewsFeed_Purpose></NewsFeed_Purpose>
-    <NewsFeed_Site_Name></NewsFeed_Site_Name>
-  </NewsFeed>
-  <Press_Release>
-    <Press_Release></Press_Release>
-    <Keywords>Freeware, Graphics, Windows, Win7, Win8, Win10, Wallpaper, Images, Viewers, Image,Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, ImgV64,ImageViewer,Editors, File, Format, Conversion, Color, Adustment,Gamma, Contrast, Slide</Keywords>
-    <Headline></Headline>
-    <Summary></Summary>
-    <Press_Release_Plain></Press_Release_Plain>
-  </Press_Release>
   <Site>
     <Site_FORM></Site_FORM>
     <Site_VERSION></Site_VERSION>
@@ -217,8 +135,8 @@ The name and trademarks of copyright holders may NOT be used in advertising or p
     <Site_Site_URL>https://mcychan.github.io/nQuant.cs/imgV64/</Site_Site_URL>
     <Site_Keywords>Graphics, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, WEBP, HEIC, ImgV64, ImageViewer, Editors, File, Format</Site_Keywords>
     <Site_Description_100>ImgV64 is a straightforward graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats.</Site_Description_100>
-    <Site_Description_250>ImgV64 is a Windows Vista/Win7/Win8/Win10 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features.</Site_Description_250>
-    <Site_Description_450>ImgV64 is a Windows Vista/Win7/Win8/Win10 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program.</Site_Description_450>
+    <Site_Description_250>ImgV64 is a Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features.</Site_Description_250>
+    <Site_Description_450>ImgV64 is a Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program.</Site_Description_450>
     <Site_Contact_First_Name>miller</Site_Contact_First_Name>
     <Site_Contact_Last_Name>chan</Site_Contact_Last_Name>
     <Site_Contact_Email>wincln@usa.com</Site_Contact_Email>
