@@ -5,97 +5,97 @@
     <MASTER_PAD_EDITOR>nQuantCpp</MASTER_PAD_EDITOR>
     <MASTER_PAD_INFO>Portable Application Description, or PAD for short, is a data set that is used by shareware authors to disseminate information to anyone interested in their software products.</MASTER_PAD_INFO>
   </MASTER_PAD_VERSION_INFO>
-  <Company_Info>
-    <Company_Name>Miller Cy Chan</Company_Name>
-    <Country>Hong Kong</Country>
-    <State_Province>Hong Kong</State_Province>
-    <City_Town>Sheung Wan</City_Town>
-    <Zip_Postal_Code>852</Zip_Postal_Code>
-    <Address_1>Room 1705, Tung Ning Building</Address_1>
-    <Address_2>2 Hillier Street</Address_2>
-    <Company_WebSite_URL>https://github.com/mcychan</Company_WebSite_URL>
-    <Contact_Info>
-      <Contact_First_Name>miller</Contact_First_Name>
-      <Contact_Last_Name>chan</Contact_Last_Name>
-      <Contact_Email>wincln@usa.com</Contact_Email>
-      <Author_First_Name>miller</Author_First_Name>
-      <Author_Last_Name>chan</Author_Last_Name>
-      <Author_Email>wincln@usa.com</Author_Email>
-      <Contact_Phone></Contact_Phone>
-    </Contact_Info>
-    <Support_Info>
-      <Sales_Email>wincln@usa.com</Sales_Email>
-      <Support_Email>wincln@usa.com</Support_Email>
-      <General_Email>wincln@usa.com</General_Email>
-      <Sales_Phone></Sales_Phone>
-      <Support_Phone></Support_Phone>
-      <General_Phone></General_Phone>
-      <Fax_Phone></Fax_Phone>
-    </Support_Info>
-    <LinkedinPage>https://hk.linkedin.com/in/miller-cy-chan-wincln</LinkedinPage>
-    <TwitterCompanyPage></TwitterCompanyPage>
-    <FacebookCompanyPage></FacebookCompanyPage>
-  </Company_Info>
-  <Program_Info>
-    <AppID>app-5200c534e624</AppID>
-    <Program_Name>ImgV64</Program_Name>
-    <Program_Version>1.88</Program_Version>
-    <Program_Release_Month>11</Program_Release_Month>
-    <Program_Release_Day>11</Program_Release_Day>
-    <Program_Release_Year>2024</Program_Release_Year>
-    <Program_Cost_Dollars>0</Program_Cost_Dollars>
-    <Program_Type>Freeware</Program_Type>
-    <Program_Category_Class>Graphic Apps::Editors</Program_Category_Class>
-    <Program_Specific_Category></Program_Specific_Category>
-    <Program_Categories>Multimedia and Design :: Image Viewers,Multimedia and Design :: Image Editing,Multimedia and Design :: Presentations</Program_Categories>
-    <Program_Release_Status>Major Update</Program_Release_Status>
-    <Program_Install_Support>Install and Uninstall</Program_Install_Support>
-    <Program_Target_Platform>Windows</Program_Target_Platform>
-    <Program_OS_Support>Windows 10,Windows 11,WinServer,WinOther</Program_OS_Support>
-    <Program_Language>English,Chinese,ChineseSimplified,ChineseTraditional,German,Japanese,Spanish</Program_Language>
-    <Program_Change_Info>Upgraded HEIC, AVIF libraries</Program_Change_Info>
-    <Program_System_Requirements>Windows 10 or above</Program_System_Requirements>
-    <Program_Category_Class>Graphics Applications</Program_Category_Class>
-    <Program_Specific_Category>Graphic Viewers</Program_Specific_Category>
-    <Awards>https://www.download3k.com/Antivirus-Report-ImgV64.html</Awards>
-    <File_Info>
-      <File_Size_Bytes>5880886</File_Size_Bytes>
-      <File_Size_K>5744</File_Size_K>
-      <File_Size_MB>5.60</File_Size_MB>
-    </File_Info>
-    <Expire_Info>
-      <Has_Expire_Info>N</Has_Expire_Info>
-      <Expire_Count></Expire_Count>
-      <Expire_Based_On></Expire_Based_On>
-      <Expire_Year></Expire_Year>
-      <Expire_Other_Info></Expire_Other_Info>
-      <Expire_Month></Expire_Month>
-      <Expire_Day></Expire_Day>
-    </Expire_Info>
-  </Program_Info>
-  <Web_Info>
-    <Application_URLs>
-      <Application_Info_URL>https://mcychan.github.io/nQuant.cs/imgV64/</Application_Info_URL>
-      <Application_Order_URL></Application_Order_URL>
-      <Application_Screenshot_URL>https://raw.githubusercontent.com/mcychan/nQuantCpp/master/ImgV64.gif</Application_Screenshot_URL>
-      <Application_Icon_URL>https://mcychan.github.io/nQuant.cs/imgV64/images/ImgV64.png</Application_Icon_URL>
-      <Application_XML_File_URL>https://mcychan.github.io/nQuant.cs/imgV64/ImgV64_18.xml</Application_XML_File_URL>
-    </Application_URLs>
-    <Download_URLs>
-      <Primary_Download_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</Primary_Download_URL>
-      <Secondary_Download_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/imgV64_18.zip</Secondary_Download_URL>
-      <Additional_Download_URL_1>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18.exe</Additional_Download_URL_1>
-      <Additional_Download_URL_2></Additional_Download_URL_2>
-    </Download_URLs>
-  </Web_Info>
-  <Program_Descriptions>
-    <English>
-      <Keywords>Freeware, Graphics, Windows, Win7, Win8, Win10, Wallpaper, Images, Viewers, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, WEBP, HEIC, ImgV64, ImageViewer, Editors, File, Format, Conversion, Color, Adustment,Gamma, Con</Keywords>
-      <Char_Desc_45>Graphics Viewer for Windows Vista or above.</Char_Desc_45>
-      <Char_Desc_80>ImgV64 is a straightforward graphics viewer for GIF, JPG, PNG, WEBP, HEIC</Char_Desc_80>
-      <Char_Desc_250>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. ImgV64 has many powerful features available. Free of any malware, spyware, and viruses. It is a 100% clean and safe tool for you to use.</Char_Desc_250>
-      <Char_Desc_450>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program. ImgV64 has many powerful features available. You can add text to an image with the text tool. This is quite versatile, with font, size and color selection, transparent.</Char_Desc_450>
-      <Char_Desc_2000>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program. &#13;
+  <COMPANY_INFO>
+    <COMPANY_NAME>Miller Cy Chan</COMPANY_NAME>
+    <COUNTRY>Hong Kong</COUNTRY>
+    <STATE_PROVINCE>Hong Kong</STATE_PROVINCE>
+    <CITY_TOWN>Sheung Wan</CITY_TOWN>
+    <ZIP_POSTAL_CODE>852</ZIP_POSTAL_CODE>
+    <ADDRESS_1>Room 1705, Tung Ning Building</ADDRESS_1>
+    <ADDRESS_2>2 Hillier Street</ADDRESS_2>
+    <COMPANY_WEBSITE_URL>https://github.com/mcychan</COMPANY_WEBSITE_URL>
+    <CONTACT_INFO>
+      <CONTACT_FIRST_NAME>miller</CONTACT_FIRST_NAME>
+      <CONTACT_LAST_NAME>chan</CONTACT_LAST_NAME>
+      <CONTACT_EMAIL>wincln@usa.com</CONTACT_EMAIL>
+      <AUTHOR_FIRST_NAME>miller</AUTHOR_FIRST_NAME>
+      <AUTHOR_LAST_NAME>chan</AUTHOR_LAST_NAME>
+      <AUTHOR_EMAIL>wincln@usa.com</AUTHOR_EMAIL>
+      <CONTACT_PHONE></CONTACT_PHONE>
+    </CONTACT_INFO>
+    <SUPPORT_INFO>
+      <SALES_EMAIL>wincln@usa.com</SALES_EMAIL>
+      <SUPPORT_EMAIL>wincln@usa.com</SUPPORT_EMAIL>
+      <GENERAL_EMAIL>wincln@usa.com</GENERAL_EMAIL>
+      <SALES_PHONE></SALES_PHONE>
+      <SUPPORT_PHONE></SUPPORT_PHONE>
+      <GENERAL_PHONE></GENERAL_PHONE>
+      <FAX_PHONE></FAX_PHONE>
+    </SUPPORT_INFO>
+    <LINKEDINPAGE>https://hk.linkedin.com/in/miller-cy-chan-wincln</LINKEDINPAGE>
+    <TWITTERCOMPANYPAGE></TWITTERCOMPANYPAGE>
+    <FACEBOOKCOMPANYPAGE></FACEBOOKCOMPANYPAGE>
+  </COMPANY_INFO>
+  <PROGRAM_INFO>
+    <APPID>app-5200c534e624</APPID>
+    <PROGRAM_NAME>ImgV64</PROGRAM_NAME>
+    <PROGRAM_VERSION>1.88</PROGRAM_VERSION>
+    <PROGRAM_RELEASE_MONTH>11</PROGRAM_RELEASE_MONTH>
+    <PROGRAM_RELEASE_DAY>11</PROGRAM_RELEASE_DAY>
+    <PROGRAM_RELEASE_YEAR>2024</PROGRAM_RELEASE_YEAR>
+    <PROGRAM_COST_DOLLARS>0</PROGRAM_COST_DOLLARS>
+    <PROGRAM_TYPE>Freeware</PROGRAM_TYPE>
+    <PROGRAM_CATEGORY_CLASS>Graphic Apps::Editors</PROGRAM_CATEGORY_CLASS>
+    <PROGRAM_SPECIFIC_CATEGORY></PROGRAM_SPECIFIC_CATEGORY>
+    <PROGRAM_CATEGORIES>Multimedia and Design :: Image Viewers,Multimedia and Design :: Image Editing,Multimedia and Design :: Presentations</PROGRAM_CATEGORIES>
+    <PROGRAM_RELEASE_STATUS>Major Update</PROGRAM_RELEASE_STATUS>
+    <PROGRAM_INSTALL_SUPPORT>Install and Uninstall</PROGRAM_INSTALL_SUPPORT>
+    <PROGRAM_TARGET_PLATFORM>Windows</PROGRAM_TARGET_PLATFORM>
+    <PROGRAM_OS_SUPPORT>Windows 10,Windows 11,WinServer,WinOther</PROGRAM_OS_SUPPORT>
+    <PROGRAM_LANGUAGE>English,Chinese,ChineseSimplified,ChineseTraditional,German,Japanese,Spanish</PROGRAM_LANGUAGE>
+    <PROGRAM_CHANGE_INFO>Upgraded HEIC, AVIF libraries</PROGRAM_CHANGE_INFO>
+    <PROGRAM_SYSTEM_REQUIREMENTS>Windows 10 or above</PROGRAM_SYSTEM_REQUIREMENTS>
+    <PROGRAM_CATEGORY_CLASS>Graphics Applications</PROGRAM_CATEGORY_CLASS>
+    <PROGRAM_SPECIFIC_CATEGORY>Graphic Viewers</PROGRAM_SPECIFIC_CATEGORY>
+    <AWARDS>https://www.download3k.com/Antivirus-Report-ImgV64.html</AWARDS>
+    <FILE_INFO>
+      <FILE_SIZE_BYTES>5880886</FILE_SIZE_BYTES>
+      <FILE_SIZE_K>5744</FILE_SIZE_K>
+      <FILE_SIZE_MB>5.60</FILE_SIZE_MB>
+    </FILE_INFO>
+    <EXPIRE_INFO>
+      <HAS_EXPIRE_INFO>N</HAS_EXPIRE_INFO>
+      <EXPIRE_COUNT></EXPIRE_COUNT>
+      <EXPIRE_BASED_ON></EXPIRE_BASED_ON>
+      <EXPIRE_YEAR></EXPIRE_YEAR>
+      <EXPIRE_OTHER_INFO></EXPIRE_OTHER_INFO>
+      <EXPIRE_MONTH></EXPIRE_MONTH>
+      <EXPIRE_DAY></EXPIRE_DAY>
+    </EXPIRE_INFO>
+  </PROGRAM_INFO>
+  <WEB_INFO>
+    <APPLICATION_URLS>
+      <APPLICATION_INFO_URL>https://mcychan.github.io/nQuant.cs/imgV64/</APPLICATION_INFO_URL>
+      <APPLICATION_ORDER_URL></APPLICATION_ORDER_URL>
+      <APPLICATION_SCREENSHOT_URL>https://raw.githubusercontent.com/mcychan/nQuantCpp/master/ImgV64.gif</APPLICATION_SCREENSHOT_URL>
+      <APPLICATION_ICON_URL>https://mcychan.github.io/nQuant.cs/imgV64/images/ImgV64.png</APPLICATION_ICON_URL>
+      <APPLICATION_XML_FILE_URL>https://mcychan.github.io/nQuant.cs/imgV64/ImgV64_18.xml</APPLICATION_XML_FILE_URL>
+    </APPLICATION_URLS>
+    <DOWNLOAD_URLS>
+      <PRIMARY_DOWNLOAD_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</PRIMARY_DOWNLOAD_URL>
+      <SECONDARY_DOWNLOAD_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/imgV64_18.zip</SECONDARY_DOWNLOAD_URL>
+      <ADDITIONAL_DOWNLOAD_URL_1>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18.exe</ADDITIONAL_DOWNLOAD_URL_1>
+      <ADDITIONAL_DOWNLOAD_URL_2></ADDITIONAL_DOWNLOAD_URL_2>
+    </DOWNLOAD_URLS>
+  </WEB_INFO>
+  <PROGRAM_DESCRIPTIONS>
+    <ENGLISH>
+      <KEYWORDS>Freeware, Graphics, Windows, Win7, Win8, Win10, Wallpaper, Images, Viewers, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, WEBP, HEIC, ImgV64, ImageViewer, Editors, File, Format, Conversion, Color, Adustment,Gamma, Con</KEYWORDS>
+      <CHAR_DESC_45>Graphics Viewer for Windows Vista or above.</CHAR_DESC_45>
+      <CHAR_DESC_80>ImgV64 is a straightforward graphics viewer for GIF, JPG, PNG, WEBP, HEIC</CHAR_DESC_80>
+      <CHAR_DESC_250>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. ImgV64 has many powerful features available. Free of any malware, spyware, and viruses. It is a 100% clean and safe tool for you to use.</CHAR_DESC_250>
+      <CHAR_DESC_450>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program. ImgV64 has many powerful features available. You can add text to an image with the text tool. This is quite versatile, with font, size and color selection, transparent.</CHAR_DESC_450>
+      <CHAR_DESC_2000>ImgV64 is a Win7/Win8/Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program. &#13;
 ImgV64 has many powerful features available, but they won't get in your way if you just want to use it as a simple viewer.&#13;
 Among the features: You can load an image from a folder and then 'slide show' through the rest of the images in the folder using the keyboard left and right arrow keys.&#13;
 This works in window or full screen modes.&#13;
@@ -109,11 +109,11 @@ If you really want to simply view or edit your photo albums, this is your choice
 Brightness, Contrast, and Gamma adjustments are selectable by slider bar. Other Tune Dialogs include Sharpen, Blur, and color adjustments on the Red/Green/Blue scale.&#13;
 The Undo of editing also has a Redo option. Both are on the toolbar for easy scrolling through changes.&#13;
 &#13;
-There is a Set as Wallpaper function in the Image menu to make the current image your desktop wallpaper.</Char_Desc_2000>
-    </English>
-  </Program_Descriptions>
-  <Permissions>
-    <Distribution_Permissions>This work (and included software, documentation such as READMEs, or other related items) is being provided by the copyright holders under the following license. By obtaining, using and/or copying this work, you (the licensee) agree that you have read, understood, and will comply with the following terms and conditions.&#13;
+There is a Set as Wallpaper function in the Image menu to make the current image your desktop wallpaper.</CHAR_DESC_2000>
+    </ENGLISH>
+  </PROGRAM_DESCRIPTIONS>
+  <PERMISSIONS>
+    <DISTRIBUTION_PERMISSIONS>This work (and included software, documentation such as READMEs, or other related items) is being provided by the copyright holders under the following license. By obtaining, using and/or copying this work, you (the licensee) agree that you have read, understood, and will comply with the following terms and conditions.&#13;
 &#13;
 Permission to copy, modify, and distribute this software and its documentation, with or without modification, for any purpose and without fee or royalty is hereby granted, provided that you include the following on ALL copies of the software and documentation or portions thereof, including modifications:&#13;
 &#13;
@@ -124,34 +124,34 @@ THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE 
 &#13;
 COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR DOCUMENTATION.&#13;
 &#13;
-The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders.</Distribution_Permissions>
+The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders.</DISTRIBUTION_PERMISSIONS>
     <EULA>Please go to https://mcychan.github.io/nQuant.cs/imgV64/copyright.htm to download and review a full copy of the End-User Software License Agreement.</EULA>
-  </Permissions>
-  <Site>
-    <Site_FORM></Site_FORM>
-    <Site_VERSION></Site_VERSION>
-    <Site_DESCRIPTION></Site_DESCRIPTION>
-    <Site_Site_Title>ImgV64</Site_Site_Title>
-    <Site_Site_URL>https://mcychan.github.io/nQuant.cs/imgV64/</Site_Site_URL>
-    <Site_Keywords>Graphics, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, WEBP, HEIC, ImgV64, ImageViewer, Editors, File, Format</Site_Keywords>
-    <Site_Description_100>ImgV64 is a straightforward graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats.</Site_Description_100>
-    <Site_Description_250>ImgV64 is a Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features.</Site_Description_250>
-    <Site_Description_450>ImgV64 is a Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program.</Site_Description_450>
-    <Site_Contact_First_Name>miller</Site_Contact_First_Name>
-    <Site_Contact_Last_Name>chan</Site_Contact_Last_Name>
-    <Site_Contact_Email>wincln@usa.com</Site_Contact_Email>
-  </Site>
-  <Download_Link_Points_To_Non_Binary_File>TRUE</Download_Link_Points_To_Non_Binary_File>
-  <Dynamic_PAD>
-    <Dynamic_Distributive>N</Dynamic_Distributive>
-    <General>
-      <DP_Pad_Enabled>TRUE</DP_Pad_Enabled>
-      <DP_AtFormFill_Enabled>TRUE</DP_AtFormFill_Enabled>
-      <DP_Distributive_Enabled>FALSE</DP_Distributive_Enabled>
-      <DP_Script_Base_URL>https://mcychan.github.io/nQuant.cs/imgV64/</DP_Script_Base_URL>
-      <DP_Pad_Mask>ImgV64_18.xml</DP_Pad_Mask>
-      <DP_Distributive_Primary_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</DP_Distributive_Primary_URL>
-      <DP_Distributive_Mask>ImgV64_18_x64.exe</DP_Distributive_Mask>
-    </General>
-  </Dynamic_PAD>
+  </PERMISSIONS>
+  <SITE>
+    <SITE_FORM></SITE_FORM>
+    <SITE_VERSION></SITE_VERSION>
+    <SITE_DESCRIPTION></SITE_DESCRIPTION>
+    <SITE_SITE_TITLE>ImgV64</SITE_SITE_TITLE>
+    <SITE_SITE_URL>https://mcychan.github.io/nQuant.cs/imgV64/</SITE_SITE_URL>
+    <SITE_KEYWORDS>Graphics, Image, Viewer, Screen, Saver, Screensaver, GIF, JPG, BMP, TIF, TGA, PNG, JPEG, WEBP, HEIC, ImgV64, ImageViewer, Editors, File, Format</SITE_KEYWORDS>
+    <SITE_DESCRIPTION_100>ImgV64 is a straightforward graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats.</SITE_DESCRIPTION_100>
+    <SITE_DESCRIPTION_250>ImgV64 is a Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features.</SITE_DESCRIPTION_250>
+    <SITE_DESCRIPTION_450>ImgV64 is a Win10/Win11 graphics viewer for GIF, JPG, PNG, WEBP, HEIC and other formats. It is designed for those who want a solid, easy viewer but who still want powerful features, without the complexity of a complete paint or thumbnailing program.</SITE_DESCRIPTION_450>
+    <SITE_CONTACT_FIRST_NAME>miller</SITE_CONTACT_FIRST_NAME>
+    <SITE_CONTACT_LAST_NAME>chan</SITE_CONTACT_LAST_NAME>
+    <SITE_CONTACT_EMAIL>wincln@usa.com</SITE_CONTACT_EMAIL>
+  </SITE>
+  <DOWNLOAD_LINK_POINTS_TO_NON_BINARY_FILE>TRUE</DOWNLOAD_LINK_POINTS_TO_NON_BINARY_FILE>
+  <DYNAMIC_PAD>
+    <DYNAMIC_DISTRIBUTIVE>N</DYNAMIC_DISTRIBUTIVE>
+    <GENERAL>
+      <DP_PAD_ENABLED>TRUE</DP_PAD_ENABLED>
+      <DP_ATFORMFILL_ENABLED>TRUE</DP_ATFORMFILL_ENABLED>
+      <DP_DISTRIBUTIVE_ENABLED>FALSE</DP_DISTRIBUTIVE_ENABLED>
+      <DP_SCRIPT_BASE_URL>https://mcychan.github.io/nQuant.cs/imgV64/</DP_SCRIPT_BASE_URL>
+      <DP_PAD_MASK>ImgV64_18.xml</DP_PAD_MASK>
+      <DP_DISTRIBUTIVE_PRIMARY_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</DP_DISTRIBUTIVE_PRIMARY_URL>
+      <DP_DISTRIBUTIVE_MASK>ImgV64_18_x64.exe</DP_DISTRIBUTIVE_MASK>
+    </GENERAL>
+  </DYNAMIC_PAD>
 </XML_DIZ_INFO>
