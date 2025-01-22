@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 
 /* Generalized Hilbert ("gilbert") space-filling curve for rectangular domains of arbitrary (non-power of two) sizes.
-Copyright (c) 2021 - 2024 Miller Cy Chan
+Copyright (c) 2021 - 2025 Miller Cy Chan
 * A general rectangle with a known orientation is split into three regions ("up", "right", "down"), for which the function calls itself recursively, until a trivial path can be produced. */
 
 namespace nQuant.Master
@@ -114,7 +114,17 @@ namespace nQuant.Master
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			if (palette.Length <= 32 && a_pix > 0xF0)
+			if (saliencies != null && palette.Length < 3)
+			{
+				int acceptedDiff = 1;
+				if (CIELABConvertor.Y_Diff(pixel, c2) > acceptedDiff)
+				{
+					var strength = 1 / 3f;
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+				}
+				qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+			}
+			else if (palette.Length <= 32 && a_pix > 0xF0)
 			{
 				int offset = ditherable.GetColorIndex(c2.ToArgb());
 				if (lookup[offset] == 0)

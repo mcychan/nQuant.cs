@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 
 /* Fast pairwise nearest neighbor based algorithm with CIELAB color space advanced version
-Copyright (c) 2018-2023 Miller Cy Chan
+Copyright (c) 2018-2025 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
 namespace PnnQuant
@@ -588,7 +588,21 @@ namespace PnnQuant
 					{
 						palettes[0] = Color.Black;
 						palettes[1] = Color.White;
-					}
+
+                        if (dither)
+                        {
+                            saliencies = new float[pixels.Length];
+                            var saliencyBase = .1f;
+
+                            for (int i = 0; i < pixels.Length; ++i)
+                            {
+                                var pixel = pixels[i];
+                                GetLab(pixel, out var lab1);
+
+                                saliencies[i] = (float)(saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
+                            }
+                        }
+                    }                    
 				}
 				m_palette = palettes;
 			}
