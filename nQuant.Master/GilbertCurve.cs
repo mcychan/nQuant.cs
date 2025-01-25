@@ -117,7 +117,7 @@ namespace nQuant.Master
 			if (saliencies != null && palette.Length < 3)
 			{
 				var strength = 1 / 3f;
-				c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], strength / saliencies[bidx], strength, x, y);
+				c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], .5f / saliencies[bidx], strength, x, y);
 				qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 			}
 			else if (palette.Length <= 32 && a_pix > 0xF0)
