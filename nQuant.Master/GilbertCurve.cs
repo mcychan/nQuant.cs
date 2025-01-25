@@ -116,12 +116,8 @@ namespace nQuant.Master
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (saliencies != null && palette.Length < 3)
 			{
-				int acceptedDiff = 1;
-				if (CIELABConvertor.Y_Diff(pixel, c2) > acceptedDiff)
-				{
-					var strength = 1 / 3f;
-					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
-				}
+				var strength = 1 / 3f;
+				c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], strength / saliencies[bidx], strength, x, y);
 				qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 			}
 			else if (palette.Length <= 32 && a_pix > 0xF0)
