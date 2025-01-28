@@ -159,7 +159,7 @@ namespace PnnQuant
 				bins[index].Ac += (float)lab1.A;
 				bins[index].Bc += (float)lab1.B;
 				bins[index].cnt += 1.0f;
-				if(lab1.alpha > alphaThreshold && nMaxColors < 32)
+				if(lab1.alpha > alphaThreshold)
 					saliencies[i] = (float) (saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
 			}
 
