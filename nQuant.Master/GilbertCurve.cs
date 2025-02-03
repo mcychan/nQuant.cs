@@ -114,7 +114,7 @@ namespace nQuant.Master
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			if (saliencies != null)
+			if (saliencies != null && !sortedByYDiff)
 			{
 				var strength = 1 / 3f;
 				var beta = palette.Length > 8 ? .7f : 1;
