@@ -47,6 +47,7 @@ namespace nQuant.Master
 		private readonly bool sortedByYDiff;
 		private readonly int width;
 		private readonly int height;
+		private readonly float beta;
 		private readonly int[] pixels;
 		private readonly Color[] palette;
 		private readonly int[] qPixels;
@@ -73,6 +74,7 @@ namespace nQuant.Master
 			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
 			weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
+			beta = palette.Length > 8 ? palette.Length > 24 ? .25f : .7f : 1;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = weight > .002 ? .25 : 1;
@@ -117,7 +119,6 @@ namespace nQuant.Master
 			if (saliencies != null && !sortedByYDiff)
 			{
 				var strength = 1 / 3f;
-				var beta = palette.Length > 8 ? palette.Length > 24 ? .25f : .7f : 1;
 				int acceptedDiff = Math.Max(2, palette.Length - margin);
 				if (palette.Length <= 8 && saliencies[bidx] > .2f && saliencies[bidx] < .25f)
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta / saliencies[bidx], strength, x, y);
