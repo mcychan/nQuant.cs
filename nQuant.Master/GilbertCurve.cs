@@ -117,7 +117,7 @@ namespace nQuant.Master
 			if (saliencies != null && !sortedByYDiff)
 			{
 				var strength = 1 / 3f;
-				var beta = palette.Length > 8 ? .7f : 1;
+				var beta = palette.Length > 8 ? palette.Length > 24 ? .25f : .7f : 1;
 				int acceptedDiff = Math.Max(2, palette.Length - margin);
 				if (palette.Length <= 8 && saliencies[bidx] > .2f && saliencies[bidx] < .25f)
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta / saliencies[bidx], strength, x, y);
