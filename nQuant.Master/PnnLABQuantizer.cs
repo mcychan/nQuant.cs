@@ -139,7 +139,7 @@ namespace PnnQuant
 		{
 			short quan_rt = 1;
 			var bins = new Pnnbin[ushort.MaxValue + 1];
-			saliencies = new float[pixels.Length];
+			saliencies = nMaxColors >= 128 ? null : new float[pixels.Length];
 			var saliencyBase = .1f;
 
 			/* Build histogram */
@@ -159,7 +159,7 @@ namespace PnnQuant
 				bins[index].Ac += (float)lab1.A;
 				bins[index].Bc += (float)lab1.B;
 				bins[index].cnt += 1.0f;
-				if(lab1.alpha > alphaThreshold)
+				if (saliencies != null && lab1.alpha > alphaThreshold)
 					saliencies[i] = (float) (saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
 			}
 
