@@ -43,11 +43,11 @@ namespace nQuant.Master
 		}
 
 		private byte ditherMax, DITHER_MAX;
+		private float beta;
 		private float[] weights;
 		private readonly bool sortedByYDiff;
 		private readonly int width;
-		private readonly int height;
-		private readonly float beta;
+		private readonly int height;		
 		private readonly int[] pixels;
 		private readonly Color[] palette;
 		private readonly int[] qPixels;
@@ -75,6 +75,8 @@ namespace nQuant.Master
 			weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
 			beta = palette.Length > 8 ? palette.Length > 24 ? .25f : .7f : 1;
+			if (weight > .02)
+				beta *= .5f;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = weight > .002 ? .25 : 1;
@@ -132,8 +134,12 @@ namespace nQuant.Master
 						c2 = BlueNoise.Diffuse(c1, palette[qPixels[bidx]], kappa, strength, x, y);
 					}
 				}
-				else if (palette.Length > 8 && (CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < acceptedDiff))
-					c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+				else if (palette.Length > 8 && (CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < acceptedDiff)) {
+					if(beta < .3f)
+						c2 = BlueNoise.Diffuse(c2, palette[qPixels[bidx]], beta * .4f * saliencies[bidx], strength, x, y);
+					else
+						c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+				}
 
 				int offset = ditherable.GetColorIndex(c2.ToArgb());
 				if (lookup[offset] == 0)
