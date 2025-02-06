@@ -71,15 +71,15 @@ namespace nQuant.Master
 			var hasAlpha = weight < 0;
 
 			errorq = new();
-			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
 			weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
+			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
 			beta = palette.Length > 8 ? palette.Length > 24 ? .25f : .7f : 1;
 			if (palette.Length > 64 || weight > .02)
 				beta *= .4f;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
-			var deviation = weight > .002 ? .25 : 1;
+			var deviation = !hasAlpha && weight > .002 ? .25 : 1;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : DITHER_MAX;
 			int density = palette.Length > 16 ? 3200 : 1500;
 			if (palette.Length / weight > 5000 && (weight > .045 || (weight > .01 && palette.Length <= 64)))
