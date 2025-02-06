@@ -541,7 +541,7 @@ namespace PnnQuant
 			if (hasSemiTransparency || isGA)
 				weight *= -1;
 	
-	            	if (dither && saliencies == null && weight < .052)
+	            	if (dither && !hasSemiTransparency && saliencies == null && weight < .052)
 	            	{
 	                	saliencies = new float[pixels.Length];
 	                	var saliencyBase = .1f;
