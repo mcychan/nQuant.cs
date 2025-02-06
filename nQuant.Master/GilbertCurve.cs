@@ -75,8 +75,8 @@ namespace nQuant.Master
 			weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
 			beta = palette.Length > 8 ? palette.Length > 24 ? .25f : .7f : 1;
-			if (weight > .02)
-				beta *= .5f;
+			if (palette.Length > 64 || weight > .02)
+				beta *= .4f;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = weight > .002 ? .25 : 1;
