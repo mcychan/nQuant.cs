@@ -538,7 +538,7 @@ namespace PnnQuant
 		protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, bool dither)
 		{
 			this.dither = dither;
-			if (hasSemiTransparency || isGA)
+			if (hasSemiTransparency)
 				weight *= -1;
 	
 	            	if (dither && !hasSemiTransparency && saliencies == null && weight < .052)
