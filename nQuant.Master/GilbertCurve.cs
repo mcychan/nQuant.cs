@@ -75,7 +75,7 @@ namespace nQuant.Master
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
 			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
 			beta = palette.Length > 8 ? Math.Max(.25f, 1 - (float)(.022 + weight) * palette.Length) : 1;
-			if (palette.Length > 64 || weight > .02)
+			if (palette.Length > 64 || (beta < 1 && weight > .02))
 				beta *= .4f;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
