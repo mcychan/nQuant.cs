@@ -123,9 +123,12 @@ namespace nQuant.Master
 				var strength = 1 / 3f;
 				int acceptedDiff = Math.Max(2, palette.Length - margin);
 				if (palette.Length <= 8 && saliencies[bidx] > .2f && saliencies[bidx] < .25f)
-					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta / saliencies[bidx], strength, x, y);
-				else if (palette.Length <= 8 || CIELABConvertor.Y_Diff(pixel, c2) < (2 * acceptedDiff))
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta * 2 / saliencies[bidx], strength, x, y);
+				else if (palette.Length <= 8 || CIELABConvertor.Y_Diff(pixel, c2) < (2 * acceptedDiff)) {
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta * .5f / saliencies[bidx], strength, x, y);
+					if (CIELABConvertor.U_Diff(pixel, c2) < (8 * acceptedDiff))
+						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta / saliencies[bidx], strength, x, y);
+				}
 
 				if (palette.Length < 3|| margin > 6) {
 					if (palette.Length > 8 && (CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < (2 * acceptedDiff))) {
