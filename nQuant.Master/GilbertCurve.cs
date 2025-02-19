@@ -129,7 +129,7 @@ namespace nQuant.Master
 					if (CIELABConvertor.U_Diff(pixel, c2) > (8 * acceptedDiff))
 						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta / saliencies[bidx], strength, x, y);
 					if (palette.Length <= 8 && CIELABConvertor.U_Diff(pixel, c2) > (8 * acceptedDiff)) {
-						var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+						var c1 = saliencies[bidx] > .65f ? pixel : Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 						c2 = BlueNoise.Diffuse(c1, palette[qPixels[bidx]], beta * saliencies[bidx], strength, x, y);
 					}
 				}
