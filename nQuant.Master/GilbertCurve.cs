@@ -126,12 +126,12 @@ namespace nQuant.Master
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta * 2 / saliencies[bidx], strength, x, y);
 				else if (palette.Length <= 8 || CIELABConvertor.Y_Diff(pixel, c2) < (2 * acceptedDiff)) {
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta * .5f / saliencies[bidx], strength, x, y);
-					if (CIELABConvertor.U_Diff(pixel, c2) > (8 * acceptedDiff))
-						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta / saliencies[bidx], strength, x, y);
 					if (palette.Length <= 8 && CIELABConvertor.U_Diff(pixel, c2) > (8 * acceptedDiff)) {
 						var c1 = saliencies[bidx] > .65f ? pixel : Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 						c2 = BlueNoise.Diffuse(c1, palette[qPixels[bidx]], beta * saliencies[bidx], strength, x, y);
 					}
+					if (CIELABConvertor.U_Diff(pixel, c2) > (8 * acceptedDiff))
+						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta / saliencies[bidx], strength, x, y);
 				}
 
 				if (palette.Length < 3 || margin > 6) {
