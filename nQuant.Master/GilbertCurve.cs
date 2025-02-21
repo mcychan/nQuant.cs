@@ -76,7 +76,7 @@ namespace nQuant.Master
 			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
 			beta = palette.Length > 8 ? (float) (1.05f - .0125f * palette.Length) : 1;
 			if (palette.Length > 8) {
-				var boundary = .01 - .000063 * palette.Length;
+				var boundary = .005 - .0000625 * palette.Length;
 				beta = (float) (weight > boundary ? Math.Max(.25, beta - palette.Length * weight) : Math.Min(1.5, beta + palette.Length * weight));
 			}
 			if (palette.Length > 64 || (palette.Length > 8 && weight > .02))
