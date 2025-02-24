@@ -74,7 +74,7 @@ namespace nQuant.Master
 			weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
 			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
-			beta = palette.Length > 8 ? (float) (1.05f - .0125f * palette.Length) : 1;
+			beta = palette.Length > 8 ? (float) (.6f - .00625f * palette.Length) : 1;
 			if (palette.Length > 8) {
 				var boundary = .005 - .0000625 * palette.Length;
 				beta = (float) (weight > boundary ? Math.Max(.25, beta - palette.Length * weight) : Math.Min(1.5, beta + palette.Length * weight));
