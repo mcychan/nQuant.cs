@@ -74,12 +74,12 @@ namespace nQuant.Master
 			weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
 			sortedByYDiff = !hasAlpha && saliencies != null && palette.Length >= 128 && weight >= .052;
-			beta = palette.Length > 8 ? (float) (.6f - .00625f * palette.Length) : 1;
-			if (palette.Length > 8) {
+			beta = palette.Length > 4 ? (float) (.6f - .00625f * palette.Length) : 1;
+			if (palette.Length > 4) {
 				var boundary = .005 - .0000625 * palette.Length;
 				beta = (float) (weight > boundary ? Math.Max(.25, beta - palette.Length * weight) : Math.Min(1.5, beta + palette.Length * weight));
 			}
-			if (palette.Length > 64 || (palette.Length > 8 && weight > .02))
+			if (palette.Length > 64 || (palette.Length > 4 && weight > .02))
 				beta *= .4f;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
@@ -126,11 +126,11 @@ namespace nQuant.Master
 			{
 				var strength = 1 / 3f;
 				int acceptedDiff = Math.Max(2, palette.Length - margin);
-				if (palette.Length <= 8 && saliencies[bidx] > .2f && saliencies[bidx] < .25f)
+				if (palette.Length <= 4 && saliencies[bidx] > .2f && saliencies[bidx] < .25f)
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta * 2 / saliencies[bidx], strength, x, y);
-				else if (palette.Length <= 8 || CIELABConvertor.Y_Diff(pixel, c2) < (2 * acceptedDiff)) {
+				else if (palette.Length <= 4 || CIELABConvertor.Y_Diff(pixel, c2) < (2 * acceptedDiff)) {
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], beta * .5f / saliencies[bidx], strength, x, y);
-					if (palette.Length <= 8 && CIELABConvertor.U_Diff(pixel, c2) > (8 * acceptedDiff)) {
+					if (palette.Length <= 4 && CIELABConvertor.U_Diff(pixel, c2) > (8 * acceptedDiff)) {
 						var c1 = saliencies[bidx] > .65f ? pixel : Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 						c2 = BlueNoise.Diffuse(c1, palette[qPixels[bidx]], beta * saliencies[bidx], strength, x, y);
 					}
