@@ -389,7 +389,7 @@ namespace PnnQuant
 					if(hasSemiTransparency)
 						curdist += BitmapUtilities.Sqr(c2.A - c.A);
 				}
-				else if (hasSemiTransparency)
+				else if (hasSemiTransparency || nMaxColors < 16)
 				{
 					curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
 					if (curdist > mindist)
