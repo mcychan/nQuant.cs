@@ -80,7 +80,9 @@ namespace nQuant.Master
 				beta = (float) (weight > boundary ? Math.Max(.25, beta - palette.Length * weight) : Math.Min(1.5, beta + palette.Length * weight));
 				if (palette.Length < 16)
 					beta *= .75f;
-			}			
+			}
+			else
+				beta *= .95f;
 			if (palette.Length > 64 || (palette.Length > 4 && weight > .02))
 				beta *= .4f;
 			DITHER_MAX = (byte)(weight < .01 ? (weight > .0025) ? 25 : 16 : 9);
