@@ -68,7 +68,7 @@ namespace PnnQuant
 				{
 					alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
 				};
-				var alphaDiff = hasSemiTransparency ? BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.5) : 0;
+				var alphaDiff = hasSemiTransparency ? BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.75) : 0;
 				var nerr = nerr2 * alphaDiff;
 				if (nerr >= err)
 					continue;
@@ -237,18 +237,15 @@ namespace PnnQuant
 				else if (quan_rt != 0 && nMaxColors < 64)
 				{
 					if (proportional > .018 && proportional < .022)
-						ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.872));
+						ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.622));
 					else if (proportional > .1)
 						ratio = Math.Min(1.0, 1.0 - weight);
 					else if (proportional > .04)
-						ratio = Math.Min(1.0, weight * Math.Exp(2.28));
+						ratio = Math.Min(1.0, weight * Math.Exp(2.44));
 					else if (proportional > .03)
-						ratio = Math.Min(1.0, weight * Math.Exp(3.275));
+						ratio = Math.Min(1.0, weight * Math.Exp(3.225));
 					else
-					{
-						var beta = (maxbins % 2 == 0) ? -1 : 1;
-						ratio = Math.Min(1.0, proportional + beta * weight * Math.Exp(1.997));
-					}
+						ratio = Math.Min(1.0, proportional + weight * Math.Exp(1.947));
 				}
 				else if (nMaxColors > 256)
 					ratio = Math.Min(1.0, 1 - 1.0 / proportional);
@@ -256,7 +253,7 @@ namespace PnnQuant
 					ratio = Math.Min(1.0, Math.Max(.98, 1 - weight * .7));
 
 				if (!hasSemiTransparency && quan_rt < 0)
-					ratio = Math.Min(1.0, weight * Math.Exp(1.997));
+					ratio = Math.Min(1.0, weight * Math.Exp(1.947));
 			}
 
 			int h, l, l2;
