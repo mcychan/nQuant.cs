@@ -237,13 +237,13 @@ namespace PnnQuant
 				else if (quan_rt != 0 && nMaxColors < 64)
 				{
 					if (proportional > .018 && proportional < .022)
-						ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.622));
+						ratio = Math.Min(1.0, proportional + weight * Math.Exp(3.872));
 					else if (proportional > .1)
 						ratio = Math.Min(1.0, 1.0 - weight);
 					else if (proportional > .04)
-						ratio = Math.Min(1.0, weight * Math.Exp(2.44));
+						ratio = Math.Min(1.0, weight * Math.Exp(2.28));
 					else if (proportional > .03)
-						ratio = Math.Min(1.0, weight * Math.Exp(3.225));
+						ratio = Math.Min(1.0, weight * Math.Exp(3.275));
 					else {
 						var beta = (nMaxColors < 16 && maxbins % 2 == 0) ? 2 : 1;
 						ratio = Math.Min(1.0, proportional + beta * weight * Math.Exp(1.947));
@@ -450,7 +450,7 @@ namespace PnnQuant
 				closest[2] = closest[3] = ushort.MaxValue;
 
 				int start = 0;
-				if(BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
+				if(c.A > 0xE0 && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
 					start = 1;
 
 				var nMaxColors = palette.Length;
@@ -477,15 +477,15 @@ namespace PnnQuant
 					for (var i = start; i < coeffs.GetLength(0); ++i) {
 						err += ratio * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));
 						if (err >= closest[3])
-						   break;
+							break;
 
 						err += ratio * BitmapUtilities.Sqr(coeffs[i, 1] * (c.G - c2.G));
 						if (err >= closest[3])
-						   break;
+							break;
 
 						err += ratio * BitmapUtilities.Sqr(coeffs[i, 2] * (c.B - c2.B));
 						if (err >= closest[3])
-						   break;
+							break;
 					}
 
 					if (err < closest[2])
@@ -540,22 +540,22 @@ namespace PnnQuant
 			if (hasSemiTransparency)
 				weight *= -1;
 	
-	            	if (dither && !hasSemiTransparency && saliencies == null && (weight < .052 || weight > .99))
-	            	{
-	                	saliencies = new float[pixels.Length];
-	                	var saliencyBase = .1f;
-	
-	                	for (int i = 0; i < pixels.Length; ++i)
-	                	{
-	                    		var pixel = pixels[i];
-	                    		GetLab(pixel, out var lab1);
-	
-	                    		saliencies[i] = (float)(saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
-	                	}
-	            	}
-	            	var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight);
+			if (dither && !hasSemiTransparency && saliencies == null && (weight < .052 || weight > .99))
+			{
+				saliencies = new float[pixels.Length];
+				var saliencyBase = .1f;
 
-			if (!dither)
+				for (int i = 0; i < pixels.Length; ++i)
+				{
+						var pixel = pixels[i];
+						GetLab(pixel, out var lab1);
+
+						saliencies[i] = (float)(saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
+				}
+			}
+			var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight, dither);
+
+			if (!dither && palettes.Length > 32)
 			{
 				var delta = BitmapUtilities.Sqr(palettes.Length) / pixelMap.Count;
 				var weight = delta > 0.023 ? 1.0f : (float)(36.921 * delta + 0.906);
@@ -600,8 +600,8 @@ namespace PnnQuant
 					else
 					{
 						palettes[0] = Color.Black;
-						palettes[1] = Color.White;                        
-                    }                    
+						palettes[1] = Color.White;
+					}
 				}
 				m_palette = palettes;
 			}

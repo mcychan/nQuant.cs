@@ -45,9 +45,9 @@ namespace nQuant.Master
 		private byte ditherMax, DITHER_MAX;
 		private float beta;
 		private float[] weights;
-		private readonly bool sortedByYDiff;
+		private readonly bool dither, sortedByYDiff;
 		private readonly int width;
-		private readonly int height;		
+		private readonly int height;
 		private readonly int[] pixels;
 		private readonly Color[] palette;
 		private readonly int[] qPixels;
@@ -59,7 +59,7 @@ namespace nQuant.Master
 		private readonly int margin, thresold;
 		private const float BLOCK_SIZE = 343f;
 
-		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight)
+		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight, bool dither)
 		{
 			this.width = width;
 			this.height = height;
@@ -68,6 +68,7 @@ namespace nQuant.Master
 			this.qPixels = qPixels;
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
+			this.dither = dither;
 			var hasAlpha = weight < 0;
 
 			errorq = new();
@@ -128,7 +129,7 @@ namespace nQuant.Master
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			if (saliencies != null && !sortedByYDiff)
+			if (saliencies != null && dither && !sortedByYDiff)
 			{
 				var strength = 1 / 3f;
 				int acceptedDiff = Math.Max(2, palette.Length - margin);
@@ -157,6 +158,9 @@ namespace nQuant.Master
 					else
 						c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 				}
+
+				if (DITHER_MAX < 16 && saliencies[bidx] < .6f && CIELABConvertor.Y_Diff(pixel, c2) > margin - 1)
+					c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 
 				int offset = ditherable.GetColorIndex(c2.ToArgb());
 				if (lookup[offset] == 0)
@@ -305,10 +309,10 @@ namespace nQuant.Master
 				Generate2d(0, 0, 0, height, width, 0);
 		}
 
-		public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, float[] saliencies = null, double weight = 1.0)
+		public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, float[] saliencies = null, double weight = 1.0, bool dither = true)
 		{
 			var qPixels = new int[pixels.Length];
-			new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, saliencies, weight).Run();
+			new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, saliencies, weight, dither).Run();
 			return qPixels;
 		}
 	}
