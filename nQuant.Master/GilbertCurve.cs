@@ -78,7 +78,7 @@ namespace nQuant.Master
 			beta = palette.Length > 4 ? (float) (.6f - .00625f * palette.Length) : 1;
 			if (palette.Length > 4) {
 				var boundary = .005 - .0000625 * palette.Length;
-				beta = (float) (weight > boundary ? Math.Max(.25, beta - palette.Length * weight) : Math.Min(1.5, beta + palette.Length * weight));
+				beta = (float) (weight > boundary ? .25 : Math.Min(1.5, beta + palette.Length * weight));
 				if(palette.Length > 32)
 					beta += .1f;
 				else if (palette.Length < 16)
@@ -148,7 +148,7 @@ namespace nQuant.Master
 				if (palette.Length < 3 || margin > 6) {
 					if (palette.Length > 8 && (CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < (2 * acceptedDiff))) {
 						var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
-						var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+						var c1 = saliencies[bidx] < .6f ? pixel : Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 						c2 = BlueNoise.Diffuse(c1, palette[qPixels[bidx]], kappa, strength, x, y);
 					}
 				}
