@@ -81,8 +81,6 @@ namespace nQuant.Master
 				beta = (float) (weight > boundary ? Math.Max(.25, beta - palette.Length * weight) : Math.Min(1.5, beta + palette.Length * weight));
 				if(palette.Length > 32)
 					beta += .1f;
-				else if (palette.Length < 16)
-					beta *= .75f;
 			}
 			else
 				beta *= .95f;
