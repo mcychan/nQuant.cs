@@ -338,7 +338,7 @@ namespace PnnQuant
 				palettes = new Color[maxbins];
 
 			int k = 0;
-			for (int i = 0; ; ++k)
+			for (int i = 0; k < nMaxColors; ++k)
 			{
 				var lab1 = new CIELABConvertor.Lab
 				{
@@ -347,14 +347,7 @@ namespace PnnQuant
 				};
 				palettes[k] = CIELABConvertor.LAB2RGB(lab1);
 
-				if ((i = bins[i].fw) == 0)
-					break;
-			}
-
-			if (k < nMaxColors - 1)
-			{
-				nMaxColors = k + 1;
-				Console.WriteLine("Maximum number of colors: " + palettes.Length);
+				i = bins[i].fw;
 			}
 		}
 
@@ -439,6 +432,9 @@ namespace PnnQuant
 
 		protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
 		{
+			if (PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
+				return NearestColorIndex(palette, pixel, pos);
+
 			ushort k = 0;
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
@@ -448,10 +444,6 @@ namespace PnnQuant
 			{
 				closest = new ushort[4];
 				closest[2] = closest[3] = ushort.MaxValue;
-
-				int start = 0;
-				if(c.A > 0xE0 && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
-					start = 1;
 
 				var nMaxColors = palette.Length;
 				for (; k < nMaxColors; ++k)
@@ -469,12 +461,10 @@ namespace PnnQuant
 					if (err >= closest[3])
 						continue;
 
-					if (hasSemiTransparency) {
-						err += PA * (1 - ratio) * BitmapUtilities.Sqr(c.A - c2.A);
-						start = 1;
-					}
+					if (hasSemiTransparency)
+						err += PA * BitmapUtilities.Sqr(c.A - c2.A);
 
-					for (var i = start; i < coeffs.GetLength(0); ++i) {
+					for (var i = 0; i < coeffs.GetLength(0); ++i) {
 						err += ratio * BitmapUtilities.Sqr(coeffs[i, 0] * (c.R - c2.R));
 						if (err >= closest[3])
 							break;
@@ -508,14 +498,11 @@ namespace PnnQuant
 				closestMap[pixel] = closest;
 			}
 
-			var MAX_ERR = palette.Length;
-			if(PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
-				return NearestColorIndex(palette, pixel, pos);
-
 			int idx = 1;
-			if (closest[2] == 0 || (rand.Next(short.MaxValue) % (closest[3] + closest[2])) <= closest[3])
+			if (closest[2] == 0 || (rand.Next(closest[3] + closest[2])) <= closest[3])
 				idx = 0;
 
+			var MAX_ERR = palette.Length;
 			if (closest[idx + 2] >= MAX_ERR || (HasAlpha && closest[idx] == 0))
 				return NearestColorIndex(palette, pixel, pos);
 			return closest[idx];

@@ -272,19 +272,12 @@ namespace PnnQuant
 				palettes = new Color[maxbins];
 
 			int k = 0;
-			for (int i = 0; ; ++k)
+			for (int i = 0; k < nMaxColors; ++k)
 			{
 				var alpha = (hasSemiTransparency || HasAlpha) ? Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue) : Byte.MaxValue;
 				palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
 
-				if ((i = bins[i].fw) == 0)
-					break;
-			}
-
-			if (k < nMaxColors - 1)
-			{
-				nMaxColors = k + 1;
-				Console.WriteLine("Maximum number of colors: " + palettes.Length);
+				i = bins[i].fw;
 			}
 		}
 		internal virtual ushort NearestColorIndex(Color[] palette, int pixel, int pos)
