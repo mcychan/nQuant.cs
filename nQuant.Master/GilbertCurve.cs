@@ -147,7 +147,7 @@ namespace nQuant.Master
 			return lookup[offset] - 1;
 		}
 
-		private void DitherPixel(int x, int y)
+		private void DiffusePixel(int x, int y)
 		{
 			int bidx = x + y * width;
 			Color pixel = Color.FromArgb(pixels[bidx]);
@@ -254,7 +254,7 @@ namespace nQuant.Master
 
 			if (h == 1) {
 				for (int i = 0; i < w; ++i){
-					DitherPixel(x, y);
+                    DiffusePixel(x, y);
 					x += dax;
 					y += day;
 				}
@@ -263,7 +263,7 @@ namespace nQuant.Master
 
 			if (w == 1) {
 				for (int i = 0; i < h; ++i){
-					DitherPixel(x, y);
+                    DiffusePixel(x, y);
 					x += dbx;
 					y += dby;
 				}
