@@ -117,9 +117,9 @@ namespace OtsuThreshold
 			}
 		}
 
-		private int[] CannyFilter(int width, int[] pixelsGray, double lowerThreshold, double higherThreshold) {
-            int height = pixelsGray.Length / width;
-            int area = width * height;
+		private int[] CannyFilter(int width, int[] pixelsGray, double lowerThreshold, double higherThreshold, bool dither) {
+			int height = pixelsGray.Length / width;
+			int area = width * height;
 
 			var pixelsCanny = Enumerable.Repeat(Color.White.ToArgb(), area).ToArray();
 
@@ -231,12 +231,10 @@ namespace OtsuThreshold
 						int center = i * width + j;
 						if (G[center] < minThreshold)
 							G[center] = 0;
-						else if (G[center] >= maxThreshold)
-							continue;
 						else if (G[center] < maxThreshold) {
 							G[center] = 0;
 							for (int x = -1; x <= 1; ++x) {
-								for (int y = -1; y <= 1; y++) {
+								for (int y = -1; y <= 1; ++y) {
 									if (x == 0 && y == 0)
 										continue;
 									if (G[center + x * width + y] >= maxThreshold) {
@@ -254,7 +252,7 @@ namespace OtsuThreshold
 						pixelsCanny[center] = Color.FromArgb(c.A, grey, grey, grey).ToArgb();
 					}
 				}
-			} while (k++ < 100);
+			} while (k++ < 100 && dither);
 			return pixelsCanny;
 		}
 
@@ -390,7 +388,7 @@ namespace OtsuThreshold
 		}
 		
 
-		public Bitmap ConvertGrayScaleToBinary(Bitmap srcimg, bool isGrayscale = false)
+		public Bitmap ConvertGrayScaleToBinary(Bitmap srcimg, bool isGrayscale = false, bool dither = true)
 		{
 			int bitmapWidth = srcimg.Width;
 			int bitmapHeight = srcimg.Height;
@@ -406,8 +404,12 @@ namespace OtsuThreshold
 				ConvertToGrayScale(pixels, pixelsGray);
 
 			var otsuThreshold = GetOtsuThreshold(pixelsGray);
-			double lowerThreshold = 0.03, higherThreshold = 0.1;
-			pixels = CannyFilter(bitmapWidth, pixelsGray, lowerThreshold, higherThreshold);
+			double lowerThreshold = .03, higherThreshold = .1;
+			if(!dither) {
+				lowerThreshold = otsuThreshold / 3.0;
+				higherThreshold = otsuThreshold;
+			}
+			pixels = CannyFilter(bitmapWidth, pixelsGray, lowerThreshold, higherThreshold, dither);
 			Threshold(pixelsGray, pixels, otsuThreshold);
 
 			var dest = new Bitmap(bitmapWidth, bitmapHeight, PixelFormat.Format1bppIndexed);
