@@ -138,7 +138,7 @@ namespace nQuant
 				case "OTSU":
 					System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of Otsu's Image Segmentation Method.", Assembly.GetExecutingAssembly().GetName().Version);
 					System.Console.WriteLine(copyright.Copyright);
-					using (var dest = new OtsuThreshold.Otsu().ConvertGrayScaleToBinary(source))
+					using (var dest = new OtsuThreshold.Otsu().ConvertGrayScaleToBinary(source, false, dither))
 					{
 						dest.Save(targetPath, ImageFormat.Png);
 						System.Console.WriteLine("Converted black and white image: " + Path.GetFullPath(targetPath));
