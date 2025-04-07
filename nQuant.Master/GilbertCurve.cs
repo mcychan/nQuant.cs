@@ -46,8 +46,8 @@ namespace nQuant.Master
 		private float beta;
 		private float[] weights;
 		private readonly bool dither, sortedByYDiff;
-		private readonly int width;
-		private readonly int height;
+		private readonly int width, height;
+		private readonly double weight;
 		private readonly int[] pixels;
 		private readonly Color[] palette;
 		private readonly int[] qPixels;
@@ -72,7 +72,7 @@ namespace nQuant.Master
 			var hasAlpha = weight < 0;
 
 			errorq = new();
-			weight = Math.Abs(weight);
+			this.weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
 			sortedByYDiff = saliencies != null && palette.Length >= 128 && (!hasAlpha || weight < .18);
 			beta = palette.Length > 4 ? (float) (.6f - .00625f * palette.Length) : 1;
@@ -125,7 +125,7 @@ namespace nQuant.Master
 			}
 
 			if (palette.Length < 3 || margin > 6) {
-				if (palette.Length > 16 && (CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < (2 * acceptedDiff))) {
+				if (palette.Length > 4 && weight > .0015 && weight < .0025 && (CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < (2 * acceptedDiff))) {
 					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
 					var c1 = saliencies[bidx] < .4f ? pixel : Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 					c2 = BlueNoise.Diffuse(c1, palette[qPixels[bidx]], kappa, strength, x, y);
