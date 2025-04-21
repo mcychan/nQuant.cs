@@ -72,10 +72,6 @@ namespace PnnQuant
 			var wg = bin1.gc;
 			var wb = bin1.bc;
 
-			int start = 0;
-			if (BlueNoise.TELL_BLUE_NOISE[idx & 4095] > -88)
-				start = (PG < coeffs[0, 1]) ? coeffs.GetLength(0) : 1;
-
 			for (int i = bin1.fw; i != 0; i = bins[i].fw)
 			{
 				var n2 = bins[i].cnt;
@@ -86,8 +82,7 @@ namespace PnnQuant
 				var nerr = 0.0;
 				if (hasSemiTransparency)
 				{
-					start = 1;
-					nerr += nerr2 * (1 - ratio) * PA * BitmapUtilities.Sqr(bins[i].ac - wa);
+					nerr += nerr2 * PA * BitmapUtilities.Sqr(bins[i].ac - wa);
 					if (nerr >= err)
 						continue;
 				}
@@ -104,7 +99,7 @@ namespace PnnQuant
 				if (nerr >= err)
 					continue;
 
-				for (int j = start; j < coeffs.GetLength(0); ++j)
+				for (int j = 0; j < coeffs.GetLength(0); ++j)
 				{
 					nerr += nerr2 * ratio * BitmapUtilities.Sqr(coeffs[j, 0] * (bins[i].rc - wr));
 					if (nerr >= err)
