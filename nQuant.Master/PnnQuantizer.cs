@@ -72,7 +72,11 @@ namespace PnnQuant
 			var wg = bin1.gc;
 			var wb = bin1.bc;
 
-			for (int i = bin1.fw; i != 0; i = bins[i].fw)
+            int start = 0;
+            if (BlueNoise.TELL_BLUE_NOISE[idx & 4095] > -88)
+                start = (PG < coeffs[0, 1]) ? coeffs.GetLength(0) : 1;
+
+            for (int i = bin1.fw; i != 0; i = bins[i].fw)
 			{
 				var n2 = bins[i].cnt;
 				var nerr2 = (n1 * n2) / (n1 + n2);
@@ -99,7 +103,7 @@ namespace PnnQuant
 				if (nerr >= err)
 					continue;
 
-				for (int j = 0; j < coeffs.GetLength(0); ++j)
+				for (int j = start; j < coeffs.GetLength(0); ++j)
 				{
 					nerr += nerr2 * ratio * BitmapUtilities.Sqr(coeffs[j, 0] * (bins[i].rc - wr));
 					if (nerr >= err)
