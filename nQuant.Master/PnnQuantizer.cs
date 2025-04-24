@@ -72,11 +72,11 @@ namespace PnnQuant
 			var wg = bin1.gc;
 			var wb = bin1.bc;
 
-            int start = 0;
-            if (BlueNoise.TELL_BLUE_NOISE[idx & 4095] > -88)
-                start = (PG < coeffs[0, 1]) ? coeffs.GetLength(0) : 1;
+			int start = 0;
+			if (BlueNoise.TELL_BLUE_NOISE[idx & 4095] > 0)
+				start = (PG < coeffs[0, 1]) ? coeffs.GetLength(0) : 1;
 
-            for (int i = bin1.fw; i != 0; i = bins[i].fw)
+			for (int i = bin1.fw; i != 0; i = bins[i].fw)
 			{
 				var n2 = bins[i].cnt;
 				var nerr2 = (n1 * n2) / (n1 + n2);
