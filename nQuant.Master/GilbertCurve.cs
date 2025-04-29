@@ -230,10 +230,20 @@ namespace nQuant.Master
 					else
 						error[j] /= (float)(1 + Math.Sqrt(ditherMax));
 				}
+
+				if (sortedByYDiff && saliencies == null && Math.Abs(error[j]) >= DITHER_MAX)
+					unaccepted = true;
 			}
 
 			if (unaccepted) {
-				qPixels[bidx] = DitherPixel(x, y, c2, 1.25f);
+				if (saliencies != null)
+					qPixels[bidx] = DitherPixel(x, y, c2, 1.25f);
+				else if (CIELABConvertor.Y_Diff(pixel, c2) > 3 && CIELABConvertor.U_Diff(pixel, c2) > 3) {
+					var strength = 1 / 3f;
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], strength, strength, x, y);
+					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+				}
+
 				if (palette.Length > 256) {
 					c2 = palette[qPixels[bidx]];
 					qPixels[bidx] = (short)ditherable.GetColorIndex(c2.ToArgb());
@@ -255,7 +265,7 @@ namespace nQuant.Master
 
 			if (h == 1) {
 				for (int i = 0; i < w; ++i){
-                    DiffusePixel(x, y);
+					DiffusePixel(x, y);
 					x += dax;
 					y += day;
 				}
@@ -264,7 +274,7 @@ namespace nQuant.Master
 
 			if (w == 1) {
 				for (int i = 0; i < h; ++i){
-                    DiffusePixel(x, y);
+					DiffusePixel(x, y);
 					x += dbx;
 					y += dby;
 				}
