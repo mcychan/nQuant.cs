@@ -74,7 +74,7 @@ namespace nQuant.Master
 			errorq = new();
 			this.weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
-			sortedByYDiff = saliencies != null && palette.Length >= 128 && (!hasAlpha || weight < .18);
+			sortedByYDiff = saliencies != null && palette.Length >= 128 && weight >= .02 && (!hasAlpha || weight < .18);
 			beta = palette.Length > 4 ? (float) (.6f - .00625f * palette.Length) : 1;
 			if (palette.Length > 4) {
 				var boundary = .005 - .0000625 * palette.Length;
@@ -84,9 +84,13 @@ namespace nQuant.Master
 			}
 			else
 				beta *= .95f;
+
 			if (palette.Length > 64 || (palette.Length > 4 && weight > .02))
 				beta *= .4f;
-			DITHER_MAX = (byte)(weight < .015 ? (weight > .0025) ? 25 : 16 : 9);
+            if (palette.Length > 128 && weight < .02)
+                beta = .2f;
+
+            DITHER_MAX = (byte)(weight < .015 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = !hasAlpha && weight > .002 ? .25 : 1;
 			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * 2);

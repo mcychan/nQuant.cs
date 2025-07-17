@@ -524,7 +524,7 @@ namespace PnnQuant
 			if (hasSemiTransparency)
 				weight *= -1;
 	
-			if (dither && !hasSemiTransparency && saliencies == null && (palettes.Length <= 128 || weight > .99))
+			if (dither && !hasSemiTransparency && saliencies == null && (palettes.Length <= 256 || weight > .99))
 			{
 				saliencies = new float[pixels.Length];
 				var saliencyBase = .1f;
