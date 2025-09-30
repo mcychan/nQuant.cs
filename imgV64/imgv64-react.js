@@ -64,7 +64,7 @@ class Header extends preact.Component {
 		return preact.createElement("div", {className: "container", style: {textAlign: "center"} },
 			[
 				preact.createElement("h2", {style: {paddingBottom: "1em"}}, preact.createElement("a", {key: "hDownload", name: "download", href: "#", onClick: this.props.onClick}, "ImgV64")),
-				preact.createElement("a", {href: "copyright.htm", style: {paddingBottom: "1em"}}, "Copyright \u00a9 2016-2024,"),
+				preact.createElement("a", {href: "copyright.htm", style: {paddingBottom: "1em"}}, "Copyright \u00a9 2016-2025,"),
 				preact.createElement("div", {style: {paddingBottom: "1em"}}, "Miller Cy Chan,"),
 				preact.createElement("div", {style: {paddingBottom: "1em"}}, "All rights reserved")
 			]
