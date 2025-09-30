@@ -80,9 +80,9 @@
       <APPLICATION_XML_FILE_URL>https://mcychan.github.io/nQuant.cs/imgV64/ImgV64_18.xml</APPLICATION_XML_FILE_URL>
     </APPLICATION_URLS>
     <DOWNLOAD_URLS>
-      <PRIMARY_DOWNLOAD_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</PRIMARY_DOWNLOAD_URL>
-      <SECONDARY_DOWNLOAD_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/imgV64_18.zip</SECONDARY_DOWNLOAD_URL>
-      <ADDITIONAL_DOWNLOAD_URL_1>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18.exe</ADDITIONAL_DOWNLOAD_URL_1>
+      <PRIMARY_DOWNLOAD_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.89/ImgV64_18_x64.exe</PRIMARY_DOWNLOAD_URL>
+      <SECONDARY_DOWNLOAD_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.89/imgV64_18.zip</SECONDARY_DOWNLOAD_URL>
+      <ADDITIONAL_DOWNLOAD_URL_1>https://github.com/mcychan/nQuant.cs/releases/download/1.89/ImgV64_18.exe</ADDITIONAL_DOWNLOAD_URL_1>
       <ADDITIONAL_DOWNLOAD_URL_2></ADDITIONAL_DOWNLOAD_URL_2>
     </DOWNLOAD_URLS>
   </WEB_INFO>
@@ -148,7 +148,7 @@ The name and trademarks of copyright holders may NOT be used in advertising or p
       <DP_DISTRIBUTIVE_ENABLED>FALSE</DP_DISTRIBUTIVE_ENABLED>
       <DP_SCRIPT_BASE_URL>https://mcychan.github.io/nQuant.cs/imgV64/</DP_SCRIPT_BASE_URL>
       <DP_PAD_MASK>ImgV64_18.xml</DP_PAD_MASK>
-      <DP_DISTRIBUTIVE_PRIMARY_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.88/ImgV64_18_x64.exe</DP_DISTRIBUTIVE_PRIMARY_URL>
+      <DP_DISTRIBUTIVE_PRIMARY_URL>https://github.com/mcychan/nQuant.cs/releases/download/1.89/ImgV64_18_x64.exe</DP_DISTRIBUTIVE_PRIMARY_URL>
       <DP_DISTRIBUTIVE_MASK>ImgV64_18_x64.exe</DP_DISTRIBUTIVE_MASK>
     </GENERAL>
   </DYNAMIC_PAD>
