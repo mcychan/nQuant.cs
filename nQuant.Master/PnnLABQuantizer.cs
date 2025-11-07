@@ -427,6 +427,64 @@ namespace PnnQuant
 			return k;
 		}
 
+		internal ushort HybridColorIndex(Color[] palette, int pixel, int pos)
+		{
+			if (nearestMap.TryGetValue(pixel, out var k))
+				return k;
+
+			var c = Color.FromArgb(pixel);
+
+			double mindist = int.MaxValue;
+			var nMaxColors = palette.Length;
+			GetLab(pixel, out var lab1);
+
+			for (int i = k; i < nMaxColors; ++i)
+			{
+				var c2 = palette[i];
+				GetLab(c2.ToArgb(), out var lab2);
+
+				var curdist = 0.0;
+				if (Math.Abs(lab2.L - lab1.L) < nMaxColors)
+				{
+					curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
+					if (curdist > mindist)
+						continue;
+
+					curdist += BitmapUtilities.Sqr(lab2.A - lab1.A);
+					if (curdist > mindist)
+						continue;
+
+					curdist += BitmapUtilities.Sqr(lab2.B - lab1.B);
+				}
+				else
+				{
+					var deltaL_prime_div_k_L_S_L = CIELABConvertor.L_prime_div_k_L_S_L(lab1, lab2);
+					curdist += BitmapUtilities.Sqr(deltaL_prime_div_k_L_S_L);
+					if (curdist > mindist)
+						continue;
+
+					var deltaC_prime_div_k_L_S_L = CIELABConvertor.C_prime_div_k_L_S_L(lab1, lab2, out var a1Prime, out var a2Prime, out var CPrime1, out var CPrime2);
+					curdist += BitmapUtilities.Sqr(deltaC_prime_div_k_L_S_L);
+					if (curdist > mindist)
+						continue;
+
+					var deltaH_prime_div_k_L_S_L = CIELABConvertor.H_prime_div_k_L_S_L(lab1, lab2, a1Prime, a2Prime, CPrime1, CPrime2, out var barCPrime, out var barhPrime);
+					curdist += BitmapUtilities.Sqr(deltaH_prime_div_k_L_S_L);
+					if (curdist > mindist)
+						continue;
+
+					curdist += CIELABConvertor.R_T(barCPrime, barhPrime, deltaC_prime_div_k_L_S_L, deltaH_prime_div_k_L_S_L);
+				}
+
+				if (curdist > mindist)
+					continue;
+				mindist = curdist;
+				k = (ushort)i;
+			}
+			nearestMap[pixel] = k;
+			return k;
+		}
+
 		protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
 		{
 			if (PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
@@ -507,6 +565,11 @@ namespace PnnQuant
 
 		public override ushort DitherColorIndex(Color[] palette, int pixel, int pos)
 		{
+			var nMaxColors = palette.Length;
+			if (HasAlpha || nMaxColors <= 4)
+				return NearestColorIndex(palette, pixel, pos);
+			if (IsGA && nMaxColors < 16)
+				return HybridColorIndex(palette, pixel, pos);
 			return ClosestColorIndex(palette, pixel, pos);
 		}
 
