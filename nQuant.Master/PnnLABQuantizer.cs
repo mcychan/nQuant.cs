@@ -586,7 +586,7 @@ namespace PnnQuant
 			this.dither = dither;
 			if (hasSemiTransparency)
 				weight *= -1;
-	
+
 			if (dither && !hasSemiTransparency && saliencies == null && (palettes.Length <= 256 || weight > .99))
 			{
 				saliencies = new float[pixels.Length];
@@ -594,10 +594,10 @@ namespace PnnQuant
 
 				for (int i = 0; i < pixels.Length; ++i)
 				{
-						var pixel = pixels[i];
-						GetLab(pixel, out var lab1);
+					var pixel = pixels[i];
+					GetLab(pixel, out var lab1);
 
-						saliencies[i] = (float)(saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
+					saliencies[i] = (float)(saliencyBase + (1 - saliencyBase) * lab1.L / 100f);
 				}
 			}
 			var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight, dither);
