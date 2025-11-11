@@ -122,8 +122,9 @@ namespace PnnQuant
 			var palette = new Color[_nMaxColors];
 			m_pq.Pnnquan(m_pixelsList[0], ref palette, ref _nMaxColors);
 
-			int threshold = maxRatio < .1 ? -64 : -112;
-			var errors = new double[_objectives.Length];
+			int threshold = (maxRatio < .1 || _nMaxColors < 32) ? -64 : -112;
+
+            var errors = new double[_objectives.Length];
 			m_pixelsList.ForEach(pixels => {
 				for (int i = 0; i < pixels.Length; ++i)
 				{
