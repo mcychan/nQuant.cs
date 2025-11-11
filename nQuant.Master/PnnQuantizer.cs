@@ -475,14 +475,6 @@ namespace PnnQuant
 
 			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
 
-			if (HasAlpha && nMaxColors <= 256)
-			{
-				var k = qPixels[m_transparentPixelIndex];
-				if (nMaxColors > 2)
-					m_palette[k] = m_transparentColor;
-				else if (m_palette[k] != m_transparentColor)
-					BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
-			}
 			closestMap.Clear();
 			nearestMap.Clear();
 

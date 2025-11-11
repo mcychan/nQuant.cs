@@ -133,8 +133,8 @@ namespace nQuant.Master
 			if (palette.Length < 3 || margin > 6) {
 				var delta = (weight > .0015 && weight < .0025) ? beta : Math.PI;
 				if (palette.Length > 4 && (CIELABConvertor.Y_Diff(pixel, c2) > (delta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < (margin * acceptedDiff))) {
-					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
-					var c1 = saliencies[bidx] < .4f ? pixel : Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+					var kappa = saliencies[bidx] < .4f ? beta * .4f / saliencies[bidx] : beta * .4f / saliencies[bidx];
+					var c1 = saliencies[bidx] < .6f ? pixel : Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 					c2 = BlueNoise.Diffuse(c1, palette[qPixelIndex], kappa, strength, x, y);
 				}
 			}

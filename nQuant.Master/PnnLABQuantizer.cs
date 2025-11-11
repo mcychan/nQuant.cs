@@ -126,9 +126,9 @@ namespace PnnQuant
 		protected override QuanFn GetQuanFn(int nMaxColors, short quan_rt) {
 			if (quan_rt > 0) {
 				if (quan_rt > 1)
-					return cnt => (int) Math.Pow(cnt, .75);
+					return cnt => (float) Math.Pow(cnt, .75);
 				if (nMaxColors < 64)
-					return cnt => (int)Math.Sqrt(cnt);
+					return cnt => (float)Math.Sqrt(cnt);
 
 				return cnt => (float)Math.Sqrt(cnt);
 			}
@@ -630,7 +630,7 @@ namespace PnnQuant
 			var bitmapHeight = pixels.Length / bitmapWidth;
 
 			var dest = new Bitmap(bitmapWidth, bitmapHeight, pixelFormat);
-			if(m_palette == null) {
+			if (m_palette == null) {
 				var palettes = dest.Palette.Entries;
 				if (palettes.Length != nMaxColors)
 					palettes = new Color[nMaxColors];
@@ -654,15 +654,6 @@ namespace PnnQuant
 			}
 
 			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
-
-			if (HasAlpha && nMaxColors <= 256)
-			{
-				var k = qPixels[m_transparentPixelIndex];
-				if (nMaxColors > 2)
-					m_palette[k] = m_transparentColor;
-				else if (m_palette[k] != m_transparentColor)
-					BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
-			}
 
 			if (nMaxColors > 256)
 				return BitmapUtilities.ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
