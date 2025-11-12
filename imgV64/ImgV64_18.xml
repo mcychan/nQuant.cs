@@ -52,13 +52,13 @@
     <PROGRAM_INSTALL_SUPPORT>Install and Uninstall</PROGRAM_INSTALL_SUPPORT>
     <PROGRAM_TARGET_PLATFORM>Windows</PROGRAM_TARGET_PLATFORM>
     <PROGRAM_OS_SUPPORT>Windows 10,Windows 11,WinServer,WinOther</PROGRAM_OS_SUPPORT>
-    <PROGRAM_LANGUAGE>English,Chinese,ChineseSimplified,ChineseTraditional,German,Japanese,Spanish</PROGRAM_LANGUAGE>
+    <PROGRAM_LANGUAGE>English,Chinese,ChineseSimplified,ChineseTraditional,German,Japanese,Polish,Spanish</PROGRAM_LANGUAGE>
     <PROGRAM_CHANGE_INFO>Added HEJ2 (HEIC embedded JPEG2000)</PROGRAM_CHANGE_INFO>
     <PROGRAM_SYSTEM_REQUIREMENTS>Windows 10 or above</PROGRAM_SYSTEM_REQUIREMENTS>    
     <AWARDS>https://www.download3k.com/Antivirus-Report-ImgV64.html</AWARDS>
     <FILE_INFO>
-      <FILE_SIZE_BYTES>5888197</FILE_SIZE_BYTES>
-      <FILE_SIZE_K>5751</FILE_SIZE_K>
+      <FILE_SIZE_BYTES>5888496</FILE_SIZE_BYTES>
+      <FILE_SIZE_K>5752</FILE_SIZE_K>
       <FILE_SIZE_MB>5.61</FILE_SIZE_MB>
     </FILE_INFO>
     <EXPIRE_INFO>
