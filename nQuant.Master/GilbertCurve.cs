@@ -183,7 +183,7 @@ namespace nQuant.Master
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			if (saliencies != null && dither && !sortedByYDiff)
+			if (saliencies != null && dither && !sortedByYDiff && pixel.A < a_pix)
 				qPixels[bidx] = DitherPixel(x, y, c2, beta);
 			else if (palette.Length <= 32 && a_pix > 0xF0)
 			{
@@ -229,7 +229,7 @@ namespace nQuant.Master
 				if (Math.Abs(error[j]) >= ditherMax)
 				{
 					if (sortedByYDiff && saliencies != null)
-						unaccepted = true;
+						unaccepted = pixel.A < a_pix;
 
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
@@ -240,7 +240,7 @@ namespace nQuant.Master
 				}
 
 				if (sortedByYDiff && saliencies == null && Math.Abs(error[j]) >= DITHER_MAX)
-					unaccepted = true;
+					unaccepted = pixel.A < a_pix;
 			}
 
 			if (unaccepted) {
