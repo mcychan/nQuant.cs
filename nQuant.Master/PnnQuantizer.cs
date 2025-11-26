@@ -286,8 +286,8 @@ namespace PnnQuant
 
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
-				c = m_transparentColor;
-			if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
+                return k;
+            if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
 				k = 1;
 
 			double pr = PR, pg = PG, pb = PB, pa = PA;
@@ -472,6 +472,15 @@ namespace PnnQuant
 				}
 			}
 			m_palette = palettes;
+
+			if (m_transparentPixelIndex >= 0)
+            {
+                var k = NearestColorIndex(m_palette, pixels[m_transparentPixelIndex], m_transparentPixelIndex);
+                if (nMaxColors > 2)
+                    m_palette[0] = m_transparentColor;
+                else if (m_palette[k] != m_transparentColor)
+                    BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
+            }
 
 			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
 

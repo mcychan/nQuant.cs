@@ -329,9 +329,6 @@ namespace PnnQuant
 			}
 
 			/* Fill palette */
-			if (extbins < 0)
-				palettes = new Color[maxbins];
-
 			int k = 0;
 			for (int i = 0; k < nMaxColors; ++k)
 			{
@@ -353,8 +350,8 @@ namespace PnnQuant
 
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
-				c = m_transparentColor;
-			if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
+                return k;
+            if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
 				k = 1;
 
 			double mindist = int.MaxValue;
