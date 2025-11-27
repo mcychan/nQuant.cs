@@ -390,26 +390,8 @@ namespace nQuant.Master
 						var pixelAlpha = *pPixelSource++;
 
 						var argb = Color.FromArgb(pixelAlpha, pixelRed, pixelGreen, pixelBlue);
-						var argb1 = Color.FromArgb(0, pixelRed, pixelGreen, pixelBlue);
-						if (transparentIndex > -1 && transparentColor.ToArgb() == argb1.ToArgb())
-						{
-							pixelAlpha = 0;
-							argb = argb1;
-						}
-
-						if (pixelAlpha < 0xE0)
-						{
-							if (pixelAlpha == 0)
-							{
-								transparentPixelIndex = pixelIndex;
-								if (nMaxColors > 2)
-									transparentColor = argb;
-								else
-									argb = transparentColor;
-							}
-							else if(pixelAlpha > alphaThreshold)
-								++semiTransCount;
-						}
+						if (pixelAlpha < 0xE0 && pixelAlpha > alphaThreshold)
+							++semiTransCount;
 						pixels[pixelIndex++] = argb.ToArgb();
 					}
 				}
@@ -421,13 +403,23 @@ namespace nQuant.Master
 
 			for (int i = 0; i < pixels.Length; ++i)
 			{
-				var c = Color.FromArgb(pixels[i]);
-				if (c.A == 0)
+				var argb = Color.FromArgb(pixels[i]);
+				var argb1 = Color.FromArgb(0, argb.R, argb.G, argb.B);
+				if (transparentIndex > -1 && transparentColor.ToArgb() == argb1.ToArgb())
+					argb = Color.FromArgb(0, argb.R, argb.G, argb.B);
+
+				if (argb.A < 0xE0)
 				{
-					transparentPixelIndex = i;
-					transparentColor = c;
-					break;
+					if (argb.A == 0)
+					{
+						transparentPixelIndex = i;
+						if (nMaxColors > 2)
+							transparentColor = argb;
+						else
+							argb = transparentColor;
+					}
 				}
+				pixels[i] = argb.ToArgb();
 			}
 			return true;
 		}
