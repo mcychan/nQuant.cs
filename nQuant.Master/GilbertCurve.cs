@@ -45,7 +45,7 @@ namespace nQuant.Master
 		private byte ditherMax, DITHER_MAX;
 		private float beta;
 		private float[] weights;
-		private readonly bool dither, sortedByYDiff;
+		private readonly bool dither, m_hasAlpha, sortedByYDiff;
 		private readonly int width, height;
 		private readonly double weight;
 		private readonly int[] pixels;
@@ -69,12 +69,12 @@ namespace nQuant.Master
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
 			this.dither = dither;
-			var hasAlpha = weight < 0;
+            this.m_hasAlpha = weight < 0;
 
 			errorq = new();
 			this.weight = Math.Abs(weight);
 			margin = weight < .0025 ? 12 : weight < .004 ? 8 : 6;
-			sortedByYDiff = saliencies != null && palette.Length >= 128 && weight >= .02 && (!hasAlpha || weight < .18);
+			sortedByYDiff = saliencies != null && palette.Length >= 128 && weight >= .02 && (!m_hasAlpha || weight < .18);
 			beta = palette.Length > 4 ? (float) (.6f - .00625f * palette.Length) : 1;
 			if (palette.Length > 4) {
 				var boundary = .005 - .0000625 * palette.Length;
@@ -95,9 +95,9 @@ namespace nQuant.Master
 				beta = .2f;
 
 			DITHER_MAX = (byte)(weight < .015 ? (weight > .0025) ? 25 : 16 : 9);
-			var edge = hasAlpha ? 1 : Math.Exp(weight) + .25;
-			var deviation = !hasAlpha && weight > .002 ? .25 : 1;
-			ditherMax = (hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * 1.5);
+			var edge = m_hasAlpha ? 1 : Math.Exp(weight) + .25;
+			var deviation = !m_hasAlpha && weight > .002 ? .25 : 1;
+			ditherMax = (m_hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * 1.5);
 			int density = palette.Length > 16 ? 3200 : 1500;
 			if (palette.Length / weight > 5000 && (weight > .045 || (weight > .01 && palette.Length < 64)))
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
@@ -183,7 +183,7 @@ namespace nQuant.Master
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			if (saliencies != null && dither && !sortedByYDiff && pixel.A < a_pix)
+			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || pixel.A < a_pix))
 				qPixels[bidx] = DitherPixel(x, y, c2, beta);
 			else if (palette.Length <= 32 && a_pix > 0xF0)
 			{
@@ -229,7 +229,7 @@ namespace nQuant.Master
 				if (Math.Abs(error[j]) >= ditherMax)
 				{
 					if (sortedByYDiff && saliencies != null)
-						unaccepted = pixel.A < a_pix;
+						unaccepted = true;
 
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
@@ -240,7 +240,7 @@ namespace nQuant.Master
 				}
 
 				if (sortedByYDiff && saliencies == null && Math.Abs(error[j]) >= DITHER_MAX)
-					unaccepted = pixel.A < a_pix;
+					unaccepted = true;
 			}
 
 			if (unaccepted) {
