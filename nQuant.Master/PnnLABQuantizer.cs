@@ -73,7 +73,7 @@ namespace PnnQuant
 				if (nerr >= err)
 					continue;
 
-				if (!texicab)
+				if (hasSemiTransparency || !texicab)
 				{
 					nerr += (1 - ratio) * nerr2 * BitmapUtilities.Sqr(lab2.L - lab1.L);
 					if (nerr >= err)
@@ -128,7 +128,7 @@ namespace PnnQuant
 				if (quan_rt > 1)
 					return cnt => (float) Math.Pow(cnt, .75);
 				if (nMaxColors < 64)
-					return cnt => (float)Math.Sqrt(cnt);
+					return cnt => (float)(int)Math.Sqrt(cnt);
 
 				return cnt => (float)Math.Sqrt(cnt);
 			}
@@ -207,7 +207,7 @@ namespace PnnQuant
 					palettes[i++] = c;
 
 					if (i > 1 && c.A == 0)
-						BitmapUtilities.Swap(ref palettes[0], ref palettes[i - 1]);
+						BitmapUtilities.Swap(ref palettes[i - 1], ref palettes[0]);
 				}
 				nMaxColors = i;
 				Console.WriteLine("Maximum number of colors: " + palettes.Length);
@@ -274,7 +274,9 @@ namespace PnnQuant
 				heap[l] = i;
 			}
 
-			if (isGA)
+			if (!isGA && quan_rt > 0 && nMaxColors < 64 && (proportional < .023 || proportional > .05) && proportional < .1)
+				ratio = Math.Min(1.0, proportional - weight * Math.Exp(2.347));
+			else if (isGA)
 				ratio = ratioY;
 
 			/* Merge bins which increase error the least */
@@ -354,7 +356,7 @@ namespace PnnQuant
             if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
 				k = 1;
 
-			double mindist = int.MaxValue;
+			double mindist = 1e100;
 			var nMaxColors = palette.Length;
 			GetLab(pixel, out var lab1);
 
@@ -485,7 +487,6 @@ namespace PnnQuant
 			if (PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
 				return NearestColorIndex(palette, pixel, pos);
 
-			ushort k = 0;
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
 				return NearestColorIndex(palette, pixel, pos);
@@ -496,7 +497,7 @@ namespace PnnQuant
 				closest[2] = closest[3] = ushort.MaxValue;
 
 				var nMaxColors = palette.Length;
-				for (; k < nMaxColors; ++k)
+				for (ushort k = 0; k < nMaxColors; ++k)
 				{
 					var c2 = palette[k];
 					var err = PR * (1 - ratio) * BitmapUtilities.Sqr(c.R - c2.R);
