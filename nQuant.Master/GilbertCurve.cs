@@ -137,7 +137,7 @@ namespace nQuant.Master
 					if (weight >= .0015 && saliencies[bidx] < .6)
 						c1 = pixel;
 					if (CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
-						kappa = (weight < .0025 ? .55f : .5f) / saliencies[bidx];
+						kappa = (!sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
 
 					c2 = BlueNoise.Diffuse(c1, palette[qPixelIndex], kappa, strength, x, y);
 				}
