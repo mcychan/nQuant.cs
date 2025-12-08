@@ -188,7 +188,12 @@ namespace nQuant.Master
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || pixel.A < a_pix))
-				qPixels[bidx] = DitherPixel(x, y, c2, beta);
+			{
+				if (palette.Length > 32 && saliencies[bidx] > .99f)
+					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+				else
+					qPixels[bidx] = DitherPixel(x, y, c2, beta);
+			}
 			else if (palette.Length <= 32 && a_pix > 0xF0)
 			{
 				int offset = ditherable.GetColorIndex(c2.ToArgb());
