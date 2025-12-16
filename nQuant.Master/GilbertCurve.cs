@@ -109,7 +109,7 @@ namespace nQuant.Master
 		}
 
 
-		private static float NormalDistribution(float x)
+		private static float NormalDistribution(float x, float peak)
 		{
 			const float mean = .5f, stdDev = .1f;
 
@@ -117,8 +117,8 @@ namespace nQuant.Master
 			double exponent = -Math.Pow(x - mean, 2) / (2 * Math.Pow(stdDev, 2));
 			double pdf = (1 / (stdDev * Math.Sqrt(2 * Math.PI))) * Math.Exp(exponent);
 			double maxPdf = 1 / (stdDev * Math.Sqrt(2 * Math.PI)); // Peak at x = mean
-			double scaledPdf = (pdf / maxPdf) * 2; // Scale peak to y = 2
-			return (float) Math.Max(0.0, Math.Min(2.0, scaledPdf));
+			double scaledPdf = (pdf / maxPdf) * peak;
+			return (float) Math.Max(0.0, Math.Min(peak, scaledPdf));
 		}
 
 
@@ -148,12 +148,14 @@ namespace nQuant.Master
 					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
 					var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 					if (palette.Length > 32)
-						kappa = beta * NormalDistribution(beta) * saliencies[bidx];
+						kappa = beta * NormalDistribution(beta, 2f) * saliencies[bidx];
 					else
 					{
 						if (weight >= .0015 && saliencies[bidx] < .6)
 							c1 = pixel;
-						if (CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
+						if (saliencies[bidx] < .6)
+							kappa = beta * NormalDistribution(beta, 1.75f) * saliencies[bidx];
+						else if (CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
 							kappa = (!sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
 					}
 
