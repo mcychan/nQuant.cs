@@ -93,8 +93,12 @@ namespace nQuant.Master
 				beta *= .4f;
 			if (palette.Length > 64 && weight < .02)
 				beta = .2f;
+            else if (palette.Length < 64 && weight < .0008)
+                beta = 2.5f;
+            else if (palette.Length > 32 && weight < .015)
+                beta = .55f;
 
-			DITHER_MAX = (byte)(weight < .015 ? (weight > .0025) ? 25 : 16 : 9);
+            DITHER_MAX = (byte)(weight < .015 ? (weight > .0025) ? 25 : 16 : 9);
 			var edge = m_hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = !m_hasAlpha && weight > .002 ? .25 : 1;
 			ditherMax = (m_hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * 1.5);
@@ -154,9 +158,14 @@ namespace nQuant.Master
 						if (weight >= .0015 && saliencies[bidx] < .6)
 							c1 = pixel;
 						if (saliencies[bidx] < .6)
-							kappa = beta * NormalDistribution(beta, 1.75f) * saliencies[bidx];
-						else if (CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
-							kappa = (!sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
+							kappa = beta * NormalDistribution(beta, weight < .0008 ? 2.5f : 1.75f) * saliencies[bidx];
+						else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
+						{
+                            if (saliencies[bidx] < .9)
+								kappa = beta * (!sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
+							else
+                                kappa = beta * NormalDistribution(beta, !sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
+                        }
 					}
 
 					c2 = BlueNoise.Diffuse(c1, palette[qPixelIndex], kappa, strength, x, y);
