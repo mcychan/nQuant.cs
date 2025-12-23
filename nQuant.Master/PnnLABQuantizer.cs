@@ -184,7 +184,7 @@ namespace PnnQuant
 				quan_rt = -1;
 			
 			weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
-			if ((nMaxColors < 16 && weight < .0075) || weight < .001 || (weight > .0014 && weight < .0022))
+			if ((nMaxColors < 16 && weight < .0075) || weight < .001 || (weight > .0015 && weight < .0022))
 				quan_rt = 2;
 			if (weight < (isGA ? .03 : .04) && PG < 1 && PG >= coeffs[0, 1]) {
 				if (nMaxColors >= 64)
@@ -226,7 +226,7 @@ namespace PnnQuant
 			}
 			bins[j].cnt = quanFn(bins[j].cnt);
 
-			var texicab = proportional > .025;
+			var texicab = quan_rt < 2;
 
 			if(!isGA) {
 				if(hasSemiTransparency)
@@ -296,7 +296,7 @@ namespace PnnQuant
 						b1 = heap[1] = heap[heap[0]--];
 					else /* Too old error value */
 					{
-						Find_nn(bins, b1, texicab && proportional < 1);
+						Find_nn(bins, b1, texicab);
 						tb.tm = i;
 					}
 					/* Push slot down */
