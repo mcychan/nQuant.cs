@@ -226,7 +226,7 @@ namespace PnnQuant
 			}
 			bins[j].cnt = quanFn(bins[j].cnt);
 
-			var texicab = proportional > .0225;
+			var texicab = proportional > .0225 && !hasSemiTransparency;
 
 			if(!isGA) {
 				if(hasSemiTransparency)

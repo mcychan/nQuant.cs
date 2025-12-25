@@ -93,9 +93,7 @@ namespace nQuant.Master
 				beta *= .4f;
 			if (palette.Length > 64 && weight < .02)
 				beta = .2f;
-            else if (palette.Length < 64 && weight < .0008)
-                beta = 2.5f;
-            else if (palette.Length > 32 && weight < .015)
+            else if (palette.Length > 32 && palette.Length < 64 && weight < .015)
                 beta = .55f;
 
             DITHER_MAX = (byte)(weight < .015 ? (weight > .0025) ? 25 : 16 : 9);
@@ -147,7 +145,7 @@ namespace nQuant.Master
 					c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta / saliencies[bidx], strength, x, y);
 			}
 
-			if (palette.Length < 3 || margin > 6) {
+			if (margin > 6 || (palette.Length <= 32 && weight > .007)) {
 				if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff)) {
 					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
 					var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
