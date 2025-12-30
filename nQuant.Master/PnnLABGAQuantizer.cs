@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -56,8 +55,11 @@ namespace PnnQuant
 			}
 			minRatio = (hasSemiTransparency || nMaxColors < 64) ? .0111 : .85;
 			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 400.0 : 50.0));
-            if (nMaxColors < 16)
-                maxRatio = .2;
+			if (nMaxColors < 16)
+			{
+				minRatio = -.003;
+				maxRatio = .2;
+			}
             _dp = maxRatio < .1 ? 10000 : 100;
 		}
 
@@ -209,7 +211,7 @@ namespace PnnQuant
 		public void SetRatio(double ratioX, double ratioY)
 		{
 			var difference = Math.Abs(ratioX - ratioY);
-			if (difference <= minRatio)
+			if (difference <= Math.Abs(minRatio))
 				ratioY = ratioX;
 			this.ratioX = Math.Min(Math.Max(ratioX, minRatio), maxRatio);
 			this.ratioY = Math.Min(Math.Max(ratioY, minRatio), maxRatio);
