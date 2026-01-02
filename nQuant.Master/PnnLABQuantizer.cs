@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 
 /* Fast pairwise nearest neighbor based algorithm with CIELAB color space advanced version
-Copyright (c) 2018-2025 Miller Cy Chan
+Copyright (c) 2018-2026 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
 namespace PnnQuant
@@ -441,7 +441,7 @@ namespace PnnQuant
 				GetLab(c2.ToArgb(), out var lab2);
 
 				var curdist = 0.0;
-				if (Math.Abs(lab2.L - lab1.L) < nMaxColors)
+				if (Math.Abs(lab2.L - lab1.L) < nMaxColors || saliencies[pos] < .2 || saliencies[pos] > .8)
 				{
 					curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
 					if (curdist > mindist)
@@ -484,9 +484,6 @@ namespace PnnQuant
 
 		protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
 		{
-			if (PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
-				return NearestColorIndex(palette, pixel, pos);
-
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
 				return NearestColorIndex(palette, pixel, pos);
