@@ -440,8 +440,8 @@ namespace PnnQuant
 				var c2 = palette[i];
 				GetLab(c2.ToArgb(), out var lab2);
 
-				var curdist = 0.0;
-				if (Math.Abs(lab2.L - lab1.L) < nMaxColors || saliencies[pos] < .2 || saliencies[pos] > .8)
+				var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5) : 0;
+                if (Math.Abs(lab2.L - lab1.L) < nMaxColors || saliencies[pos] < .2 || saliencies[pos] > .8)
 				{
 					curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
 					if (curdist > mindist)
@@ -554,7 +554,7 @@ namespace PnnQuant
 				idx = 0;
 
 			var MAX_ERR = palette.Length;
-			if (closest[idx + 2] >= MAX_ERR || (HasAlpha && closest[idx] == 0))
+			if (closest[idx + 2] >= MAX_ERR || closest[idx] == 0 || palette[closest[idx]].A < c.A)
 				return NearestColorIndex(palette, pixel, pos);
 			return closest[idx];
 		}
@@ -562,7 +562,7 @@ namespace PnnQuant
 		public override ushort DitherColorIndex(Color[] palette, int pixel, int pos)
 		{
 			var nMaxColors = palette.Length;
-			if (HasAlpha || nMaxColors <= 4)
+			if (nMaxColors <= 4)
 				return NearestColorIndex(palette, pixel, pos);
 			if (IsGA && nMaxColors < 16)
 				return HybridColorIndex(palette, pixel, pos);
