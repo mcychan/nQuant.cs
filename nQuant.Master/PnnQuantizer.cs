@@ -281,7 +281,8 @@ namespace PnnQuant
 		}
 		internal virtual ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{
-			if (nearestMap.TryGetValue(pixel, out var k))
+            int offset = GetColorIndex(pixel);
+            if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
 			var c = Color.FromArgb(pixel);
@@ -318,7 +319,7 @@ namespace PnnQuant
 				mindist = curdist;
 				k = (ushort)i;
 			}
-			nearestMap[pixel] = k;
+			nearestMap[offset] = k;
 			return k;
 		}
 		
@@ -329,7 +330,8 @@ namespace PnnQuant
 			if (c.A <= alphaThreshold)
 				return NearestColorIndex(palette, pixel, pos);
 
-			if (!closestMap.TryGetValue(pixel, out var closest))
+            int offset = GetColorIndex(pixel);
+            if (!closestMap.TryGetValue(offset, out var closest))
 			{
 				closest = new ushort[4];
 				closest[2] = closest[3] = ushort.MaxValue;
@@ -374,7 +376,7 @@ namespace PnnQuant
 				if (closest[3] == ushort.MaxValue)
 					closest[1] = closest[0];
 				
-				closestMap[pixel] = closest;
+				closestMap[offset] = closest;
 			}
 
 			var MAX_ERR = palette.Length << 2;
