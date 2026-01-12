@@ -273,12 +273,9 @@ namespace nQuant.Master
 
 			if (unaccepted) {
 				if (saliencies != null)
-					qPixels[bidx] = DitherPixel(x, y, c2, 1.25f);
-				else if (CIELABConvertor.Y_Diff(pixel, c2) > 3 && CIELABConvertor.U_Diff(pixel, c2) > 3) {
-					var strength = 1 / 3f;
-					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], strength, strength, x, y);
-					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
-				}
+					qPixels[bidx] = DitherPixel(x, y, c2, beta);
+				else if (CIELABConvertor.Y_Diff(pixel, c2) > 3 && CIELABConvertor.U_Diff(pixel, c2) > 3)
+                    qPixels[bidx] = DitherPixel(x, y, c2, 1.25f);
 
 				if (palette.Length > 256) {
 					c2 = palette[qPixels[bidx]];

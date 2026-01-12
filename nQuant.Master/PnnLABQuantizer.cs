@@ -347,7 +347,8 @@ namespace PnnQuant
 
 		internal override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{
-            int offset = GetColorIndex(pixel);
+            var nMaxColors = palette.Length;
+            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
             if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
@@ -358,7 +359,6 @@ namespace PnnQuant
 				k = 1;
 
 			double mindist = 1e100;
-			var nMaxColors = palette.Length;
 			GetLab(pixel, out var lab1);
 
 			for (int i = k; i < nMaxColors; ++i)
@@ -427,14 +427,14 @@ namespace PnnQuant
 
 		internal ushort HybridColorIndex(Color[] palette, int pixel, int pos)
 		{
-            int offset = GetColorIndex(pixel);
+            var nMaxColors = palette.Length;
+            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
             if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
 			var c = Color.FromArgb(pixel);
 
 			double mindist = int.MaxValue;
-			var nMaxColors = palette.Length;
 			GetLab(pixel, out var lab1);
 
 			for (int i = k; i < nMaxColors; ++i)
@@ -493,13 +493,13 @@ namespace PnnQuant
 			if (c.A <= alphaThreshold)
 				return NearestColorIndex(palette, pixel, pos);
 
-            int offset = GetColorIndex(pixel);
+            var nMaxColors = palette.Length;
+            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
             if (!closestMap.TryGetValue(offset, out var closest))
 			{
 				closest = new ushort[4];
 				closest[2] = closest[3] = ushort.MaxValue;
 
-				var nMaxColors = palette.Length;
 				for (ushort k = 0; k < nMaxColors; ++k)
 				{
 					var c2 = palette[k];
