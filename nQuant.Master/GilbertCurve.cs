@@ -54,7 +54,6 @@ namespace nQuant.Master
 		private readonly Ditherable ditherable;
 		private readonly float[] saliencies;
 		private List<ErrorBox> errorq;
-		private readonly int[] lookup;
 
 		private readonly int margin, thresold;
 		private const float BLOCK_SIZE = 343f;
@@ -107,7 +106,6 @@ namespace nQuant.Master
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
 			thresold = DITHER_MAX > 9 ? -112 : -64;
 			weights = new float[0];
-			lookup = new int[65536];
 		}
 
 
@@ -181,10 +179,7 @@ namespace nQuant.Master
 			if (beta > 1f && CIELABConvertor.Y_Diff(pixel, c2) > DITHER_MAX)
 				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 
-			int offset = ditherable.GetColorIndex(c2.ToArgb());
-			if (lookup[offset] == 0)
-				lookup[offset] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
-			return lookup[offset] - 1;
+			return ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 		}
 
 		private void DiffusePixel(int x, int y)
@@ -223,10 +218,7 @@ namespace nQuant.Master
 			}
 			else if (palette.Length <= 32 && a_pix > 0xF0)
 			{
-				int offset = ditherable.GetColorIndex(c2.ToArgb());
-				if (lookup[offset] == 0)
-					lookup[offset] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx) + 1;
-				qPixels[bidx] = lookup[offset] - 1;
+				qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 
 				int acceptedDiff = Math.Max(2, palette.Length - margin);
 				if (saliencies != null && (CIELABConvertor.Y_Diff(pixel, c2) > acceptedDiff || CIELABConvertor.U_Diff(pixel, c2) > (2 * acceptedDiff)))
