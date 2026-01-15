@@ -347,15 +347,15 @@ namespace PnnQuant
 
 		internal override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{
-            var nMaxColors = palette.Length;
-            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
-            if (nearestMap.TryGetValue(offset, out var k))
+			var nMaxColors = palette.Length;
+			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
-                return k;
-            if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
+				return k;
+			if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
 				k = 1;
 
 			double mindist = 1e100;
@@ -427,9 +427,9 @@ namespace PnnQuant
 
 		internal ushort HybridColorIndex(Color[] palette, int pixel, int pos)
 		{
-            var nMaxColors = palette.Length;
-            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
-            if (nearestMap.TryGetValue(offset, out var k))
+			var nMaxColors = palette.Length;
+			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
 			var c = Color.FromArgb(pixel);
@@ -486,16 +486,16 @@ namespace PnnQuant
 
 		protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
 		{
-            if (PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
-                return HybridColorIndex(palette, pixel, pos);
+			if (PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
+				return HybridColorIndex(palette, pixel, pos);
 
-            var c = Color.FromArgb(pixel);
+			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
 				return NearestColorIndex(palette, pixel, pos);
 
-            var nMaxColors = palette.Length;
-            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
-            if (!closestMap.TryGetValue(offset, out var closest))
+			var nMaxColors = palette.Length;
+			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			if (!closestMap.TryGetValue(offset, out var closest))
 			{
 				closest = new ushort[4];
 				closest[2] = closest[3] = ushort.MaxValue;

@@ -6,7 +6,7 @@ using System.Drawing.Imaging;
 
 /* Fast pairwise nearest neighbor based algorithm for multilevel thresholding
 Copyright (C) 2004-2016 Mark Tyler and Dmitry Groshev
-Copyright (c) 2018-2023 Miller Cy Chan
+Copyright (c) 2018-2026 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
 namespace PnnQuant
@@ -282,7 +282,7 @@ namespace PnnQuant
 		internal virtual ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{
             var nMaxColors = palette.Length;
-            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
+            int offset = weight > .015 ? pixel : GetColorIndex(pixel);
             if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
@@ -331,7 +331,7 @@ namespace PnnQuant
 				return NearestColorIndex(palette, pixel, pos);
 
             var nMaxColors = palette.Length;
-            int offset = nMaxColors > 32 ? pixel : GetColorIndex(pixel);
+            int offset = weight > .015 ? pixel : GetColorIndex(pixel);
             if (!closestMap.TryGetValue(offset, out var closest))
 			{
 				closest = new ushort[4];
@@ -476,13 +476,13 @@ namespace PnnQuant
 			m_palette = palettes;
 
 			if (m_transparentPixelIndex >= 0)
-            {
-                var k = NearestColorIndex(m_palette, pixels[m_transparentPixelIndex], m_transparentPixelIndex);
-                if (nMaxColors > 2)
-                    m_palette[0] = m_transparentColor;
-                else if (m_palette[k] != m_transparentColor)
-                    BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
-            }
+			{
+				var k = NearestColorIndex(m_palette, pixels[m_transparentPixelIndex], m_transparentPixelIndex);
+				if (nMaxColors > 2)
+					m_palette[0] = m_transparentColor;
+				else if (m_palette[k] != m_transparentColor)
+					BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
+			}
 
 			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
 
