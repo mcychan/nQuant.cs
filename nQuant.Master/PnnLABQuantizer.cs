@@ -16,6 +16,7 @@ namespace PnnQuant
 		private Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
 		private readonly bool isGA;
+		private bool isNano;
 		private double proportional, ratioY = .5;
 
 		private sealed class Pnnbin
@@ -184,7 +185,8 @@ namespace PnnQuant
 				quan_rt = -1;
 			
 			weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
-			if ((nMaxColors < 16 && weight < .0075) || weight < .001 || (weight > .0015 && weight < .0022))
+			isNano = weight <= .015;
+            if ((nMaxColors < 16 && weight < .0075) || weight < .001 || (weight > .0015 && weight < .0022))
 				quan_rt = 2;
 			if (weight < (isGA ? .03 : .04) && PG < 1 && PG >= coeffs[0, 1]) {
 				if (nMaxColors >= 64)
@@ -348,7 +350,7 @@ namespace PnnQuant
 		internal override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{
 			var nMaxColors = palette.Length;
-			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			int offset = !isNano ? pixel : GetColorIndex(pixel);
 			if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
@@ -428,7 +430,7 @@ namespace PnnQuant
 		internal ushort HybridColorIndex(Color[] palette, int pixel, int pos)
 		{
 			var nMaxColors = palette.Length;
-			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			int offset = !isNano ? pixel : GetColorIndex(pixel);
 			if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
@@ -486,7 +488,7 @@ namespace PnnQuant
 
 		protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
 		{
-			if (PG < coeffs[0, 1] && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > -88)
+			if (PG < 1 && weight > .1 && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > 0)
 				return HybridColorIndex(palette, pixel, pos);
 
 			var c = Color.FromArgb(pixel);
@@ -494,7 +496,7 @@ namespace PnnQuant
 				return NearestColorIndex(palette, pixel, pos);
 
 			var nMaxColors = palette.Length;
-			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			int offset = !isNano ? pixel : GetColorIndex(pixel);
 			if (!closestMap.TryGetValue(offset, out var closest))
 			{
 				closest = new ushort[4];
