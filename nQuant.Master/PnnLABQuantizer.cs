@@ -488,9 +488,6 @@ namespace PnnQuant
 
 		protected override ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
 		{
-			if (PG < 1 && weight > .15 && BlueNoise.TELL_BLUE_NOISE[pos & 4095] > 0)
-				return HybridColorIndex(palette, pixel, pos);
-
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
 				return NearestColorIndex(palette, pixel, pos);
