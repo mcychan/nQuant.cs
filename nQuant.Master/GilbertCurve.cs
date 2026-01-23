@@ -93,10 +93,16 @@ namespace nQuant.Master
 			if (palette.Length > 64 || (palette.Length > 4 && weight > .02))
 				beta *= .4f;
 			if (palette.Length > 64 && weight < .02)
-				beta = .2f;
+				beta = .18f;
 
 			DITHER_MAX = (byte)(weight < .015 ? (weight > .0025) ? 25 : 16 : 9);
-			var edge = m_hasAlpha ? 1 : Math.Exp(weight) + .25;
+			if (weight > .99)
+			{
+				beta = (float)weight;
+				DITHER_MAX = 25;
+			}
+
+            var edge = m_hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = !m_hasAlpha && weight > .002 ? .25 : 1;
 			ditherMax = (m_hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * 1.5);
 			int density = palette.Length > 16 ? 3200 : 1500;
