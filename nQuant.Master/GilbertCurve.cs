@@ -189,7 +189,7 @@ namespace nQuant.Master
 			}
 
 			if (!sortedByYDiff && palette.Length > 32 && (palette.Length <= 64 || weight >= .02) && CIELABConvertor.Y_Diff(pixel, c2) > margin - 1)
-				c2 = BlueNoise.Diffuse(c2, palette[qPixelIndex], beta * NormalDistribution(beta, palette.Length / 128f) * saliencies[bidx], strength, x, y);
+				c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * NormalDistribution(beta, palette.Length / 128f) * saliencies[bidx], strength, x, y);
 			if (beta > 1f && CIELABConvertor.Y_Diff(pixel, c2) > DITHER_MAX)
 				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 
