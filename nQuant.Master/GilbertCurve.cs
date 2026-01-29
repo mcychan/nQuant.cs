@@ -102,7 +102,7 @@ namespace nQuant.Master
 				DITHER_MAX = 25;
 			}
 
-            var edge = m_hasAlpha ? 1 : Math.Exp(weight) + .25;
+			var edge = m_hasAlpha ? 1 : Math.Exp(weight) + .25;
 			var deviation = !m_hasAlpha && weight > .002 ? .25 : 1;
 			ditherMax = (m_hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * 1.5);
 			int density = palette.Length > 16 ? 3200 : 1500;
@@ -145,7 +145,7 @@ namespace nQuant.Master
 			else if (palette.Length <= 4 || CIELABConvertor.Y_Diff(pixel, c2) < (2 * acceptedDiff)) {
 				if (palette.Length <= 128 || BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > 0)
 				{
-					if (palette.Length > 32)
+					if (palette.Length > 64)
 					{
 						var kappa = saliencies[bidx] < .6f ? beta * .15f / saliencies[bidx] : beta * .4f / saliencies[bidx];
 						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], kappa, strength, x, y);
@@ -162,13 +162,13 @@ namespace nQuant.Master
 					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
 					var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 					if (palette.Length > 32)
-						kappa = beta * NormalDistribution(beta, 2f) * saliencies[bidx];
+						kappa = beta * NormalDistribution(saliencies[bidx], 2f);
 					else
 					{
 						if (weight >= .0015 && saliencies[bidx] < .6)
 							c1 = pixel;
 						if (saliencies[bidx] < .6)
-							kappa = beta * NormalDistribution(beta, weight < .0008 ? 2.5f : 1.75f) * saliencies[bidx];
+							kappa = beta * NormalDistribution(saliencies[bidx], weight < .0008 ? 2.5f : 1.75f);
 						else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
 						{
 							if (saliencies[bidx] < .9)
@@ -188,8 +188,8 @@ namespace nQuant.Master
 					c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			}
 
-			if (!sortedByYDiff && palette.Length > 32 && (palette.Length <= 64 || weight >= .02) && CIELABConvertor.Y_Diff(pixel, c2) > margin - 1)
-				c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * NormalDistribution(beta, palette.Length / 128f) * saliencies[bidx], strength, x, y);
+			if (DITHER_MAX < 16 && palette.Length > 4 && saliencies[bidx] < .6f && CIELABConvertor.Y_Diff(pixel, c2) > margin - 1)
+				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (beta > 1f && CIELABConvertor.Y_Diff(pixel, c2) > DITHER_MAX)
 				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 
