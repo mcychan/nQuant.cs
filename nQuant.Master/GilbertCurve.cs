@@ -171,10 +171,10 @@ namespace nQuant.Master
 							kappa = beta * NormalDistribution(saliencies[bidx], weight < .0008 ? 2.5f : 1.75f);
 						else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
 						{
-							if (saliencies[bidx] < .9)
+							if (saliencies[bidx] > .15 && saliencies[bidx] < .9)
 								kappa = beta * (!sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
 							else
-								kappa = beta * NormalDistribution(beta, !sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
+								kappa = beta * NormalDistribution(saliencies[bidx], weight < .0025 ? 1.82f : 2f);
 						}
 					}
 
