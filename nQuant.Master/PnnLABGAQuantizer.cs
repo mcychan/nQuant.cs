@@ -57,10 +57,10 @@ namespace PnnQuant
 			maxRatio = Math.Min(1.0, nMaxColors / ((nMaxColors < 64) ? 400.0 : 50.0));
 			if (nMaxColors < 16)
 			{
-                minRatio = -.055;
-                maxRatio = -.01;
-            }
-            _dp = maxRatio < .1 ? 10000 : 100;
+				minRatio = -.055;
+				maxRatio = -.01;
+			}
+			_dp = maxRatio < .1 ? 10000 : 100;
 		}
 
 		private PnnLABGAQuantizer(PnnLABQuantizer pq, List<int[]> pixelsList, List<int> bitmapWidths, int nMaxColors)
@@ -124,9 +124,14 @@ namespace PnnQuant
 			var palette = new Color[_nMaxColors];
 			m_pq.Pnnquan(m_pixelsList[0], ref palette, ref _nMaxColors);
 
-			int threshold = (maxRatio < .1 || Math.Abs(ratioX - ratioY) > .01) ? -64 : -112;
+			if (maxRatio < .1 && maxRatio > 0)
+				minRatio = m_pq.Proportional;
 
-            var errors = new double[_objectives.Length];
+			int threshold = (maxRatio < .1) ? -64 : -112;
+			if (Math.Abs(ratioX - ratioY) > .005)
+				threshold = -32;
+
+			var errors = new double[_objectives.Length];
 			m_pixelsList.ForEach(pixels => {
 				for (int i = 0; i < pixels.Length; ++i)
 				{
@@ -222,20 +227,20 @@ namespace PnnQuant
 			get => (float) _fitness;
 		}
 		
-		private double RotateLeft(double u, double v, double delta = 0.0) {
-			var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
+		private double RotateLeft(double u, double v) {
+			var theta = Math.PI * Randrange(minRatio, maxRatio);
 			var result = u * Math.Sin(theta) + v * Math.Cos(theta);
-            if (delta < 50 && (result <= minRatio || result >= maxRatio))
-				result = RotateLeft(u, v, delta + .5);
-			return result;
+            if (result <= minRatio || result >= maxRatio)
+                result = minRatio + minRatio % (maxRatio - minRatio);
+            return result;
 		}
 		
-		private double RotateRight(double u, double v, double delta = 0.0) {
-			var theta = Math.PI * Randrange(minRatio, maxRatio) / Math.Exp(delta);
+		private double RotateRight(double u, double v) {
+			var theta = Math.PI * Randrange(minRatio, maxRatio);
 			var result = u * Math.Cos(theta) - v * Math.Sin(theta);
-            if (delta < 50 && (result <= minRatio || result >= maxRatio))
-				result = RotateRight(u, v, delta + .5);
-			return result;
+            if (result <= minRatio || result >= maxRatio)
+                result = maxRatio - minRatio % (maxRatio - minRatio);
+            return result;
 		}
 
 		public PnnLABGAQuantizer Crossover(PnnLABGAQuantizer mother, int numberOfCrossoverPoints, float crossoverProbability)
