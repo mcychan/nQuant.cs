@@ -150,7 +150,7 @@ namespace nQuant.Master
 						var kappa = saliencies[bidx] < .6f ? beta * .15f / saliencies[bidx] : beta * .4f / saliencies[bidx];
 						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], kappa, strength, x, y);
 					}
-					else if(palette.Length > 16)
+					else if(palette.Length > 16 && palette.Length <= 32)
 						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * NormalDistribution(saliencies[bidx], .5f) + beta, strength, x, y);
 					else
 						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * .5f / saliencies[bidx], strength, x, y);
