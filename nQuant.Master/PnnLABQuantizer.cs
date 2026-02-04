@@ -566,7 +566,7 @@ namespace PnnQuant
 			var nMaxColors = palette.Length;
 			if (nMaxColors <= 4)
 				return NearestColorIndex(palette, pixel, pos);
-			if (IsGA && nMaxColors < 16)
+			if (weight < .0005 && nMaxColors < 16)
 				return HybridColorIndex(palette, pixel, pos);
 			return ClosestColorIndex(palette, pixel, pos);
 		}
