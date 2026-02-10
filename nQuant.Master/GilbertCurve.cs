@@ -155,45 +155,33 @@ namespace nQuant.Master
 					else
 						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * .5f / saliencies[bidx], strength, x, y);
 				}
-				if (CIELABConvertor.U_Diff(pixel, c2) > (margin * acceptedDiff))
-					c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * NormalDistribution(saliencies[bidx], .25f) + beta, strength, x, y);
 			}
 
-			if (margin > 6 || (palette.Length <= 32 && weight < .01 && weight > .007)) {
-				if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff)) {
-					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
-					var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-					if (palette.Length > 32)
-						kappa = beta * NormalDistribution(saliencies[bidx], 2f);
-					else
-					{
-						if (weight >= .0015 && saliencies[bidx] < .6)
-							c1 = pixel;
-						if (saliencies[bidx] < .6)
-							kappa = beta * NormalDistribution(saliencies[bidx], weight < .0008 ? 2.5f : 1.75f);
-						else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
-						{
-							var ub = 1 - palette.Length / 320.0;
-							if (saliencies[bidx] > .15 && saliencies[bidx] < ub)
-								kappa = beta * (!sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
-							else
-								kappa = beta * NormalDistribution(saliencies[bidx], weight < .0025 ? 1.82f : 2f);
-						}
-					}
-
-					c2 = BlueNoise.Diffuse(c1, palette[qPixelIndex], kappa, strength, x, y);
-				}
-			}
-			else if (palette.Length > 4 && (CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff) || CIELABConvertor.U_Diff(pixel, c2) < acceptedDiff)) {
-				if(beta < .3f && (palette.Length <= 32 || saliencies[bidx] < beta))
-					c2 = BlueNoise.Diffuse(c2, palette[qPixelIndex], beta * .4f * saliencies[bidx], strength, x, y);
+			if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff)) {
+				var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
+				var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+				if (palette.Length > 32)
+					kappa = beta * NormalDistribution(saliencies[bidx], 2f);
 				else
-					c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			}
+				{
+					if (weight >= .0015 && saliencies[bidx] < .6)
+						c1 = pixel;
+					if (saliencies[bidx] < .6)
+						kappa = beta * NormalDistribution(saliencies[bidx], weight < .0008 ? 2.5f : 1.75f);
+					else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
+					{
+						var ub = 1 - palette.Length / 320.0;
+						if (saliencies[bidx] > .15 && saliencies[bidx] < ub)
+							kappa = beta * (!sortedByYDiff && weight < .0025 ? .55f : .5f) / saliencies[bidx];
+						else
+							kappa = beta * NormalDistribution(saliencies[bidx], weight < .0025 ? 1.82f : 2f);
+					}
+				}
 
+				c2 = BlueNoise.Diffuse(c1, palette[qPixelIndex], kappa, strength, x, y);
+			}
+			
 			if (DITHER_MAX < 16 && palette.Length > 4 && saliencies[bidx] < .6f && CIELABConvertor.Y_Diff(pixel, c2) > margin - 1)
-				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			if (beta > 1f && CIELABConvertor.Y_Diff(pixel, c2) > DITHER_MAX)
 				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 
 			return ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
