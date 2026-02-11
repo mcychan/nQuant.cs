@@ -188,8 +188,8 @@ namespace nQuant.Master
             }
             else if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff))
             {
-                if (beta < .4f && ((palette.Length <= 32 && weight >= .005) || saliencies[bidx] < beta))
-                    c2 = BlueNoise.Diffuse(c2, palette[qPixelIndex], beta * NormalDistribution(saliencies[bidx], .4f), strength, x, y);
+                if ((palette.Length <= 32 && weight >= .004) || saliencies[bidx] < beta)
+                    c2 = BlueNoise.Diffuse(c2, palette[qPixelIndex], beta * NormalDistribution(saliencies[bidx], .25f), strength, x, y);
                 else
                     c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
             }
