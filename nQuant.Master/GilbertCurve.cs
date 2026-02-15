@@ -159,9 +159,9 @@ namespace nQuant.Master
 				}
 			}
 
-			if (margin > 6 || (palette.Length <= 32 && weight < .01 && weight > .007))
+			if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff))
 			{
-				if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff))
+				if (margin > 6 || (palette.Length <= 32 && weight < .01 && weight > .007))
 				{
 					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
 					var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
@@ -185,10 +185,7 @@ namespace nQuant.Master
 
 					c2 = BlueNoise.Diffuse(c1, palette[qPixelIndex], kappa, strength, x, y);
 				}
-			}
-			else if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff))
-			{
-				if (palette.Length <= 32 && weight >= .004)
+				else if (palette.Length <= 32 && weight >= .004)
 					c2 = BlueNoise.Diffuse(c2, palette[qPixelIndex], beta * NormalDistribution(saliencies[bidx], .25f), strength, x, y);
 				else
 					c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
