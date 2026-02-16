@@ -87,7 +87,7 @@ namespace nQuant.Master
 				else if (palette.Length > 32 && palette.Length < 64 && weight < .015)
 					beta = .55f;
 				else if (palette.Length > 16 && palette.Length <= 32 && weight < .005)
-					beta = .55f;
+					beta += .1f;
 			}
 			else
 				beta *= .95f;
@@ -171,7 +171,7 @@ namespace nQuant.Master
 					{
 						if (weight >= .0015 && saliencies[bidx] < .6)
 							c1 = pixel;
-						if (saliencies[bidx] < .6)
+						if (weight < .005 && saliencies[bidx] < .6)
 							kappa = beta * NormalDistribution(saliencies[bidx], weight < .0008 ? 2.5f : 1.75f);
 						else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
 						{
