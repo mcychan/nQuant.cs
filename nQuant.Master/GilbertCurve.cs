@@ -159,9 +159,10 @@ namespace nQuant.Master
 				}
 			}
 
-			if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (beta * acceptedDiff))
+			var gamma = (palette.Length <= 32 && weight < .01 && weight > .007) ? 1 - beta : beta;
+			if (palette.Length > 4 && CIELABConvertor.Y_Diff(pixel, c2) > (gamma * acceptedDiff))
 			{
-				if (margin > 6 || (palette.Length <= 32 && weight < .01 && weight > .007))
+				if (margin > 6 || gamma > beta)
 				{
 					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
 					var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
@@ -173,7 +174,7 @@ namespace nQuant.Master
 							c1 = pixel;
 						if (weight < .005 && saliencies[bidx] < .6)
 							kappa = beta * NormalDistribution(saliencies[bidx], weight < .0008 ? 2.5f : 1.75f);
-						else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (beta * Math.PI * acceptedDiff))
+						else if (palette.Length >= 32 || CIELABConvertor.Y_Diff(c1, c2) > (gamma * Math.PI * acceptedDiff))
 						{
 							var ub = 1 - palette.Length / 320.0;
 							if (saliencies[bidx] > .15 && saliencies[bidx] < ub)
