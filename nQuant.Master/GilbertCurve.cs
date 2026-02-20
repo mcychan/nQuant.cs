@@ -87,8 +87,8 @@ namespace nQuant.Master
 				else if (palette.Length > 32 && palette.Length < 64 && weight < .015)
 					beta = .55f;
 				else if (palette.Length > 16 && palette.Length <= 32 && weight < .005)
-					beta += .1f;
-			}
+					beta += (float)(.05 + weight * palette.Length);
+            }
 			else
 				beta *= .95f;
 
