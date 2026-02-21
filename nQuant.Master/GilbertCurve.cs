@@ -194,6 +194,11 @@ namespace nQuant.Master
 
 			if (DITHER_MAX < 16 && palette.Length > 4 && saliencies[bidx] < .6f && CIELABConvertor.Y_Diff(pixel, c2) > margin - 1)
 				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+			if (palette.Length > 32 && saliencies[bidx] > .95)
+			{
+				var kappa = beta * (.75f - palette.Length / 128f) * saliencies[bidx];
+				c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], kappa, strength, x, y);
+			}
 
 			return ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 		}
