@@ -145,18 +145,15 @@ namespace nQuant.Master
 			if (palette.Length <= 4 && saliencies[bidx] > .2f && saliencies[bidx] < .25f)
 				c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * 2 / saliencies[bidx], strength, x, y);
 			else if (palette.Length <= 4 || CIELABConvertor.Y_Diff(pixel, c2) < (2 * acceptedDiff)) {
-				if (palette.Length <= 128 || BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > 0)
+				if (palette.Length > 64)
 				{
-					if (palette.Length > 64)
-					{
-						var kappa = saliencies[bidx] < .6f ? beta * .15f / saliencies[bidx] : beta * .4f / saliencies[bidx];
-						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], kappa, strength, x, y);
-					}
-					else if(palette.Length > 16 && weight < .005)
-						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * NormalDistribution(saliencies[bidx], .5f) + beta, strength, x, y);
-					else
-						c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * .5f / saliencies[bidx], strength, x, y);
+					var kappa = saliencies[bidx] < .6f ? beta * .15f / saliencies[bidx] : beta * .4f / saliencies[bidx];
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], kappa, strength, x, y);
 				}
+				else if(palette.Length > 16 && weight < .005)
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * NormalDistribution(saliencies[bidx], .5f) + beta, strength, x, y);
+				else
+					c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], beta * .5f / saliencies[bidx], strength, x, y);
 			}
 
 			var gamma = (palette.Length <= 32 && weight < .01 && weight > .007) ? 1 - beta : beta;
@@ -196,7 +193,7 @@ namespace nQuant.Master
 				c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (palette.Length > 32 && saliencies[bidx] > .95)
 			{
-				var kappa = beta * (.75f - palette.Length / 128f) * saliencies[bidx];
+				var kappa = beta * Math.Max(.05f, .75f - palette.Length / 128f) * saliencies[bidx];
 				c2 = BlueNoise.Diffuse(pixel, palette[qPixelIndex], kappa, strength, x, y);
 			}
 
