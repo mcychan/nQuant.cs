@@ -122,7 +122,13 @@ namespace nQuant
 					}
 				break;
 				case "PNNLAB+":
-					System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based parallel genetic algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
+					if (maxColors < 3)
+					{
+						DoProcess(source, "PNNLAB");
+						return;
+					}
+
+                    System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based parallel genetic algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
 					System.Console.WriteLine(copyright.Copyright);
 					var alg = new APNsgaIII<PnnQuant.PnnLABGAQuantizer>(new PnnQuant.PnnLABGAQuantizer(new PnnQuant.PnnLABQuantizer(), new List<Bitmap> { source }, maxColors));
 					alg.Run(999, -Double.Epsilon);
@@ -256,7 +262,7 @@ namespace nQuant
 		{
 			string algorithm = "PNNLAB";
 #if DEBUG
-			var sourcePath = @"samples\SE5x9.jpg";
+			var sourcePath = @"C:\Users\miller\source\repos\nQuant.cs-core\samples\kKcuz.png";
 			maxColors = 256;
 #else
 			if (args.Length < 1)
