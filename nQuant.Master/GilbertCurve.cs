@@ -227,7 +227,7 @@ namespace nQuant.Master
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
 			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || pixel.A < a_pix))
+			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || Math.Abs(pixel.A - a_pix) < (.5 * margin)))
 			{
 				if (palette.Length >= 256 && saliencies[bidx] > .99f)
 					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
