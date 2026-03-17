@@ -18,6 +18,7 @@ namespace PnnQuant
 		private readonly bool isGA;
 		private bool isNano;
 		private double proportional, ratioY = .5;
+		private static readonly double TRANS_RATE = 1 - (512 + 101) / 768.0;
 
 		private sealed class Pnnbin
 		{
@@ -69,7 +70,7 @@ namespace PnnQuant
 				{
 					alpha = bins[i].ac, L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
 				};
-				var alphaDiff = hasSemiTransparency ? BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.75) : 0;
+				var alphaDiff = hasSemiTransparency ? BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) * TRANS_RATE : 0;
 				var nerr = nerr2 * alphaDiff;
 				if (nerr >= err)
 					continue;
@@ -367,7 +368,7 @@ namespace PnnQuant
 			{
 				var c2 = palette[i];
 
-				var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5) : 0;
+				var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) * TRANS_RATE : 0;
 				if (curdist > mindist)
 					continue;
 
@@ -444,7 +445,7 @@ namespace PnnQuant
 				var c2 = palette[i];
 				GetLab(c2.ToArgb(), out var lab2);
 
-				var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) / Math.Exp(1.5) : 0;
+				var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) * TRANS_RATE : 0;
                 if (Math.Abs(lab2.L - lab1.L) < nMaxColors || saliencies[pos] < .2 || saliencies[pos] > .8)
 				{
 					curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
