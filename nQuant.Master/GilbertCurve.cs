@@ -266,7 +266,6 @@ namespace nQuant.Master
 			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > thresold;
 			error.yDiff = sortedByYDiff ? CIELABConvertor.Y_Diff(pixel, c2) : 1;
-			var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(error.yDiff * 4096) & 4095] > thresold;
 
 			var unaccepted = false;
 			var errLength = denoise ? error.Length - 1 : 0;
@@ -277,12 +276,17 @@ namespace nQuant.Master
 					if (sortedByYDiff && saliencies != null)
 						unaccepted = true;
 
+					if (m_hasAlpha && saliencies == null)
+					{
+						if (Math.Abs(error[j]) >= (ditherMax * 2))
+							error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
+						continue;
+					}
+
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
-					else if(illusion)
-						error[j] = (float)(error[j] / maxErr * error.yDiff) * (ditherMax - 1);
 					else
-						error[j] /= (float)(1 + Math.Sqrt(ditherMax));
+						unaccepted = true;
 				}
 
 				if (sortedByYDiff && saliencies == null && Math.Abs(error[j]) >= DITHER_MAX)
