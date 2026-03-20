@@ -88,7 +88,7 @@ namespace nQuant.Master
 					beta = .55f;
 				else if (palette.Length > 16 && palette.Length <= 32 && weight < .005)
 					beta += (float)(.05 + weight * palette.Length);
-            }
+			}
 			else
 				beta *= .95f;
 
@@ -230,7 +230,7 @@ namespace nQuant.Master
 			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || pixel.A < a_pix))
 			{
 				if ((palette.Length >= 256 && saliencies[bidx] > .99f) || (m_hasAlpha && (pixel.A - a_pix) < (.5 * margin)))
-                    qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 				else
 					qPixels[bidx] = DitherPixel(x, y, c2, beta);
 			}
@@ -266,6 +266,7 @@ namespace nQuant.Master
 			var denoise = palette.Length > 2;
 			var diffuse = BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > thresold;
 			error.yDiff = sortedByYDiff ? CIELABConvertor.Y_Diff(pixel, c2) : 1;
+			var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(error.yDiff * 4096) & 4095] > thresold;
 
 			var unaccepted = false;
 			var errLength = denoise ? error.Length - 1 : 0;
@@ -285,8 +286,10 @@ namespace nQuant.Master
 
 					if (diffuse)
 						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
+					else if (illusion)
+						error[j] = (float)(error[j] / maxErr * error.yDiff) * (ditherMax - 1);
 					else
-						unaccepted = true;
+						error[j] /= (float)(1 + Math.Sqrt(ditherMax));
 				}
 
 				if (sortedByYDiff && saliencies == null && Math.Abs(error[j]) >= DITHER_MAX)
