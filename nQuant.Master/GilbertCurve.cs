@@ -55,7 +55,7 @@ namespace nQuant.Master
 		private readonly float[] saliencies;
 		private List<ErrorBox> errorq;
 
-		private readonly int margin, thresold;
+		private readonly int margin;
 		private const float BLOCK_SIZE = 343f;
 
 		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight, bool dither)
@@ -112,7 +112,6 @@ namespace nQuant.Master
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
 			else if (weight < .03 && palette.Length / weight < density && palette.Length >= 16 && palette.Length < 256)
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
-			thresold = DITHER_MAX > 9 ? -112 : -64;
 			weights = new float[0];
 		}
 
@@ -264,9 +263,7 @@ namespace nQuant.Master
 			error[3] = a_pix - c2.A;
 
 			var denoise = palette.Length > 2;
-			var diffuse = BlueNoise.TELL_BLUE_NOISE[bidx & 4095] > thresold;
 			error.yDiff = sortedByYDiff ? CIELABConvertor.Y_Diff(pixel, c2) : 1;
-			var illusion = !diffuse && BlueNoise.TELL_BLUE_NOISE[(int)(error.yDiff * 4096) & 4095] > thresold;
 
 			var unaccepted = false;
 			var errLength = denoise ? error.Length - 1 : 0;
@@ -279,17 +276,12 @@ namespace nQuant.Master
 
 					if (m_hasAlpha && saliencies == null)
 					{
-						if (Math.Abs(error[j]) >= (ditherMax * 2))
+						if (Math.Abs(error[j]) >= (ditherMax * Math.PI) || error[3] < 1)
 							error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
 						continue;
 					}
 
-					if (diffuse)
-						error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
-					else if (illusion)
-						error[j] = (float)(error[j] / maxErr * error.yDiff) * (ditherMax - 1);
-					else
-						error[j] /= (float)(1 + Math.Sqrt(ditherMax));
+					error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
 				}
 
 				if (sortedByYDiff && saliencies == null && Math.Abs(error[j]) >= DITHER_MAX)
