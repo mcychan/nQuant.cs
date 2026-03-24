@@ -253,10 +253,10 @@ namespace PnnQuant
 				var n1 = tb.cnt;
 				var n2 = nb.cnt;
 				var d = 1.0f / (n1 + n2);
-				tb.ac = d * (float) Math.Round(n1 * tb.ac + n2 * nb.ac);
-				tb.rc = d * (float) Math.Round(n1 * tb.rc + n2 * nb.rc);
-				tb.gc = d * (float) Math.Round(n1 * tb.gc + n2 * nb.gc);
-				tb.bc = d * (float) Math.Round(n1 * tb.bc + n2 * nb.bc);
+				tb.ac = d * (float) Math.Round(n1 * tb.ac + n2 * nb.ac, MidpointRounding.AwayFromZero);
+				tb.rc = d * (float) Math.Round(n1 * tb.rc + n2 * nb.rc, MidpointRounding.AwayFromZero);
+				tb.gc = d * (float) Math.Round(n1 * tb.gc + n2 * nb.gc, MidpointRounding.AwayFromZero);
+				tb.bc = d * (float) Math.Round(n1 * tb.bc + n2 * nb.bc, MidpointRounding.AwayFromZero);
 				tb.cnt += n2;
 				tb.mtm = ++i;
 
@@ -273,7 +273,7 @@ namespace PnnQuant
 			int k = 0;
 			for (int i = 0; k < nMaxColors; ++k)
 			{
-				var alpha = (hasSemiTransparency || HasAlpha) ? Math.Clamp((int)Math.Round(bins[i].ac), Byte.MinValue, Byte.MaxValue) : Byte.MaxValue;
+				var alpha = (hasSemiTransparency || HasAlpha) ? Math.Clamp((int)Math.Round(bins[i].ac, MidpointRounding.AwayFromZero), Byte.MinValue, Byte.MaxValue) : Byte.MaxValue;
 				palettes[k] = Color.FromArgb(alpha, Math.Clamp((int)bins[i].rc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].gc, Byte.MinValue, Byte.MaxValue), Math.Clamp((int)bins[i].bc, Byte.MinValue, Byte.MaxValue));
 
 				i = bins[i].fw;
@@ -281,15 +281,16 @@ namespace PnnQuant
 		}
 		internal virtual ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{
-            var nMaxColors = palette.Length;
-            int offset = weight > .015 ? pixel : GetColorIndex(pixel);
-            if (nearestMap.TryGetValue(offset, out var k))
+			var nMaxColors = palette.Length;
+			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			if (nearestMap.TryGetValue(offset, out var k))
 				return k;
 
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
-                return k;
-            if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
+				c = m_transparentColor;
+
+			if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
 				k = 1;
 
 			double pr = PR, pg = PG, pb = PB, pa = PA;
@@ -330,9 +331,9 @@ namespace PnnQuant
 			if (c.A <= alphaThreshold)
 				return NearestColorIndex(palette, pixel, pos);
 
-            var nMaxColors = palette.Length;
-            int offset = weight > .015 ? pixel : GetColorIndex(pixel);
-            if (!closestMap.TryGetValue(offset, out var closest))
+			var nMaxColors = palette.Length;
+			int offset = weight > .015 ? pixel : GetColorIndex(pixel);
+			if (!closestMap.TryGetValue(offset, out var closest))
 			{
 				closest = new ushort[4];
 				closest[2] = closest[3] = ushort.MaxValue;

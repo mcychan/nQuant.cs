@@ -357,7 +357,8 @@ namespace PnnQuant
 
 			var c = Color.FromArgb(pixel);
 			if (c.A <= alphaThreshold)
-				return k;
+				c = m_transparentColor;
+
 			if (palette.Length > 2 && HasAlpha && c.A > alphaThreshold)
 				k = 1;
 
@@ -446,7 +447,7 @@ namespace PnnQuant
 				GetLab(c2.ToArgb(), out var lab2);
 
 				var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) * TRANS_RATE : 0;
-                if (Math.Abs(lab2.L - lab1.L) < nMaxColors || saliencies[pos] < .2 || saliencies[pos] > .8)
+				if (Math.Abs(lab2.L - lab1.L) < nMaxColors || saliencies[pos] < .2 || saliencies[pos] > .8)
 				{
 					curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
 					if (curdist > mindist)
@@ -664,12 +665,12 @@ namespace PnnQuant
 			get => isGA;
 		}
 
-        internal double Proportional
-        {
-            get => proportional;
-        }
+		internal double Proportional
+		{
+			get => proportional;
+		}
 
-        internal void SetRatio(double ratioX, double ratioY) {
+		internal void SetRatio(double ratioX, double ratioY) {
 			this.ratio = Math.Min(1.0, ratioX);
 			this.ratioY = Math.Min(1.0, ratioY);
 			Clear();
