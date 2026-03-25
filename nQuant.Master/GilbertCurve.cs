@@ -104,9 +104,14 @@ namespace nQuant.Master
 				DITHER_MAX = 25;
 			}
 
-			var edge = m_hasAlpha ? 1 : Math.Exp(weight) + .25;
-			var deviation = !m_hasAlpha && weight > .002 ? .25 : 1;
-			ditherMax = (m_hasAlpha || DITHER_MAX > 9) ? (byte) BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * 1.5);
+			var edge = m_hasAlpha ? 1 : Math.Exp(weight) - .25;
+			if (sortedByYDiff)
+				ditherMax = (byte)(DITHER_MAX / weight);
+			else
+			{
+				var deviation = !m_hasAlpha && weight > .0025 ? -.25 : 1;
+				ditherMax = (m_hasAlpha || DITHER_MAX > 9) ? (byte)BitmapUtilities.Sqr(Math.Sqrt(DITHER_MAX) + edge * deviation) : (byte)(DITHER_MAX * (saliencies != null ? 2 : Math.E));
+			}
 			int density = palette.Length > 16 ? 3200 : 1500;
 			if (palette.Length / weight > 5000 && (weight > .045 || (weight > .01 && palette.Length < 64)))
 				ditherMax = (byte) BitmapUtilities.Sqr(5 + edge);
