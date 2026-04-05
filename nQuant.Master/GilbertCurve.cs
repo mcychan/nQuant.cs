@@ -105,7 +105,7 @@ namespace nQuant.Master
 			}
 
 			var edge = m_hasAlpha ? 1 : Math.Exp(weight) - .25;
-            if (m_hasAlpha || (saliencies != null && sortedByYDiff))
+            if (saliencies != null && (m_hasAlpha || (sortedByYDiff && weight < .03)))
                 ditherMax = (byte)(DITHER_MAX / weight);
 			else
 			{
@@ -281,7 +281,7 @@ namespace nQuant.Master
 
 					if (m_hasAlpha && saliencies == null)
 					{
-						if (Math.Abs(error[j]) >= (ditherMax * Math.PI) || error[3] < 1)
+						if (Math.Abs(error[j]) >= (ditherMax * Math.E * Math.PI) || error[3] < 0)
 							error[j] = (float)Math.Tanh(error[j] / maxErr * 20) * (ditherMax - 1);
 						continue;
 					}
