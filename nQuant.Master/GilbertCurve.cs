@@ -105,8 +105,8 @@ namespace nQuant.Master
 			}
 
 			var edge = m_hasAlpha ? 1 : Math.Exp(weight) - .25;
-			if (sortedByYDiff || (m_hasAlpha && saliencies != null))
-				ditherMax = (byte)(DITHER_MAX / weight);
+            if (m_hasAlpha || (saliencies != null && sortedByYDiff))
+                ditherMax = (byte)(DITHER_MAX / weight);
 			else
 			{
 				var deviation = !m_hasAlpha && weight > .0025 ? -.25 : 1;
