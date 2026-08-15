@@ -1,6 +1,6 @@
 ﻿/* Otsu's Image Segmentation Method
   Copyright (C) 2009 Tolga Birdal
-  Copyright (c) 2018-2024 Miller Cy Chan
+  Copyright (c) 2018-2026 Miller Cy Chan
 */
 
 using nQuant.Master;
@@ -19,6 +19,9 @@ namespace OtsuThreshold
 
 		protected int m_transparentPixelIndex = -1;
 		protected Color m_transparentColor = Color.Transparent;
+
+		protected float[] saliencies;
+		internal Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 		protected readonly Dictionary<int, ushort> nearestMap = new();
 
 		// function is used to compute the q values in the equation
@@ -129,7 +132,7 @@ namespace OtsuThreshold
 			var theta = new int[area];
 			var largestG = 0.0;
 
-			// perform canny edge detection on everything but the edges
+			// Sobel Gradient Calculation
 			for (int i = 1; i < height - 1; ++i) {
 				for (int j = 1; j < width - 1; ++j) {
 					// find gx and gy for each pixel
@@ -152,107 +155,82 @@ namespace OtsuThreshold
 					if (G[center] > largestG)
 						largestG = G[center];
 
-					// setting the edges
-					if (i == 1) {
-						G[center - 1] = G[center];
-						theta[center - 1] = theta[center];
-					}
-					else if (j == 1) {
-						G[center - width] = G[center];
-						theta[center - width] = theta[center];
-					}
-					else if (i == height - 1) {
-						G[center + 1] = G[center];
-						theta[center + 1] = theta[center];
-					}
-					else if (j == width - 1) {
-						G[center + width] = G[center];
-						theta[center + width] = theta[center];
-					}
-
-					// setting the corners
-					if (i == 1 && j == 1) {
-						G[center - width - 1] = G[center];
-						theta[center - width - 1] = theta[center];
-					}
-					else if (i == 1 && j == width - 1) {
-						G[center - width + 1] = G[center];
-						theta[center - width + 1] = theta[center];
-					}
-					else if (i == height - 1 && j == 1) {
-						G[center + width - 1] = G[center];
-						theta[center + width - 1] = theta[center];
-					}
-					else if (i == height - 1 && j == width - 1) {
-						G[center + width + 1] = G[center];
-						theta[center + width + 1] = theta[center];
-					}
-
 					// to the nearest 45 degrees
 					theta[center] = (int) Math.Round(theta[center] / 45.0) * 45;
 				}
 			}
 
-			largestG *= .5;
-
-			// non-maximum suppression
+			// Non-Maximum Suppression (NMS) -> Ensures 1-pixel thin line candidates
+			var suppressedG = new double[area];
 			for (int i = 1; i < height - 1; ++i) {
 				for (int j = 1; j < width - 1; ++j) {
 					int center = i * width + j;
-					if (theta[center] == 0 || theta[center] == 180) {
-						if (G[center] < G[center - 1] || G[center] < G[center + 1])
-							G[center] = 0;
-					}
-					else if (theta[center] == 45 || theta[center] == 225) {
-						if (G[center] < G[center + width + 1] || G[center] < G[center - width - 1])
-							G[center] = 0;
-					}
-					else if (theta[center] == 90 || theta[center] == 270) {
-						if (G[center] < G[center + width] || G[center] < G[center - width])
-							G[center] = 0;
-					}
-					else {
-						if (G[center] < G[center + width - 1] || G[center] < G[center - width + 1])
-							G[center] = 0;
-					}
+					var currentG = G[center];
 
-					var grey = Byte.MaxValue - (byte)(G[center] * (255.0 / largestG));
-					var c = Color.FromArgb(pixelsGray[center]);
-					pixelsCanny[center] = Color.FromArgb(c.A, grey, grey, grey).ToArgb();
+					if (theta[center] == 0 || theta[center] == 180 || theta[center] == 360) {
+						if (currentG >= G[center - 1] && currentG >= G[center + 1]) suppressedG[center] = currentG;
+					} else if (theta[center] == 45 || theta[center] == 225) {
+						if (currentG >= G[center + width + 1] && currentG >= G[center - width - 1]) suppressedG[center] = currentG;
+					} else if (theta[center] == 90 || theta[center] == 270) {
+						if (currentG >= G[center + width] && currentG >= G[center - width]) suppressedG[center] = currentG;
+					} else { // 135 or 315
+						if (currentG >= G[center + width - 1] && currentG >= G[center - width + 1]) suppressedG[center] = currentG;
+					}
 				}
 			}
 
-			int k = 0;
-			var minThreshold = lowerThreshold * largestG;
-			var maxThreshold = higherThreshold * largestG;
-			do {
-				for (int i = 1; i < height - 1; ++i) {
-					for (int j = 1; j < width - 1; ++j) {
-						int center = i * width + j;
-						if (G[center] < minThreshold)
-							G[center] = 0;
-						else if (G[center] < maxThreshold) {
-							G[center] = 0;
-							for (int x = -1; x <= 1; ++x) {
-								for (int y = -1; y <= 1; ++y) {
-									if (x == 0 && y == 0)
-										continue;
-									if (G[center + x * width + y] >= maxThreshold) {
-										G[center] = higherThreshold * largestG;
-										k = 0;
-										x = 2;
-										break;
-									}
+			// Saliency-Driven Hysteresis Thresholding
+			// A temporary tracking grid to mark confirmed clean edges (0 = background, 255 = edge)
+			var edges = new int[area];
+
+			for (int i = 1; i < height - 1; ++i) {
+				for (int j = 1; j < width - 1; ++j) {
+					int center = i * width + j;
+					// Scale thresholds locally using the saliency value of the pixel
+					// Highly salient areas get responsive sensitivity adjustment
+					var saliency = (saliencies != null) ? saliencies[center] : 1.0f;
+					var factor = 1.0 - (saliency * 0.6);
+					if (factor < 0.15)
+						factor = 0.15; // Ensures a 15% threshold floor always remains
+
+					var localMin = lowerThreshold * largestG * factor; 
+					var localMax = higherThreshold * largestG * factor;
+
+					if (suppressedG[center] >= localMax) {
+						edges[center] = 255; // Strong edge
+					} else if (suppressedG[center] >= localMin) {
+						// Hysteresis check: link weak edges to strong neighbors
+						var connected = false;
+						for (int x = -1; x <= 1 && !connected; ++x) {
+							for (int y = -1; y <= 1; y++) {
+								if (suppressedG[center + x * width + y] >= localMax) {
+									connected = true;
+									break;
 								}
 							}
 						}
-						
-						var grey = Byte.MaxValue - (byte)(G[center] * 255.0 / largestG);
-						var c = Color.FromArgb(pixelsGray[center]);
-						pixelsCanny[center] = Color.FromArgb(c.A, grey, grey, grey).ToArgb();
+						if (connected) {
+							edges[center] = 255;
+						}
 					}
 				}
-			} while (k++ < 100 && dither);
+			}
+			
+			var dilatedEdges = new int[area];
+			Array.Copy(edges, 0, dilatedEdges, 0, area);
+
+			// Render to Out-Pixel Array
+			for (int i = 0; i < area; ++i) {
+				var c = Color.FromArgb(pixelsGray[i]);
+				if (dilatedEdges[i] == 255) {
+					// Draw clean black edge lines
+					pixelsCanny[i] = Color.FromArgb(c.A, 0, 0, 0).ToArgb();
+				} else {
+					// Keep background white (or pass through original image depending on needs)
+					pixelsCanny[i] = Color.FromArgb(c.A, 255, 255, 255).ToArgb();
+				}
+			}
+
 			return pixelsCanny;
 		}
 
@@ -290,6 +268,15 @@ namespace OtsuThreshold
 			}
 			nearestMap[pixel] = k;
 			return k;
+		}
+
+		internal void GetLab(int argb, out CIELABConvertor.Lab lab1)
+		{
+			if (!pixelMap.TryGetValue(argb, out lab1))
+			{
+				lab1 = CIELABConvertor.RGB2LAB(Color.FromArgb(argb));
+				pixelMap[argb] = lab1;
+			}
 		}
 
 		public int GetColorIndex(int argb)
@@ -375,13 +362,19 @@ namespace OtsuThreshold
 					max1 = green;
 			}
 
+			saliencies = new float[pixels.Length];
+			var saliencyBase = .1f;
 			for (int i = 0; i < pixels.Length; ++i)
 			{
-				int alfa = (pixels[i] >> 24) & 0xff;
+				var pixel = pixels[i];
+				GetLab(pixel, out var lab1);
+				saliencies[i] = (float) (saliencyBase + (1 - saliencyBase) * lab1.L / 100f * lab1.alpha / 255f);
+
+				int alfa = (pixel >> 24) & 0xff;
 				if (alfa <= alphaThreshold)
 					continue;
 
-				int green = (pixels[i] >> 8) & 0xff;
+				int green = (pixel >> 8) & 0xff;
 				var grey = (int)((green - min1) * (Byte.MaxValue / (max1 - min1)));
 				dest[i] = Color.FromArgb(alfa, grey, grey, grey).ToArgb();
 			}

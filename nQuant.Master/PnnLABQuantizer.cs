@@ -581,7 +581,15 @@ namespace PnnQuant
 			nearestMap.Clear();
 		}
 
-		protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, bool dither)
+        internal int[] DitherImage(int[] pixels, Color[] palette, Ditherable ditherable, int width, int height,
+            float[] saliencies, int frameIndex)
+		{
+            var qPixels = new int[pixels.Length];
+			BlueNoise.DitherImage(pixels, palette, this, new int[pixels.Length], width, height, saliencies, frameIndex);
+            return qPixels;
+        }
+
+        protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, int frameIndex, bool dither)
 		{
 			this.dither = dither;
 			if (hasSemiTransparency)
@@ -600,7 +608,16 @@ namespace PnnQuant
 					saliencies[i] = (float)(saliencyBase + (1 - saliencyBase) * lab1.L / 100f * lab1.alpha / 255f);
 				}
 			}
-			var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight, dither);
+
+			var fullDither = !HasAlpha && palettes.Length >= 128 && weight < .02;
+			if (isGA && !HasAlpha && palettes.Length >= 128)
+				fullDither = true;
+
+			if (dither && fullDither) {
+				return DitherImage(pixels, palettes, this, width, height, saliencies, frameIndex);
+			}
+
+			var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, saliencies, weight, frameIndex, dither);
 
 			if (!dither && palettes.Length > 32)
 			{
@@ -612,7 +629,7 @@ namespace PnnQuant
 			return qPixels;
 		}
 
-		internal Bitmap QuantizeImage(int[] pixels, int bitmapWidth, int nMaxColors, bool dither)
+		internal Bitmap QuantizeImage(int[] pixels, int bitmapWidth, int nMaxColors, int frameIndex, bool dither)
 		{
 			if (nMaxColors <= 32)
 				PR = PG = PB = PA = 1;
@@ -653,7 +670,7 @@ namespace PnnQuant
 				m_palette = palettes;
 			}
 
-			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
+			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, frameIndex, dither);
 
 			if (nMaxColors > 256)
 				return BitmapUtilities.ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);

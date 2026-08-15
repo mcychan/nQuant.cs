@@ -12,6 +12,8 @@ namespace nQuant.Master
 	// Made from: https://github.com/Tellusim/BlueNoise
 	class BlueNoise
 	{
+		internal static readonly int BLUE_NOISE_SIZE = 64;
+
 		internal static readonly sbyte[] TELL_BLUE_NOISE = {
 			18, 60, -13, 24, -93, -44, -107, 18, -34, 123, -120, 63, 115, 32, 91, -28, 118, -12, 97, -42, 77, -76, 30, -97, -39,
 			87, -10, -57, 54, -3, -55, 118, 10, -35, 42, 124, -97, 57, -60, 1, -41, -103, -68, 97, -116, 44, -74, 60, -48, 87,
@@ -177,9 +179,9 @@ namespace nQuant.Master
 			20, -37, 38, 0, -99, 51, 95, 81, -76, 127, -61, 50, 87, -14, 105, -84, 68, -47, -4, -104, -49, -83, 63, -104, 39,
 			-63, 18, -114, 48, -13, 82, 3, -78, 26, 101, -101, 30, -83, 43, -110, 64, -88, -53, -14, 22, 104, -87, 73, 127, -8,
 			26, -34, 118, 8, -25, 22, -104, 48, -57, 80, 26, -125, -33, 1, 108, -117, 90, -62, -31, 6, -107
-    };
+	};
 
-    public static Color Diffuse(Color pixel, Color qPixel, float weight, float strength, int x, int y)
+	public static Color Diffuse(Color pixel, Color qPixel, float weight, float strength, int x, int y)
 		{
 			int r_pix = pixel.R;
 			int g_pix = pixel.G;
@@ -189,10 +191,10 @@ namespace nQuant.Master
 			var adj = (TELL_BLUE_NOISE[(x & 63) | (y & 63) << 6] + 0.5f) / 127.5f;
 			adj += ((x + y & 1) - 0.5f) * strength / 8.0f;
 			adj *= weight;
-			r_pix = (int)Math.Min(0xff, Math.Max(r_pix + (adj * (r_pix - qPixel.R)), 0));
-			g_pix = (int)Math.Min(0xff, Math.Max(g_pix + (adj * (g_pix - qPixel.G)), 0));
-			b_pix = (int)Math.Min(0xff, Math.Max(b_pix + (adj * (b_pix - qPixel.B)), 0));
-			a_pix = (int)Math.Min(0xff, Math.Max(a_pix + (adj * (a_pix - qPixel.A)), 0));
+			r_pix = (int)Math.Min(Byte.MaxValue, Math.Max(r_pix + (adj * (r_pix - qPixel.R)), 0));
+			g_pix = (int)Math.Min(Byte.MaxValue, Math.Max(g_pix + (adj * (g_pix - qPixel.G)), 0));
+			b_pix = (int)Math.Min(Byte.MaxValue, Math.Max(b_pix + (adj * (b_pix - qPixel.B)), 0));
+			a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(a_pix + (adj * (a_pix - qPixel.A)), 0));
 
 			return Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 		}
@@ -213,5 +215,98 @@ namespace nQuant.Master
 				}
 			}
 		}
+		
+			// Convert signed-byte blue-noise value (-128 … 127) → float [0, 1]
+		// (the +0.5 / 256 form is the conventional unbiased mapping)
+		internal static float BlueNoiseByteToFloat(sbyte v)
+		{
+			return (v + 0.5f) * (1.0f / 256.0f);
+		}
+
+		// Optional: convert directly to a centered value in [-0.5, 0.5]
+		// (useful if you want to skip the “- 0.5f” later)
+		internal static float BlueNoiseByteToCentered(sbyte v)
+		{
+			return (v + 0.5f) * (1.0f / 256.0f) - 0.5f;
+			// almost identical alternative:  return (float) v) * (1.0f / 255.0f);
+		}
+
+		internal static float GetTemporalBlueNoise(int x, int y, int frameIndex)
+		{
+			// simple temporal offset (replace with a better 3-D sequence if you have one)
+			int ox = (x + frameIndex * 13) & (BLUE_NOISE_SIZE - 1);
+			int oy = (y + frameIndex * 29) & (BLUE_NOISE_SIZE - 1);
+			var index = oy * BLUE_NOISE_SIZE + ox;
+			var raw = (index < TELL_BLUE_NOISE.Length) ? TELL_BLUE_NOISE[index] : TELL_BLUE_NOISE[index & 4095];
+			return BlueNoiseByteToFloat(raw);               // returns [0,1]
+		}
+
+		internal static float GetLuminanceFromSaliency(float saliency, byte alpha, float saliencyBase = 0.1f)
+		{
+			// Avoid division by zero for fully transparent pixels
+			if (alpha == 0) {
+				return 0.0f;
+			}
+
+			var alphaNormalized = (float) alpha / 255.0f;
+			var scale = (1.0f - saliencyBase) * alphaNormalized;
+
+			if (scale <= 0.0f) {
+				return 0.0f;
+			}
+
+			// Invert the formula to isolate L
+			var L = (saliency - saliencyBase) / scale;
+
+			// Clamp L to the valid CIELAB Lightness range [0.0, 1.0]
+			return Math.Min(1.0f, Math.Max(L, 0.0f));
+		}
+		
+		public static Color DitherPixel(Color pixel, float saliency, int x, int y, float baseSpread, int frameIndex)
+		{
+			var luminance = GetLuminanceFromSaliency(saliency, pixel.A);
+			// Taper noise to 0 when luminance approaches 1.0 (pure white sky)
+			// Smoothstep / quadratic decay in the top 15% brightness range [0.85, 1.0]
+			var highlightDampener = 1.0f;
+			if (luminance > 0.85f) {
+				// Smoothly drop from 1.0 (at 0.85) to 0.0 (at 1.0)
+				var t = (luminance - 0.85f) / 0.15f;
+				highlightDampener = (1.0f - t) * (1.0f - t);
+			}
+
+			// Blue-noise sample centered to [-0.5, 0.5]
+			var noise = GetTemporalBlueNoise(x, y, frameIndex) - 0.5f;
+			var offset = noise * baseSpread * saliency * highlightDampener;
+			
+			// Apply noise and clamp safely to RGB limits
+			int r = (int) Math.Min(Byte.MaxValue, Math.Max((int) pixel.R + offset, 0));
+			int g = (int) Math.Min(Byte.MaxValue, Math.Max((int) pixel.G + offset, 0));
+			int b = (int) Math.Min(Byte.MaxValue, Math.Max((int) pixel.B + offset, 0));
+			int a = pixel.A;
+			return Color.FromArgb(a, r, g, b);
+		}
+
+		public static bool DitherImage(int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, int width, int height,
+			float[] saliencies, int frameIndex)
+		{
+			// Introduce a tuning multiplier (e.g., 0.5f to 0.8f) to reduce overall noise amplitude
+			var noiseDampener = 0.8f;
+			var baseSpread = (255.0f / (float) Math.Cbrt(palette.Length)) * noiseDampener;
+
+			for (int y = 0; y < height; ++y)
+			{
+				for (int x = 0; x < width; ++x)
+				{
+					int pixelIndex = y * width + x;
+					var c = Color.FromArgb(pixels[pixelIndex]);
+
+                    var noisyArgb = DitherPixel(c, (saliencies != null) ? saliencies[pixelIndex] : 1.0f, x, y, baseSpread, frameIndex);
+					qPixels[pixelIndex] = ditherable.DitherColorIndex(palette, noisyArgb.ToArgb(), y + x);
+				}
+			}
+
+			return true;
+		}
+
 	}
 }

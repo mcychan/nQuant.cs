@@ -30,7 +30,7 @@ namespace PnnQuant
 			{-0.14713f, -0.28886f, 0.436f},
 			{0.615f, -0.51499f, -0.10001f}
 		};
-		
+
 		private sealed class Pnnbin
 		{
 			internal float ac, rc, gc, bc;
@@ -38,8 +38,9 @@ namespace PnnQuant
 			internal int nn, fw, bk, tm, mtm;
 			internal float err;
 		}
-		
-		protected PnnQuantizer(PnnQuantizer quantizer) {
+
+		protected PnnQuantizer(PnnQuantizer quantizer)
+		{
 			alphaThreshold = quantizer.alphaThreshold;
 			hasSemiTransparency = quantizer.hasSemiTransparency;
 			m_transparentPixelIndex = quantizer.m_transparentPixelIndex;
@@ -121,20 +122,21 @@ namespace PnnQuant
 				err = nerr;
 				nn = i;
 			}
-			bin1.err = (float) err;
+			bin1.err = (float)err;
 			bin1.nn = nn;
 		}
 
 		protected delegate float QuanFn(float cnt);
 		protected virtual QuanFn GetQuanFn(int nMaxColors, short quan_rt)
 		{
-			if (quan_rt > 0) {
+			if (quan_rt > 0)
+			{
 				if (nMaxColors < 64)
 					return cnt => (int)Math.Sqrt(cnt);
 				return cnt => (float)Math.Sqrt(cnt);
 			}
 			if (quan_rt < 0)
-				return cnt => (int) Math.Cbrt(cnt);
+				return cnt => (int)Math.Cbrt(cnt);
 			return cnt => cnt;
 		}
 		internal virtual void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
@@ -177,9 +179,10 @@ namespace PnnQuant
 
 			if (nMaxColors < 16)
 				nMaxColors = -1;
-				
+
 			weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
-			if (weight < .04 && PG < 1 && PG >= coeffs[0, 1]) {
+			if (weight < .04 && PG < 1 && PG >= coeffs[0, 1])
+			{
 				PR = PG = PB = PA = 1;
 				if (nMaxColors >= 64)
 					quan_rt = 0;
@@ -253,10 +256,10 @@ namespace PnnQuant
 				var n1 = tb.cnt;
 				var n2 = nb.cnt;
 				var d = 1.0f / (n1 + n2);
-				tb.ac = d * (float) Math.Round(n1 * tb.ac + n2 * nb.ac, MidpointRounding.AwayFromZero);
-				tb.rc = d * (float) Math.Round(n1 * tb.rc + n2 * nb.rc, MidpointRounding.AwayFromZero);
-				tb.gc = d * (float) Math.Round(n1 * tb.gc + n2 * nb.gc, MidpointRounding.AwayFromZero);
-				tb.bc = d * (float) Math.Round(n1 * tb.bc + n2 * nb.bc, MidpointRounding.AwayFromZero);
+				tb.ac = d * (float)Math.Round(n1 * tb.ac + n2 * nb.ac, MidpointRounding.AwayFromZero);
+				tb.rc = d * (float)Math.Round(n1 * tb.rc + n2 * nb.rc, MidpointRounding.AwayFromZero);
+				tb.gc = d * (float)Math.Round(n1 * tb.gc + n2 * nb.gc, MidpointRounding.AwayFromZero);
+				tb.bc = d * (float)Math.Round(n1 * tb.bc + n2 * nb.bc, MidpointRounding.AwayFromZero);
 				tb.cnt += n2;
 				tb.mtm = ++i;
 
@@ -294,7 +297,7 @@ namespace PnnQuant
 				k = 1;
 
 			double pr = PR, pg = PG, pb = PB, pa = PA;
-			if(palette.Length < 3)
+			if (palette.Length < 3)
 				pr = pg = pb = pa = 1;
 
 			double mindist = int.MaxValue;
@@ -323,7 +326,7 @@ namespace PnnQuant
 			nearestMap[offset] = k;
 			return k;
 		}
-		
+
 		protected virtual ushort ClosestColorIndex(Color[] palette, int pixel, int pos)
 		{
 			ushort k = 0;
@@ -339,9 +342,9 @@ namespace PnnQuant
 				closest[2] = closest[3] = ushort.MaxValue;
 
 				double pr = PR, pg = PG, pb = PB, pa = PA;
-				if(palette.Length < 3)
+				if (palette.Length < 3)
 					pr = pg = pb = pa = 1;
-				
+
 				for (; k < nMaxColors; ++k)
 				{
 					var c2 = palette[k];
@@ -365,18 +368,18 @@ namespace PnnQuant
 						closest[1] = closest[0];
 						closest[3] = closest[2];
 						closest[0] = k;
-						closest[2] = (ushort) err;
+						closest[2] = (ushort)err;
 					}
 					else if (err < closest[3])
 					{
 						closest[1] = k;
-						closest[3] = (ushort) err;
+						closest[3] = (ushort)err;
 					}
 				}
 
 				if (closest[3] == ushort.MaxValue)
 					closest[1] = closest[0];
-				
+
 				closestMap[offset] = closest;
 			}
 
@@ -408,12 +411,12 @@ namespace PnnQuant
 			return Math.Pow(2, bitDepth) >= nMaxColors;
 		}
 
-		protected virtual int[] Dither(int[] pixels, Color[] palettes, int width, int height, bool dither)
+		protected virtual int[] Dither(int[] pixels, Color[] palettes, int width, int height, int frameIndex, bool dither)
 		{
 			this.dither = dither;
 			if (hasSemiTransparency)
 				weight *= -1;
-			var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, null, weight, dither);
+			var qPixels = GilbertCurve.Dither(width, height, pixels, palettes, this, null, weight, frameIndex, dither);
 
 			if (!dither && palettes.Length > 32)
 				BlueNoise.Dither(width, height, pixels, palettes, this, qPixels);
@@ -432,11 +435,12 @@ namespace PnnQuant
 			return pixels;
 		}
 
-		public Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
+		public Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, int frameIndex, bool dither)
 		{
 			if (nMaxColors <= 32)
 				PR = PG = PB = PA = 1;
-			else {
+			else
+			{
 				PR = coeffs[0, 0]; PG = coeffs[0, 1]; PB = coeffs[0, 2];
 			}
 
@@ -462,7 +466,8 @@ namespace PnnQuant
 
 			if (nMaxColors > 2)
 				Pnnquan(pixels, ref palettes, ref nMaxColors);
-			else {
+			else
+			{
 				if (HasAlpha)
 				{
 					palettes[0] = m_transparentColor;
@@ -485,16 +490,20 @@ namespace PnnQuant
 					BitmapUtilities.Swap(ref m_palette[0], ref m_palette[1]);
 			}
 
-			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, dither);
+			var qPixels = Dither(pixels, m_palette, bitmapWidth, bitmapHeight, frameIndex, dither);
 
 			closestMap.Clear();
 			nearestMap.Clear();
 
 			if (nMaxColors > 256)
 				return BitmapUtilities.ProcessImagePixels(dest, qPixels, hasSemiTransparency, m_transparentPixelIndex);
-			
+
 			return BitmapUtilities.ProcessImagePixels(dest, m_palette, qPixels, HasAlpha);
 		}
-	}
 
+		public Bitmap QuantizeImage(Bitmap source, PixelFormat pixelFormat, int nMaxColors, bool dither)
+		{
+			return QuantizeImage(source, pixelFormat, nMaxColors, 0, dither);
+		}
+	}
 }

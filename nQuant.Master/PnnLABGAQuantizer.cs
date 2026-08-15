@@ -166,7 +166,7 @@ namespace PnnQuant
 			var palette = new Color[_nMaxColors];
 			m_pq.Pnnquan(m_pixelsList[0], ref palette, ref _nMaxColors);
 
-			var bitmaps = m_pixelsList.Select((pixels, i) => m_pq.QuantizeImage(pixels, _bitmapWidths[i], _nMaxColors, dither));
+			var bitmaps = m_pixelsList.Select((pixels, i) => m_pq.QuantizeImage(pixels, _bitmapWidths[i], _nMaxColors, i, dither));
 			m_pq.Clear();
 			return bitmaps.ToList();
 		}

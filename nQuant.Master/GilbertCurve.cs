@@ -43,10 +43,11 @@ namespace nQuant.Master
 		}
 
 		private byte ditherMax, DITHER_MAX;
-		private float beta;
+		private float baseSpread, beta;
 		private float[] weights;
 		private readonly bool dither, m_hasAlpha, sortedByYDiff;
-		private readonly int width, height;
+		private readonly int width, height, frameIndex;
+		private readonly  float noiseDampener = 0.8f;
 		private readonly double weight;
 		private readonly int[] pixels;
 		private readonly Color[] palette;
@@ -58,15 +59,17 @@ namespace nQuant.Master
 		private readonly int margin;
 		private const float BLOCK_SIZE = 343f;
 
-		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight, bool dither)
+		private GilbertCurve(int width, int height, int[] pixels, Color[] palette, int[] qPixels, Ditherable ditherable, float[] saliencies, double weight, int frameIndex, bool dither)
 		{
 			this.width = width;
 			this.height = height;
 			this.pixels = pixels;
 			this.palette = palette;
+			baseSpread = (255.0f / (float) Math.Cbrt(palette.Length)) * noiseDampener;
 			this.qPixels = qPixels;
 			this.ditherable = ditherable;
 			this.saliencies = saliencies;
+			this.frameIndex = frameIndex;
 			this.dither = dither;
 			this.m_hasAlpha = weight < 0;
 
@@ -128,10 +131,10 @@ namespace nQuant.Master
 			const float mean = .5f, stdDev = .1f;
 
 			// Calculate the probability density function (PDF)
-			double exponent = -Math.Pow(x - mean, 2) / (2 * Math.Pow(stdDev, 2));
-			double pdf = (1 / (stdDev * Math.Sqrt(2 * Math.PI))) * Math.Exp(exponent);
-			double maxPdf = 1 / (stdDev * Math.Sqrt(2 * Math.PI)); // Peak at x = mean
-			double scaledPdf = (pdf / maxPdf) * peak;
+			var exponent = -Math.Pow(x - mean, 2) / (2 * Math.Pow(stdDev, 2));
+            var pdf = (1 / (stdDev * Math.Sqrt(2 * Math.PI))) * Math.Exp(exponent);
+            var maxPdf = 1 / (stdDev * Math.Sqrt(2 * Math.PI)); // Peak at x = mean
+            var scaledPdf = (pdf / maxPdf) * peak;
 			return (float) Math.Max(0.0, Math.Min(peak, scaledPdf));
 		}
 
@@ -139,7 +142,7 @@ namespace nQuant.Master
 		private int DitherPixel(int x, int y, Color c2, float beta)
 		{
 			int bidx = x + y * width;
-			Color pixel = Color.FromArgb(pixels[bidx]);
+            var pixel = Color.FromArgb(pixels[bidx]);
 			int r_pix = c2.R;
 			int g_pix = c2.G;
 			int b_pix = c2.B;
@@ -209,7 +212,7 @@ namespace nQuant.Master
 		private void DiffusePixel(int x, int y)
 		{
 			int bidx = x + y * width;
-			Color pixel = Color.FromArgb(pixels[bidx]);
+            var pixel = Color.FromArgb(pixels[bidx]);
 			var error = new ErrorBox(pixel);
 			int i = sortedByYDiff ? weights.Length - 1 : 0;
 			float maxErr = DITHER_MAX - 1;
@@ -232,7 +235,7 @@ namespace nQuant.Master
 			int b_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[2], 0.0));
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
-			Color c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+            var c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || pixel.A < a_pix))
 			{
 				if ((palette.Length >= 256 && saliencies[bidx] > .99f) || (m_hasAlpha && (pixel.A - a_pix) < (.5 * margin)))
@@ -247,8 +250,12 @@ namespace nQuant.Master
 				int acceptedDiff = Math.Max(2, palette.Length - margin);
 				if (saliencies != null && (CIELABConvertor.Y_Diff(pixel, c2) > acceptedDiff || CIELABConvertor.U_Diff(pixel, c2) > (2 * acceptedDiff)))
 				{
-					var strength = 1 / 3f;
-					c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+					if (dither && !(m_hasAlpha && palette.Length < 24))
+						c2 = BlueNoise.DitherPixel(pixel, (saliencies != null) ? saliencies[bidx] : 1.0f, x, y, baseSpread, frameIndex);
+					else {
+						var strength = 1 / 3f;
+						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+					}
 					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 				}
 			}
@@ -298,8 +305,15 @@ namespace nQuant.Master
 			if (unaccepted) {
 				if (saliencies != null)
 					qPixels[bidx] = DitherPixel(x, y, c2, beta);
-				else if (CIELABConvertor.Y_Diff(pixel, c2) > 3 && CIELABConvertor.U_Diff(pixel, c2) > 3)
-					qPixels[bidx] = DitherPixel(x, y, c2, 1.25f);
+				else if (CIELABConvertor.Y_Diff(pixel, c2) > 3 && CIELABConvertor.U_Diff(pixel, c2) > 3) {
+					if (dither)
+						c2 = BlueNoise.DitherPixel(pixel, (saliencies != null) ? saliencies[bidx] : 1.0f, x, y, baseSpread, frameIndex);
+					else {
+						var strength = 1 / 3f;
+						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+					}
+					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
+				}
 
 				if (palette.Length > 256) {
 					c2 = palette[qPixels[bidx]];
@@ -367,11 +381,11 @@ namespace nQuant.Master
 		}
 
 		private void InitWeights(int size) {
-			/* Dithers all pixels of the image in sequence using
+            /* Dithers all pixels of the image in sequence using
 			 * the Gilbert path, and distributes the error in
 			 * a sequence of pixels size.
 			 */
-			float weightRatio = (float) Math.Pow(BLOCK_SIZE + 1f, 1f / (size - 1f));
+            var weightRatio = (float) Math.Pow(BLOCK_SIZE + 1f, 1f / (size - 1f));
 			float weight = 1f, sumweight = 0f;
 			weights = new float[size];
 			for (int c = 0; c < size; ++c)
@@ -391,8 +405,7 @@ namespace nQuant.Master
 
 		private void Run()
 		{
-			if(!sortedByYDiff)
-				InitWeights(DITHER_MAX);
+			InitWeights(DITHER_MAX);
 			
 			if (width >= height)
 				Generate2d(0, 0, width, 0, 0, height);
@@ -400,10 +413,10 @@ namespace nQuant.Master
 				Generate2d(0, 0, 0, height, width, 0);
 		}
 
-		public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, float[] saliencies = null, double weight = 1.0, bool dither = true)
+		public static int[] Dither(int width, int height, int[] pixels, Color[] palette, Ditherable ditherable, float[] saliencies = null, double weight = 1.0, int frameIndex = 0, bool dither = true)
 		{
 			var qPixels = new int[pixels.Length];
-			new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, saliencies, weight, dither).Run();
+			new GilbertCurve(width, height, pixels, palette, qPixels, ditherable, saliencies, weight, frameIndex, dither).Run();
 			return qPixels;
 		}
 	}
