@@ -11,10 +11,15 @@
     <ApplicationIcon />
     <RepositoryUrl>https://github.com/mcychan/nQuant.cs.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>color-quantization;error-diffusion;image-processing;cielab;dithering</PackageTags>    
+    <PackageTags>color-quantization;error-diffusion;image-processing;cielab;dithering</PackageTags>
+    <Platforms>AnyCPU;x64</Platforms>    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
 

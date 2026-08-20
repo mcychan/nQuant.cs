@@ -5,6 +5,10 @@
 		<Product>nQuant.cs</Product>
 		<Company>Miller Cy Chan</Company>
 		<Copyright>Copyright © Miller Cy Chan 2018 - 2026</Copyright>
-		<LangVersion>10.0</LangVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'windows'">
+		<TargetFramework></TargetFramework> <!-- Clears plural frameworks -->
+		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 </Project>
