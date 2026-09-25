@@ -69,8 +69,12 @@ namespace nQuant
 
 						case "A":
 							strAlgor = args[index + 1].ToUpper();
+#if NET6_0
 							if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN"))
-							{
+#else
+                            if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN") && strAlgor != "GRHV")
+#endif
+                            {
 								PrintUsage();
 								Environment.Exit(1);
 								break;
@@ -101,18 +105,36 @@ namespace nQuant
 			System.Console.WriteLine("Valid options:");
 			System.Console.WriteLine("  /m : Max Colors (pixel-depth) - Maximum number of colors for the output format to support. The default is 256 (8-bit).");
 			System.Console.WriteLine("  /d : Dithering or not? y or n.");
-			System.Console.WriteLine("  /a : Algorithm used - Choose one of them, otherwise give you the default pnn from [pnn, pnnlab, pnnlab+, otsu]");
-			System.Console.WriteLine("  /o : Output image file path. The default is <source image path directory>\\<source image file name without extension>-quant<Max colors>.png");
+#if NET6_0
+            System.Console.WriteLine("  /a : Algorithm used - Choose one of them, otherwise give you the default pnnlab from [pnn, pnnlab, pnnlab+, otsu]");
+#else
+            System.Console.WriteLine("  /a : Algorithm used - Choose one of them, otherwise give you the default pnnlab from [pnn, pnnlab, pnnlab+, grhv, otsu]");
+#endif
+            System.Console.WriteLine("  /o : Output image file path. The default is <source image path directory>\\<source image file name without extension>-quant<Max colors>.png");
 		}
 
 
 		private static void DoProcess(Bitmap source, string algorithm)
 		{
 			var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
-			var quantizer = algorithm == "PNN" ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
+#if !NET6_0
+            if (algorithm == "GRHV")
+			{
+                System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. Graph regularized harmonic mean vector quantization algorithm with CIELAB color space.", Assembly.GetExecutingAssembly().GetName().Version);
+                System.Console.WriteLine(copyright.Copyright);
+                using (var dest = new nQuant.Master.GRHVQuantizer().QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
+                {
+                    dest.Save(targetPath, ImageFormat.Png);
+                    System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
+                }
+				return;
+            }
+#endif
+
+            var quantizer = algorithm == "PNN" ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
 			switch (algorithm)
 			{
-				case "PNNLAB":
+				case "PNN":
 					System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. An adaptation of fast pairwise nearest neighbor based algorithm.", Assembly.GetExecutingAssembly().GetName().Version);
 					System.Console.WriteLine(copyright.Copyright);
 					using (var dest = quantizer.QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
@@ -187,7 +209,7 @@ namespace nQuant
 #if (DEBUG)
 					System.Console.WriteLine(q.StackTrace);
 #else
-					System.Console.WriteLine(q.Message);
+					System.Console.WriteLine(q.StackTrace);
 					System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", bitmap.PixelFormat.ToString(), maxColors);
 #endif
 				}

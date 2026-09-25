@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net10.0;net6.0</TargetFrameworks>
-	<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <StartupObject>nQuant.ConsoleApp</StartupObject>
     <PackageId>nQuant.ConsoleApp</PackageId>
     <Authors>Miller Cy Chan</Authors>

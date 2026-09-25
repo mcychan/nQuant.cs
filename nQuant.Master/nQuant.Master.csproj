@@ -2,19 +2,19 @@
 
   <PropertyGroup>
     <TargetFrameworks>net10.0;net6.0</TargetFrameworks>
-	<TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Miller Cy Chan</Authors>
-	<PackageIcon>ImgV64.png</PackageIcon>
-	<PackageProjectUrl>http://imgv64.rf.gd</PackageProjectUrl>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>ImgV64.png</PackageIcon>
+    <PackageProjectUrl>http://imgv64.rf.gd</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/mcychan/nQuant.cs.git</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>    
-	<Title>nQuant.cs</Title>
-	<Summary>nQuant is a C# color quantizer which produces high quality 256 color 8 bit PNG images. nQuant uses an algorithm adapted from fast pairwise nearest neighbor based algorithm color quantizer. nQuant often produces high quality 256 color 8 bit PNG images minimizing color loss for photo having red lips and supports 256 or less colors with transparency.</Summary>
-	<PackageTags>color-quantization;error-diffusion;image-processing;cielab;dithering</PackageTags>
+    <RepositoryType>git</RepositoryType>    
+    <Title>nQuant.cs</Title>
+    <Summary>nQuant is a C# color quantizer which produces high quality 256 color 8 bit PNG images. nQuant uses an algorithm adapted from fast pairwise nearest neighbor based algorithm color quantizer. nQuant often produces high quality 256 color 8 bit PNG images minimizing color loss for photo having red lips and supports 256 or less colors with transparency.</Summary>
+    <PackageTags>color-quantization;error-diffusion;image-processing;cielab;dithering</PackageTags>
     <Description>
       nQuant.cs is a C# color quantizer that can dramatically reduce the size of images with little to no perceptible quality loss.
     </Description>
@@ -46,7 +46,15 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-	<None Include="res\ImgV64.png" Pack="true" PackagePath="" />
+    <None Include="res\ImgV64.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="System.Numerics.Tensors" Version="10.0.12" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <Compile Remove="GRHVQuantizer.cs" />
   </ItemGroup>
 
 </Project>

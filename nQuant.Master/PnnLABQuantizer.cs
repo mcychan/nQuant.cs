@@ -581,15 +581,15 @@ namespace PnnQuant
 			nearestMap.Clear();
 		}
 
-        internal int[] DitherImage(int[] pixels, Color[] palette, Ditherable ditherable, int width, int height,
-            float[] saliencies, int frameIndex)
+		internal int[] DitherImage(int[] pixels, Color[] palette, Ditherable ditherable, int width, int height,
+			float[] saliencies, int frameIndex)
 		{
-            var qPixels = new int[pixels.Length];
-			BlueNoise.DitherImage(pixels, palette, this, new int[pixels.Length], width, height, saliencies, frameIndex);
-            return qPixels;
-        }
+			var qPixels = new int[pixels.Length];
+			BlueNoise.DitherImage(pixels, palette, this, qPixels, width, height, saliencies, frameIndex);
+			return qPixels;
+		}
 
-        protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, int frameIndex, bool dither)
+		protected override int[] Dither(int[] pixels, Color[] palettes, int width, int height, int frameIndex, bool dither)
 		{
 			this.dither = dither;
 			if (hasSemiTransparency)
