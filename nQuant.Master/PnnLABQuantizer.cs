@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-/* Fast pairwise nearest neighbor based algorithm with CIELAB color space advanced version
+/* Density-weighted Fast pairwise nearest neighbor K-means algorithm with CIELAB color space advanced version
 Copyright (c) 2018-2026 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
@@ -13,14 +13,14 @@ namespace PnnQuant
 	public class PnnLABQuantizer : PnnQuantizer
 	{
 		protected float[] saliencies;
-		private Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
+		internal Dictionary<int, CIELABConvertor.Lab> pixelMap = new();
 
-		private readonly bool isGA;
-		private bool isNano;
-		private double proportional, ratioY = .5;
-		private static readonly double TRANS_RATE = 1 - (512 + 101) / 768.0;
+		protected readonly bool isGA;
+		protected bool isNano;
+		protected double proportional, ratioY = .5;
+		protected static readonly double TRANS_RATE = 1 - (512 + 101) / 768.0;
 
-		private sealed class Pnnbin
+        protected sealed class Pnnbin
 		{
 			internal float ac, Lc, Ac, Bc;
 			internal float cnt;
@@ -48,7 +48,7 @@ namespace PnnQuant
 			}
 		}
 
-		private void Find_nn(Pnnbin[] bins, int idx, bool texicab)
+		protected void Find_nn(Pnnbin[] bins, int idx, bool texicab)
 		{
 			int nn = 0;
 			var err = 1e100;
@@ -137,7 +137,7 @@ namespace PnnQuant
 			return cnt => cnt;
 		}
 
-		internal override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
+		protected virtual Pnnbin[] Getbins(int[] pixels, ref Color[] palettes, out int maxbins, ref int nMaxColors)
 		{
 			short quan_rt = 1;
 			var bins = new Pnnbin[ushort.MaxValue + 1];
@@ -162,11 +162,11 @@ namespace PnnQuant
 				bins[index].Bc += (float)lab1.B;
 				bins[index].cnt += 1.0f;
 				if (saliencies != null)
-					saliencies[i] = (float) (saliencyBase + (1 - saliencyBase) * lab1.L / 100f * lab1.alpha / 255f);
+					saliencies[i] = (float)(saliencyBase + (1 - saliencyBase) * lab1.L / 100f * lab1.alpha / 255f);
 			}
 
 			/* Cluster nonempty bins at one end of array */
-			int maxbins = 0;
+			maxbins = 0;
 			for (int i = 0; i < bins.Length; ++i)
 			{
 				if (bins[i] == null)
@@ -184,16 +184,18 @@ namespace PnnQuant
 			proportional = BitmapUtilities.Sqr(nMaxColors) / maxbins;
 			if ((HasAlpha || hasSemiTransparency) && nMaxColors < 32)
 				quan_rt = -1;
-			
+
 			weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
 			isNano = weight <= .015;
-            if ((nMaxColors < 16 && weight < .0075) || weight < .001 || (weight > .0015 && weight < .0022))
+			if ((nMaxColors < 16 && weight < .0075) || weight < .001 || (weight > .0015 && weight < .0022))
 				quan_rt = 2;
-			if (weight < (isGA ? .03 : .04) && PG < 1 && PG >= coeffs[0, 1]) {
+			if (weight < (isGA ? .03 : .04) && PG < 1 && PG >= coeffs[0, 1])
+			{
 				if (nMaxColors >= 64)
 					quan_rt = 0;
 			}
-			if (nMaxColors > 16 && nMaxColors < 64) {
+			if (nMaxColors > 16 && nMaxColors < 64)
+			{
 				var weightB = nMaxColors / 8000.0;
 				if (Math.Abs(weightB - weight) < .001)
 					quan_rt = 2;
@@ -214,7 +216,7 @@ namespace PnnQuant
 				}
 				nMaxColors = i;
 				Console.WriteLine("Maximum number of colors: " + palettes.Length);
-				return;
+				return null;
 			}
 
 			var quanFn = GetQuanFn(nMaxColors, quan_rt);
@@ -231,8 +233,9 @@ namespace PnnQuant
 
 			var texicab = proportional > .0225 && !hasSemiTransparency;
 
-			if(!isGA) {
-				if(hasSemiTransparency)
+			if (!isGA)
+			{
+				if (hasSemiTransparency)
 					ratio = .5;
 				else if (quan_rt != 0 && nMaxColors < 64)
 				{
@@ -244,7 +247,8 @@ namespace PnnQuant
 						ratio = Math.Min(1.0, weight * Math.Exp(2.28));
 					else if (proportional > .03)
 						ratio = Math.Min(1.0, weight * Math.Exp(3.275));
-					else {
+					else
+					{
 						var beta = (nMaxColors < 16 && maxbins % 2 == 0) ? 2 : 1;
 						ratio = Math.Min(1.0, proportional + beta * weight * Math.Exp(1.947));
 					}
@@ -339,14 +343,23 @@ namespace PnnQuant
 			{
 				var lab1 = new CIELABConvertor.Lab
 				{
-					alpha = (hasSemiTransparency || HasAlpha) ? Math.Round(bins[i].ac) : Byte.MaxValue,
-					L = bins[i].Lc, A = bins[i].Ac, B = bins[i].Bc
+					alpha = (hasSemiTransparency || HasAlpha) ? (float)Math.Round(bins[i].ac) : Byte.MaxValue,
+					L = bins[i].Lc,
+					A = bins[i].Ac,
+					B = bins[i].Bc
 				};
 				palettes[k] = CIELABConvertor.LAB2RGB(lab1);
 
 				i = bins[i].fw;
 			}
+
+			return bins;
 		}
+
+		internal override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
+		{
+			Getbins(pixels, ref palettes, out var maxbins, ref nMaxColors);
+        }
 
 		internal override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{

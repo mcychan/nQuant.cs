@@ -385,6 +385,7 @@ namespace nQuant.Master
 			 * the Gilbert path, and distributes the error in
 			 * a sequence of pixels size.
 			 */
+            errorq.Clear();
             var weightRatio = (float) Math.Pow(BLOCK_SIZE + 1f, 1f / (size - 1f));
 			float weight = 1f, sumweight = 0f;
 			weights = new float[size];

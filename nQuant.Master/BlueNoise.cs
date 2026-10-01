@@ -181,7 +181,7 @@ namespace nQuant.Master
 			26, -34, 118, 8, -25, 22, -104, 48, -57, 80, 26, -125, -33, 1, 108, -117, 90, -62, -31, 6, -107
 	};
 
-	public static Color Diffuse(Color pixel, Color qPixel, float weight, float strength, int x, int y)
+		public static Color Diffuse(Color pixel, Color qPixel, float weight, float strength, int x, int y)
 		{
 			int r_pix = pixel.R;
 			int g_pix = pixel.G;
@@ -216,7 +216,7 @@ namespace nQuant.Master
 			}
 		}
 		
-			// Convert signed-byte blue-noise value (-128 … 127) → float [0, 1]
+		// Convert signed-byte blue-noise value (-128 … 127) → float [0, 1]
 		// (the +0.5 / 256 form is the conventional unbiased mapping)
 		internal static float BlueNoiseByteToFloat(sbyte v)
 		{
@@ -241,30 +241,29 @@ namespace nQuant.Master
 			return BlueNoiseByteToFloat(raw);               // returns [0,1]
 		}
 
-		internal static float GetLuminanceFromSaliency(float saliency, byte alpha, float saliencyBase = 0.1f)
+		private static float GetLuminanceFromPixel(Color c)
 		{
 			// Avoid division by zero for fully transparent pixels
-			if (alpha == 0) {
+			if (c.A == 0) {
 				return 0.0f;
 			}
-
-			var alphaNormalized = (float) alpha / 255.0f;
-			var scale = (1.0f - saliencyBase) * alphaNormalized;
-
-			if (scale <= 0.0f) {
-				return 0.0f;
-			}
-
-			// Invert the formula to isolate L
-			var L = (saliency - saliencyBase) / scale;
+			
+			var L = (0.299f * c.R + 0.587f * c.G + 0.114f * c.B) / 255.0f;
+			var alphaNormalized = c.A / 255.0f;
 
 			// Clamp L to the valid CIELAB Lightness range [0.0, 1.0]
-			return Math.Min(1.0f, Math.Max(L, 0.0f));
+			return Math.Min(1.0f, Math.Max(L / alphaNormalized, 0.0f));
 		}
-		
-		public static Color DitherPixel(Color pixel, float saliency, int x, int y, float baseSpread, int frameIndex)
+
+		private static float GetLuminanceFromPixel(int argb)
 		{
-			var luminance = GetLuminanceFromSaliency(saliency, pixel.A);
+			var c = Color.FromArgb(argb);
+			return GetLuminanceFromPixel(c);
+		}
+
+		public static Color DitherPixel(Color pixel, float saliency, int x, int y, float baseSpread, int frameIndex, float edgeWeight = 0.0f, float modulationFactor = 1.0f)
+		{
+			var luminance = GetLuminanceFromPixel(pixel);
 			// Taper noise to 0 when luminance approaches 1.0 (pure white sky)
 			// Smoothstep / quadratic decay in the top 15% brightness range [0.85, 1.0]
 			var highlightDampener = 1.0f;
@@ -273,6 +272,10 @@ namespace nQuant.Master
 				var t = (luminance - 0.85f) / 0.15f;
 				highlightDampener = (1.0f - t) * (1.0f - t);
 			}
+
+			var edgeAwareFactor = Math.Max(0.0f, 1.0f - Math.Min(1.0f, edgeWeight));
+
+			var modulation = modulationFactor * (0.5f + 0.5f * (1.0f - Math.Abs(luminance - 0.5f) * 2.0f));
 
 			// Blue-noise sample centered to [-0.5, 0.5]
 			var noise = GetTemporalBlueNoise(x, y, frameIndex) - 0.5f;
@@ -286,27 +289,58 @@ namespace nQuant.Master
 			return Color.FromArgb(a, r, g, b);
 		}
 
-		public static bool DitherImage(int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, int width, int height,
-			float[] saliencies, int frameIndex)
+		public static bool DitherImage(int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, int width, int height, float[] saliencies, int frameIndex)
+	{
+		var noiseDampener = 0.8f;
+		var baseSpread = (255.0f / (float)Math.Cbrt(palette.Length)) * noiseDampener;
+
+		for (int y = 0; y < height; ++y)
 		{
-			// Introduce a tuning multiplier (e.g., 0.5f to 0.8f) to reduce overall noise amplitude
-			var noiseDampener = 0.8f;
-			var baseSpread = (255.0f / (float) Math.Cbrt(palette.Length)) * noiseDampener;
-
-			for (int y = 0; y < height; ++y)
+			for (int x = 0; x < width; ++x)
 			{
-				for (int x = 0; x < width; ++x)
-				{
-					int pixelIndex = y * width + x;
-					var c = Color.FromArgb(pixels[pixelIndex]);
+				int pixelIndex = y * width + x;
+				var c = Color.FromArgb(pixels[pixelIndex]);
 
-                    var noisyArgb = DitherPixel(c, (saliencies != null) ? saliencies[pixelIndex] : 1.0f, x, y, baseSpread, frameIndex);
-					qPixels[pixelIndex] = ditherable.DitherColorIndex(palette, noisyArgb.ToArgb(), y + x);
-				}
+				// Define safe neighbor indices with boundary clamping
+				int xLeft = Math.Max(0, x - 1);
+				int xRight = Math.Min(width - 1, x + 1);
+				int yTop = Math.Max(0, y - 1);
+				int yBottom = Math.Min(height - 1, y + 1);
+
+				var lumL = GetLuminanceFromPixel(pixels[y * width + xLeft]);
+				var lumR = GetLuminanceFromPixel(pixels[y * width + xRight]);
+				var lumT = GetLuminanceFromPixel(pixels[yTop * width + x]);
+				var lumB = GetLuminanceFromPixel(pixels[yBottom * width + x]);
+				var lumCenter = GetLuminanceFromPixel(pixels[pixelIndex]);
+
+				// Calculate Edge Weight (Gradient Magnitude)
+				var gx = lumR - lumL;
+				var gy = lumB - lumT;
+				var edgeWeight = (float) Math.Sqrt(gx * gx + gy * gy);
+				edgeWeight = Math.Min(1.0f, edgeWeight * 2.5f);
+
+				// Calculate Modulation Factor (Local Contrast / Variance)
+				var localAvg = (lumL + lumR + lumT + lumB) * 0.25f;
+				var localVariance = Math.Abs(lumCenter - localAvg);
+				var modulationFactor = Math.Max(0.2f, 1.0f - Math.Min(1.0f, localVariance * 3.0f));
+
+				// Pass computed factors into DitherPixel
+				var noisyArgb = DitherPixel(
+					c,
+					(saliencies != null) ? saliencies[pixelIndex] : 1.0f,
+					x, y,
+					baseSpread,
+					frameIndex,
+					edgeWeight,
+					modulationFactor
+				);
+
+				qPixels[pixelIndex] = ditherable.DitherColorIndex(palette, noisyArgb.ToArgb(), pixelIndex);
 			}
-
-			return true;
 		}
+
+		return true;
+	}
 
 	}
 }

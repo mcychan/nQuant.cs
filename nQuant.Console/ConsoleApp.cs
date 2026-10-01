@@ -72,7 +72,7 @@ namespace nQuant
 #if NET6_0
 							if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN"))
 #else
-                            if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN") && strAlgor != "GRHV")
+                            if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN") && strAlgor != "DWPNNK")
 #endif
                             {
 								PrintUsage();
@@ -118,17 +118,17 @@ namespace nQuant
 		{
 			var copyright = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0] as AssemblyCopyrightAttribute;
 #if !NET6_0
-            if (algorithm == "GRHV")
+			if (algorithm == "DWPNNK")
 			{
-                System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. Graph regularized harmonic mean vector quantization algorithm with CIELAB color space.", Assembly.GetExecutingAssembly().GetName().Version);
-                System.Console.WriteLine(copyright.Copyright);
-                using (var dest = new nQuant.Master.GRHVQuantizer().QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
-                {
-                    dest.Save(targetPath, ImageFormat.Png);
-                    System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
-                }
+				System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. Density-weighted pairwise nearest neighbor K-means algorithm with CIELAB color space.", Assembly.GetExecutingAssembly().GetName().Version);
+				System.Console.WriteLine(copyright.Copyright);
+				using (var dest = new PnnQuant.DwPnnKmeansLABQuantizer().QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
+				{
+					dest.Save(targetPath, ImageFormat.Png);
+					System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
+				}
 				return;
-            }
+			}
 #endif
 
             var quantizer = algorithm == "PNN" ? new PnnQuant.PnnQuantizer() : new PnnQuant.PnnLABQuantizer();
@@ -266,6 +266,8 @@ namespace nQuant
                 else
                 {
                     var fname = Path.GetFileNameWithoutExtension(paths[0]);
+					if (targetPath.Equals(sourceDir))
+						targetPath = Path.GetDirectoryName(targetPath);
                     destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".gif";
                     var gifWriter = new GifWriter(destPath, 850);
                     gifWriter.AddImages(imgs);

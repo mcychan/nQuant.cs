@@ -54,7 +54,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <Compile Remove="GRHVQuantizer.cs" />
+    <Compile Remove="DwPnnKmeansLABQuantizer.cs" />
   </ItemGroup>
 
 </Project>

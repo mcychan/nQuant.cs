@@ -12,7 +12,7 @@ namespace nQuant.Master
 		private static readonly double XYZ_KAPPA = 903.3;
 
 		internal struct Lab {
-			internal double alpha, A, B, L;
+			internal float alpha, A, B, L;
 		}
 
 		private static float pivotXyzComponent(double component)
