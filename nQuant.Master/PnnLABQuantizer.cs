@@ -352,6 +352,7 @@ namespace PnnQuant
 
 				i = bins[i].fw;
 			}
+			m_palette = palettes;
 
 			return bins;
 		}
@@ -623,8 +624,6 @@ namespace PnnQuant
 			}
 
 			var fullDither = !HasAlpha && palettes.Length >= 128 && weight < .02;
-			if (isGA && !HasAlpha && palettes.Length >= 128)
-				fullDither = true;
 
 			if (dither && fullDither) {
 				return DitherImage(pixels, palettes, this, width, height, saliencies, frameIndex);

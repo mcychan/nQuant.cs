@@ -234,8 +234,8 @@ namespace nQuant.Master
 		internal static float GetTemporalBlueNoise(int x, int y, int frameIndex)
 		{
 			// simple temporal offset (replace with a better 3-D sequence if you have one)
-			int ox = (x + frameIndex * 13) & (BLUE_NOISE_SIZE - 1);
-			int oy = (y + frameIndex * 29) & (BLUE_NOISE_SIZE - 1);
+			int ox = (x ^ (frameIndex * 19)) & (BLUE_NOISE_SIZE - 1);
+			int oy = (y ^ (frameIndex * 37)) & (BLUE_NOISE_SIZE - 1);
 			var index = oy * BLUE_NOISE_SIZE + ox;
 			var raw = (index < TELL_BLUE_NOISE.Length) ? TELL_BLUE_NOISE[index] : TELL_BLUE_NOISE[index & 4095];
 			return BlueNoiseByteToFloat(raw);               // returns [0,1]
@@ -267,20 +267,19 @@ namespace nQuant.Master
 			// Taper noise to 0 when luminance approaches 1.0 (pure white sky)
 			// Smoothstep / quadratic decay in the top 15% brightness range [0.85, 1.0]
 			var highlightDampener = 1.0f;
-			if (luminance > 0.85f) {
-				// Smoothly drop from 1.0 (at 0.85) to 0.0 (at 1.0)
-				var t = (luminance - 0.85f) / 0.15f;
-				highlightDampener = (1.0f - t) * (1.0f - t);
+			if (luminance > 0.80f) {
+				var t = (luminance - 0.80f) / 0.20f;
+				highlightDampener = Math.Max(0.25f, (1.0f - t) * (1.0f - t));
 			}
 
-			var edgeAwareFactor = Math.Max(0.0f, 1.0f - Math.Min(1.0f, edgeWeight));
+			var edgeAwareFactor = Math.Max(0.3f, 1.0f - Math.Min(1.0f, edgeWeight));
 
 			var modulation = modulationFactor * (0.5f + 0.5f * (1.0f - Math.Abs(luminance - 0.5f) * 2.0f));
 
 			// Blue-noise sample centered to [-0.5, 0.5]
 			var noise = GetTemporalBlueNoise(x, y, frameIndex) - 0.5f;
-			var offset = noise * baseSpread * saliency * highlightDampener;
-			
+			var offset = noise * baseSpread * saliency * highlightDampener * edgeAwareFactor * modulation;
+
 			// Apply noise and clamp safely to RGB limits
 			int r = (int) Math.Min(Byte.MaxValue, Math.Max((int) pixel.R + offset, 0));
 			int g = (int) Math.Min(Byte.MaxValue, Math.Max((int) pixel.G + offset, 0));
@@ -290,7 +289,7 @@ namespace nQuant.Master
 		}
 
 		public static bool DitherImage(int[] pixels, Color[] palette, Ditherable ditherable, int[] qPixels, int width, int height, float[] saliencies, int frameIndex)
-	{
+		{
 		var noiseDampener = 0.8f;
 		var baseSpread = (255.0f / (float)Math.Cbrt(palette.Length)) * noiseDampener;
 
