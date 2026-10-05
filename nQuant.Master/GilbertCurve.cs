@@ -111,7 +111,7 @@ namespace nQuant.Master
 			if (saliencies != null && (m_hasAlpha || (sortedByYDiff && weight < .03)))
 				ditherMax = (byte)(DITHER_MAX / weight);
 			else if (m_hasAlpha)
-				ditherMax = (byte)(DITHER_MAX / Math.Sqrt(weight));
+				ditherMax = (byte)(DITHER_MAX / weight);
 			else
 			{
 				var deviation = !m_hasAlpha && weight > .0025 ? -.25 : 1;
@@ -132,9 +132,9 @@ namespace nQuant.Master
 
 			// Calculate the probability density function (PDF)
 			var exponent = -Math.Pow(x - mean, 2) / (2 * Math.Pow(stdDev, 2));
-            var pdf = (1 / (stdDev * Math.Sqrt(2 * Math.PI))) * Math.Exp(exponent);
-            var maxPdf = 1 / (stdDev * Math.Sqrt(2 * Math.PI)); // Peak at x = mean
-            var scaledPdf = (pdf / maxPdf) * peak;
+			var pdf = (1 / (stdDev * Math.Sqrt(2 * Math.PI))) * Math.Exp(exponent);
+			var maxPdf = 1 / (stdDev * Math.Sqrt(2 * Math.PI)); // Peak at x = mean
+			var scaledPdf = (pdf / maxPdf) * peak;
 			return (float) Math.Max(0.0, Math.Min(peak, scaledPdf));
 		}
 
@@ -142,7 +142,7 @@ namespace nQuant.Master
 		private int DitherPixel(int x, int y, Color c2, float beta)
 		{
 			int bidx = x + y * width;
-            var pixel = Color.FromArgb(pixels[bidx]);
+			var pixel = Color.FromArgb(pixels[bidx]);
 			int r_pix = c2.R;
 			int g_pix = c2.G;
 			int b_pix = c2.B;
@@ -238,7 +238,7 @@ namespace nQuant.Master
             var c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || pixel.A < a_pix))
 			{
-				if ((palette.Length >= 256 && saliencies[bidx] > .99f) || (m_hasAlpha && (pixel.A - a_pix) < (.5 * margin)))
+				if (palette.Length > 32 && saliencies[bidx] > .99f)
 					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 				else
 					qPixels[bidx] = DitherPixel(x, y, c2, beta);
@@ -403,13 +403,12 @@ namespace nQuant.Master
 			 * the Gilbert path, and distributes the error in
 			 * a sequence of pixels size.
 			 */
-			Resize(errorq, size);
+			errorq.Clear();
 			var weightRatio = (float) Math.Pow(BLOCK_SIZE + 1f, 1f / (size - 1f));
 			float weight = 1f, sumweight = 0f;
 			weights = new float[size];
 			for (int c = 0; c < size; ++c)
 			{
-				errorq.Add(new ErrorBox());
 				sumweight += (weights[size - c - 1] = 1.0f / weight);
 				weight *= weightRatio;
 			}
