@@ -47,14 +47,15 @@ namespace nQuant.Master
 		private float[] weights;
 		private readonly bool dither, m_hasAlpha, sortedByYDiff;
 		private readonly int width, height, frameIndex;
-		private readonly  float noiseDampener = 0.8f;
+		private readonly float noiseDampener = 0.8f;
 		private readonly double weight;
 		private readonly int[] pixels;
 		private readonly Color[] palette;
 		private readonly int[] qPixels;
 		private readonly Ditherable ditherable;
 		private readonly float[] saliencies;
-		private List<ErrorBox> errorq;
+		private readonly PriorityQueue<ErrorBox, double> errorq;
+		private double insertionCounter = 0;
 
 		private readonly int margin;
 		private const float BLOCK_SIZE = 343f;
@@ -216,15 +217,16 @@ namespace nQuant.Master
 			var error = new ErrorBox(pixel);
 			int i = sortedByYDiff ? weights.Length - 1 : 0;
 			float maxErr = DITHER_MAX - 1;
-			foreach (var eb in errorq)
+			foreach (var item in errorq.UnorderedItems)
 			{
-				if(i < 0 || i >= weights.Length)
+				var eb = item.Element;
+				if (i < 0 || i >= weights.Length)
 					break;
 
 				for (int j = 0; j < eb.Length; ++j)
 				{
 					error[j] += eb[j] * weights[i];
-					if(error[j] > maxErr)
+					if (error[j] > maxErr)
 						maxErr = error[j];
 				}
 				i += sortedByYDiff ? -1 : 1;
@@ -263,7 +265,7 @@ namespace nQuant.Master
 				qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 
 			if(errorq.Count >= DITHER_MAX)
-				errorq.RemoveAt(0);
+				errorq.Dequeue();
 			else if (errorq.Count > 0)
 				InitWeights(errorq.Count);
 
@@ -321,9 +323,8 @@ namespace nQuant.Master
 				}
 			}
 
-			errorq.Add(error);
-			if (sortedByYDiff)
-				errorq.Sort((o1, o2) => o2.yDiff.CompareTo(o1.yDiff));
+			var priority = sortedByYDiff ? -error.yDiff : insertionCounter++;
+			errorq.Enqueue(error, priority);
 		}
 
 		private void Generate2d(int x, int y, int ax, int ay, int bx, int by) {
@@ -385,17 +386,16 @@ namespace nQuant.Master
 			 * the Gilbert path, and distributes the error in
 			 * a sequence of pixels size.
 			 */
-			errorq.Clear();
 			var weightRatio = (float) Math.Pow(BLOCK_SIZE + 1f, 1f / (size - 1f));
 			float weight = 1f, sumweight = 0f;
 			weights = new float[size];
 			for (int c = 0; c < size; ++c)
 			{
+				var priority = sortedByYDiff ? 0.0 : insertionCounter++;
+				errorq.Enqueue(new ErrorBox(), priority);
 				sumweight += (weights[size - c - 1] = 1.0f / weight);
 				weight *= weightRatio;
 			}
-			if (sortedByYDiff)
-				errorq.Sort((o1, o2) => o2.yDiff.CompareTo(o1.yDiff));
 
 			weight = 0f; /* Normalize */
 			for (int c = 0; c < size; ++c)
