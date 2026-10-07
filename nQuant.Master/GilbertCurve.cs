@@ -380,24 +380,6 @@ namespace nQuant.Master
 			Generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2));
 		}
 
-		private static void Resize(List<ErrorBox> list, int newSize)
-		{
-			int currentSize = list.Count;
-
-			if (newSize < currentSize)
-			{
-				list.RemoveRange(newSize, currentSize - newSize);
-			}
-			else if (newSize > currentSize)
-			{
-				list.Capacity = newSize;
-				for (int i = currentSize; i < newSize; i++)
-				{
-					list.Add(new ErrorBox());
-				}
-			}
-		}
-		
 		private void InitWeights(int size) {
 			/* Dithers all pixels of the image in sequence using
 			 * the Gilbert path, and distributes the error in
