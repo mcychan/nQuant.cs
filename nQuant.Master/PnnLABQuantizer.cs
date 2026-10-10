@@ -360,7 +360,7 @@ namespace PnnQuant
 		internal override void Pnnquan(int[] pixels, ref Color[] palettes, ref int nMaxColors)
 		{
 			Getbins(pixels, ref palettes, out var maxbins, ref nMaxColors);
-        }
+		}
 
 		internal override ushort NearestColorIndex(Color[] palette, int pixel, int pos)
 		{
