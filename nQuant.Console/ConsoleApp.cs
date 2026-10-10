@@ -72,9 +72,9 @@ namespace nQuant
 #if NET6_0
 							if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN"))
 #else
-                            if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN") && strAlgor != "DWPNNK")
+							if (strAlgor != "OTSU" && !strAlgor.StartsWith("PNN") && strAlgor != "DWPNNK")
 #endif
-                            {
+							{
 								PrintUsage();
 								Environment.Exit(1);
 								break;
@@ -106,11 +106,11 @@ namespace nQuant
 			System.Console.WriteLine("  /m : Max Colors (pixel-depth) - Maximum number of colors for the output format to support. The default is 256 (8-bit).");
 			System.Console.WriteLine("  /d : Dithering or not? y or n.");
 #if NET6_0
-            System.Console.WriteLine("  /a : Algorithm used - Choose one of them, otherwise give you the default pnnlab from [pnn, pnnlab, pnnlab+, otsu]");
+			System.Console.WriteLine("  /a : Algorithm used - Choose one of them, otherwise give you the default pnnlab from [pnn, pnnlab, pnnlab+, otsu]");
 #else
-            System.Console.WriteLine("  /a : Algorithm used - Choose one of them, otherwise give you the default pnnlab from [pnn, pnnlab, pnnlab+, grhv, otsu]");
+			System.Console.WriteLine("  /a : Algorithm used - Choose one of them, otherwise give you the default pnnlab from [pnn, pnnlab, pnnlab+, dwpnnk, otsu]");
 #endif
-            System.Console.WriteLine("  /o : Output image file path. The default is <source image path directory>\\<source image file name without extension>-quant<Max colors>.png");
+			System.Console.WriteLine("  /o : Output image file path. The default is <source image path directory>\\<source image file name without extension>-quant<Max colors>.png");
 		}
 
 
@@ -120,9 +120,9 @@ namespace nQuant
 #if !NET6_0
 			if (algorithm == "DWPNNK")
 			{
-				System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. Density-weighted pairwise nearest neighbor K-means algorithm with CIELAB color space.", Assembly.GetExecutingAssembly().GetName().Version);
+				System.Console.WriteLine("nQuant Version {0} C# Color Quantizer. Density-weighted pairwise nearest neighbor K-harmonic means algorithm with CIELAB color space.", Assembly.GetExecutingAssembly().GetName().Version);
 				System.Console.WriteLine(copyright.Copyright);
-				using (var dest = new PnnQuant.DwPnnKmeansLABQuantizer().QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
+				using (var dest = new PnnQuant.DwPnnKhmLABQuantizer().QuantizeImage(source, PixelFormat.Undefined, maxColors, dither))
 				{
 					dest.Save(targetPath, ImageFormat.Png);
 					System.Console.WriteLine("Converted image: " + Path.GetFullPath(targetPath));
@@ -206,12 +206,7 @@ namespace nQuant
 				}
 				catch (Exception q)
 				{
-#if (DEBUG)
-					System.Console.WriteLine(q.StackTrace);
-#else
-					System.Console.WriteLine(q.StackTrace);
-					System.Console.WriteLine("Incorrect pixel format: {0} for {1} colors.", bitmap.PixelFormat.ToString(), maxColors);
-#endif
+					System.Console.WriteLine(q.ToString());
 				}
 			}
 			System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
@@ -249,47 +244,64 @@ namespace nQuant
 
 				var alg = new APNsgaIII<PnnLABGAQuantizer>(new PnnLABGAQuantizer(new PnnLABQuantizer(), bitmaps, maxColors));
 				alg.Run(999, -Double.Epsilon);
-                using var pGAq = alg.Result;
-                System.Console.WriteLine("\n" + pGAq.Result);
-                var destPath = string.Empty;
-                var imgs = pGAq.QuantizeImage(dither);
-                if (maxColors > 256)
-                {
-                    for (int i = 0; i < imgs.Count; ++i)
-                    {
-                        var fname = Path.GetFileNameWithoutExtension(paths[i]);
-                        destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".png";
-                        imgs[i].Save(destPath, ImageFormat.Png);
-                        System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
-                    }
-                }
-                else
-                {
-                    var fname = Path.GetFileNameWithoutExtension(paths[0]);
+				using var pGAq = alg.Result;
+				System.Console.WriteLine("\n" + pGAq.Result);
+				var destPath = string.Empty;
+				var imgs = pGAq.QuantizeImage(dither);
+				if (maxColors > 256)
+				{
+					for (int i = 0; i < imgs.Count; ++i)
+					{
+						var fname = Path.GetFileNameWithoutExtension(paths[i]);
+						destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".png";
+						imgs[i].Save(destPath, ImageFormat.Png);
+						System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
+					}
+				}
+				else
+				{
+					var fname = Path.GetFileNameWithoutExtension(paths[0]);
 					if (targetPath.Equals(sourceDir))
 						targetPath = Path.GetDirectoryName(targetPath);
-                    destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".gif";
-                    var gifWriter = new GifWriter(destPath, 850);
-                    gifWriter.AddImages(imgs);
-                }
+					destPath = Path.Combine(targetPath, fname) + " - PNNLAB+quant" + maxColors + ".gif";
+					var gifWriter = new GifWriter(destPath, 850);
+					gifWriter.AddImages(imgs);
+				}
 
-                System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
-            }
+				System.Console.WriteLine("Converted image: " + Path.GetFullPath(destPath));
+			}
 			catch (Exception q)
 			{
 				System.Console.WriteLine(q.StackTrace);
 			}
 			System.Console.WriteLine(@"Completed in {0:s\.fff} secs with peak memory usage of {1}.", stopwatch.Elapsed, Process.GetCurrentProcess().PeakWorkingSet64.ToString("#,#"));
 		}
-		
+
+		private static string GetSolutionDirectory()
+		{
+			var currentDir = new DirectoryInfo(AppContext.BaseDirectory);
+
+			while (currentDir != null)
+			{
+				// Look for any file ending in .sln
+				if (currentDir.GetFiles("*.sln").Any())
+				{
+					return currentDir.FullName;
+				}
+				currentDir = currentDir.Parent;
+			}
+
+			throw new FileNotFoundException("Solution directory could not be determined.");
+		}
+
 		public static void Main(string[] args)
 		{
-			string algorithm = "PNNLAB";
+			var algorithm = "PNNLAB";
 #if DEBUG
-			var sourcePath = @"C:\Users\miller\source\repos\nQuant.cs-core\samples\kKcuz.png";
+			var sourcePath = GetSolutionDirectory() + @"\samples\SE5x9.jpg";
 			maxColors = 256;
 #else
-			if (args.Length < 1)
+            if (args.Length < 1)
 			{
 				PrintUsage();
 				Environment.Exit(1);
