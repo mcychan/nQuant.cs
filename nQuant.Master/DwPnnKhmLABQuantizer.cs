@@ -7,7 +7,7 @@ using System.Numerics.Tensors;
 using System.Threading.Tasks;
 
 /* Density-weighted pairwise nearest neighbor K-harmonic means algorithm with CIELAB color space advanced version
-Copyright (c) 2018-2026 Miller Cy Chan
+Copyright (c) 2026 Miller Cy Chan
 * error measure; time used is proportional to number of bins squared - WJ */
 
 namespace PnnQuant
@@ -59,7 +59,7 @@ namespace PnnQuant
 					Span<float> distances = stackalloc float[k];
 					float sumInvDistP = 0f;
 
-					for (int j = 0; j < k; j++)
+					for (int j = 0; j < k; ++j)
 					{
 						p2[0] = centroids[j].L;
 						p2[1] = centroids[j].A;
@@ -76,7 +76,7 @@ namespace PnnQuant
 
 					// Accumulate weighted contributions across all clusters using KHM soft membership
 					var w = weights[i];
-					for (int j = 0; j < k; j++)
+					for (int j = 0; j < k; ++j)
 					{
 						// KHM membership weight factor: d(x, c_j)^(-p-2) / (sum d(x, c_l)^(-p))^2
 						float dist = TensorPrimitives.Distance(p1, stackalloc float[3] { centroids[j].L, centroids[j].A, centroids[j].B });
@@ -97,7 +97,7 @@ namespace PnnQuant
 				});
 
 				var changed = false;
-				for (int j = 0; j < k; j++)
+				for (int j = 0; j < k; ++j)
 				{
 					if (weightSum[j] > 1e-5f)
 					{
@@ -144,7 +144,7 @@ namespace PnnQuant
 				finalWeightsList.Add(bin.cnt * (1.0f + (float)Math.Abs(bin.Lc / 100.0f)));
 			}
 
-			int maxIterations = nMaxColors <= 16 ? 5 : (nMaxColors <= 64 ? 10 : 18);
+			int maxIterations = nMaxColors <= 16 ? 5 : (nMaxColors <= 64 ? 8 : 10);
 			RefinePaletteWithDwKhMeans(uniqueLabsList.ToArray(), finalWeightsList.ToArray(), ref palettes, maxIterations);
 		}
 
