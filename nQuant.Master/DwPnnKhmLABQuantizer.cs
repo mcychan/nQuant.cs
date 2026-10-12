@@ -39,7 +39,7 @@ namespace PnnQuant
 			var newAlpha = new float[k];
 			var weightSum = new float[k];
 
-			const float p = 2.0f; // K-harmonic means power parameter
+			var p = hasSemiTransparency ? 2.5f : 3.0f; ; // K-harmonic means power parameter
 
 			for (int iter = 0; iter < maxIterations; ++iter)
 			{
