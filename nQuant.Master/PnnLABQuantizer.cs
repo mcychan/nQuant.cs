@@ -18,9 +18,9 @@ namespace PnnQuant
 		protected readonly bool isGA;
 		protected bool isNano;
 		protected double proportional, ratioY = .5;
-		protected static readonly double TRANS_RATE = 1 - (512 + 101) / 768.0;
+		internal static readonly double TRANS_RATE = 1 - (512 + 101) / 768.0;
 
-        protected sealed class Pnnbin
+		protected sealed class Pnnbin
 		{
 			internal float ac, Lc, Ac, Bc;
 			internal float cnt;
@@ -124,7 +124,7 @@ namespace PnnQuant
 			bin1.err = (float) err;
 			bin1.nn = nn;
 		}
-		
+
 		protected override QuanFn GetQuanFn(int nMaxColors, short quan_rt) {
 			if (quan_rt > 0) {
 				if (quan_rt > 1)

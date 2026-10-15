@@ -90,18 +90,19 @@ namespace PnnQuant
 		private void CalculateError(double[] errors)
 		{
 			var maxError = maxRatio < .1 ? .5 : .0625;
-			if(m_pq.HasAlpha)
+			if (m_pq.HasAlpha)
 				maxError = 1;
 
 			double fitness = 0;
 			int length = m_pixelsList.Select(pixels => pixels.Length).Sum();
-			for (int i = 0; i < errors.Length; ++i)
-				errors[i] /= maxError * length;
 
+			var p = m_pq.HasAlpha ? 2.5f : 3.0f;
 			for (int i = 0; i < errors.Length; ++i)
 			{
-				if (i > 0)
+				errors[i] /= maxError * length;
+				if (i >= 1)
 					errors[i] /= 2.55;
+				errors[i] = Math.Pow(errors[i], p); // Applying K-harmonic means power transformation
 				fitness -= errors[i];
 			}
 
@@ -147,7 +148,7 @@ namespace PnnQuant
 						errors[0] += BitmapUtilities.Sqr(lab2.L - lab1.L);
 						errors[1] += BitmapUtilities.Sqr(lab2.A - lab1.A);
 						errors[2] += BitmapUtilities.Sqr(lab2.B - lab1.B);
-						errors[3] += BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) / Math.Exp(1.5);
+						errors[3] += BitmapUtilities.Sqr(lab2.alpha - lab1.alpha) * PnnLABQuantizer.TRANS_RATE;
 					}
 					else
 					{
