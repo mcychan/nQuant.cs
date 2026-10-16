@@ -178,7 +178,7 @@ namespace PnnQuant
 			}
 
 			if (nMaxColors < 16)
-				nMaxColors = -1;
+                quan_rt = -1;
 
 			weight = Math.Min(0.9, nMaxColors * 1.0 / maxbins);
 			if (weight < .04 && PG < 1 && PG >= coeffs[0, 1])
