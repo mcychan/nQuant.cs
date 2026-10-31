@@ -173,7 +173,7 @@ namespace nQuant.Master
 				{
 					var kappa = saliencies[bidx] < .4f ? beta * .4f * saliencies[bidx] : beta * .4f / saliencies[bidx];
 					var c1 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
-					if (palette.Length > 32)
+					if (palette.Length > 32 && saliencies[bidx] < .9)
 						kappa = beta * NormalDistribution(saliencies[bidx], 2f);
 					else
 					{
@@ -213,7 +213,7 @@ namespace nQuant.Master
 		private void DiffusePixel(int x, int y)
 		{
 			int bidx = x + y * width;
-            var pixel = Color.FromArgb(pixels[bidx]);
+			var pixel = Color.FromArgb(pixels[bidx]);
 			var error = new ErrorBox(pixel);
 			int i = sortedByYDiff ? weights.Length - 1 : 0;
 			float maxErr = DITHER_MAX - 1;
@@ -237,10 +237,10 @@ namespace nQuant.Master
 			int b_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[2], 0.0));
 			int a_pix = (int)Math.Min(Byte.MaxValue, Math.Max(error[3], 0.0));
 
-            var c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
+			var c2 = Color.FromArgb(a_pix, r_pix, g_pix, b_pix);
 			if (saliencies != null && dither && !sortedByYDiff && (!m_hasAlpha || pixel.A < a_pix))
 			{
-				if (palette.Length > 32 && saliencies[bidx] > .99f)
+				if ((palette.Length >= 256 && saliencies[bidx] > .99f) || (m_hasAlpha && (pixel.A - a_pix) < (.5 * margin)))
 					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 				else
 					qPixels[bidx] = DitherPixel(x, y, c2, beta);
@@ -256,7 +256,7 @@ namespace nQuant.Master
 						c2 = BlueNoise.DitherPixel(pixel, (saliencies != null) ? saliencies[bidx] : 1.0f, x, y, baseSpread, frameIndex);
 					else {
 						var strength = 1 / 3f;
-						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], 1 / saliencies[bidx], strength, x, y);
+						c2 = BlueNoise.Diffuse(pixel, palette[qPixels[bidx]], strength, strength, x, y);
 					}
 					qPixels[bidx] = ditherable.DitherColorIndex(palette, c2.ToArgb(), bidx);
 				}
