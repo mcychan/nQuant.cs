@@ -461,7 +461,7 @@ namespace PnnQuant
 				GetLab(c2.ToArgb(), out var lab2);
 
 				var curdist = hasSemiTransparency ? BitmapUtilities.Sqr(c2.A - c.A) * TRANS_RATE : 0;
-				if (Math.Abs(lab2.L - lab1.L) < nMaxColors || saliencies[pos] < .2 || saliencies[pos] > .8)
+				if (Math.Abs(lab2.L - lab1.L) < nMaxColors)
 				{
 					curdist += BitmapUtilities.Sqr(lab2.L - lab1.L);
 					if (curdist > mindist)
